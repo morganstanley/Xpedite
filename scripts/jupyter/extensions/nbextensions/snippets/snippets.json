@@ -1,0 +1,34 @@
+{
+    "snippets" : [
+        {
+            "name" : "txns",
+            "code" : [
+                "txns(['RxBegin', 'FixRxBegin', 'HandleNewOrderBegin', 'LocateGhostBegin', 'ClientOrderFSMBegin', 'RxEnd'])"
+            ]
+        },
+        {
+            "name" : "plot-txns",
+            "code" : [
+                "plot(['RxBegin', 'FixRxBegin', 'HandleNewOrderBegin', 'LocateGhostBegin', 'ClientOrderFSMBegin', 'RxEnd'])"
+            ]
+        },
+        {
+            "name" : "filter",
+            "code" : [
+                "filter(lambda txns : txns.endpoint.duration > 11).txns(['RxBegin', 'FixRxBegin', 'HandleNewOrderBegin', 'LocateGhostBegin', 'ClientOrderFSMBegin', 'RxEnd'])"
+            ]
+        },
+        {
+            "name" : "filter-stat",
+            "code" : [
+                "filter(lambda txns : txns.endpoint.duration > 11).stat(['RxBegin', 'FixRxBegin', 'HandleNewOrderBegin', 'LocateGhostBegin', 'ClientOrderFSMBegin', 'RxEnd'])"
+            ]
+        },
+        {
+            "name" : "plot-one",
+            "code" : [
+                "plot()"
+            ]
+        }
+    ]
+}

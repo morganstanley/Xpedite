@@ -1,0 +1,80 @@
+/******************************************************************************************
+**
+** Styling for xpedite dark theme in jupyter notebook
+**
+** Author: Manikandan Dhamodharan, Morgan Stanley
+**
+*******************************************************************************************/
+
+#notebook .tableSummary {
+  margin-top: 0;
+}
+
+#notebook .tableSummary, #notebook .tableReport {
+  background: #262626;
+  word-break: break-all;
+  width: 1200px;
+}
+
+#notebook .tableSummary th, #notebook .tableSummary tr, #notebook .tableSummary td {
+  border-top: none;
+}
+
+#notebook .tableSummary td, #notebook .tableReport td, #notebook .tableEnv td {
+  background: #3a3a3a;
+}
+
+.timePointStatsTitle {
+  clear: both;
+}
+
+.flotPlaceholder {
+  width: 1190px;
+  height: 500px;
+  clear: both;
+}
+
+.flotChoiceContainer {
+  width: 1190px;
+}
+
+.flotChoiceContainer span {
+  display: block;
+  clear: both;
+}
+
+#notebook .flotChoice {
+  display: inline-block;
+}
+
+.tableReport td a {
+  color: #979797;
+}
+
+#notebook .xpedite-tabs-panel li {
+  background: #262626;
+}
+
+#notebook .xpedite-tab-pane .benchmarkStatsContainer, #notebook .xpedite-tab-pane .trivialStatsTable {
+  border-top: 1px solid #d78787;
+  margin-top: -1px;
+  z-index: -1;
+  position: relative;
+}
+
+#notebook .legend div {
+  margin: 0;
+  padding: 0;
+}
+
+#notebook .legend table {
+  margin: 0;
+}
+
+.legendContainer {
+  width: 800px;
+}
+
+#notebook .errorText {
+  color: red;
+}

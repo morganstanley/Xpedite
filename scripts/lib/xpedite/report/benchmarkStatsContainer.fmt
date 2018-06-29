@@ -1,0 +1,21 @@
+<div class="benchmarkStatsContainer">
+  {}
+  <div class="legendContainer">
+  <div class="legendColorBoxContainer">
+    <div class="legendColorBox legendRedBox"> </div>
+  </div>
+  <p> stats in red represent degradation of constituent latency for current run compared to chosen benchmark.</p>
+  <div class="legendColorBoxContainer">
+    <div class="legendColorBox legendGreenBox"> </div>
+  </div>
+  <p> stats in green represent improvement of constituent latency for current run compared to chosen benchmark.</p>
+  <div class="legendColorBoxContainer">
+    <div class="legendColorBox legendGreyBox"> </div>
+  </div>
+  <p> stats in grey represent no noticible difference in constituent latency between current run and chosen benchmark.</p>
+  <p>
+  The numerical value in paranthesis is the latency difference between chosen benchmark and current run.
+  </p>
+  </div>
+</div>
+

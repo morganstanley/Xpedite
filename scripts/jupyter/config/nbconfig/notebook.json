@@ -1,0 +1,8 @@
+{
+   "load_extensions": {
+       "hide/main_hide": true,
+       "init/main_init": true,
+       "freeze/main_freeze": true,
+       "snippets/main_snippets": true
+    }
+}

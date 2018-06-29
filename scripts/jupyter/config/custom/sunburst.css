@@ -1,0 +1,56 @@
+/******************************************************************************************
+**
+** Styling for sunburst to visualize heirarchical breakdown of txn
+**
+*******************************************************************************************/
+
+.main {
+  float: left;
+  width: 950px;
+}
+
+.sidebar {
+  float: right;
+  width: 200px;
+}
+
+.sequence {
+  width: 1150px;
+  height: 70px;
+}
+
+.legend {
+  padding: 10px 0 0 3px;
+}
+
+.sequence text, .legend text {
+  font-weight: 600;
+  fill: #fff;
+}
+
+.chart {
+  position: relative;
+}
+
+.chart path {
+  stroke: #fff;
+}
+
+.explanation {
+  position: absolute;
+  top: 300px;
+  left: 405px;
+  width: 140px;
+  text-align: center;
+  color: #666;
+  z-index: -1;
+}
+
+#notebook .explanation span {
+  font-size: 60px;
+}
+
+.percentage {
+  font-size: 2.5em;
+}
+

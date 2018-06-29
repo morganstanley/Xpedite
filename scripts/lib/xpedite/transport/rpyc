@@ -1,0 +1,36 @@
+#!/usr/bin/env python2.7
+"""
+Threaded rpyc server, running a SlaveService to support remote profiling
+
+Author: Manikandan Dhamodharan, Morgan Stanley
+"""
+import sys
+import os
+
+XPEDITE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(XPEDITE_PATH)
+from xpedite.dependencies     import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Rpyc)
+
+import rpyc
+from rpyc.utils.server            import ThreadedServer
+from rpyc.utils.registry          import REGISTRY_PORT
+from rpyc.utils.registry          import UDPRegistryClient
+from rpyc.lib                     import setup_logger
+from rpyc.core                    import SlaveService
+
+def main():
+  """Launches a threaded rpyc server to support remote profiling"""
+  DEFAULT_SERVER_PORT = 0
+  setup_logger(False, None)
+  sys.stderr.write('pid<{0}>\n'.format(os.getpid()))
+  threadedServer = ThreadedServer(SlaveService, hostname='',
+    port=DEFAULT_SERVER_PORT, reuse_addr=True, ipv6=False,
+    authenticator=None, registrar=UDPRegistryClient(ip='255.255.255.255', port=REGISTRY_PORT),
+    auto_register=False)
+  threadedServer.logger.quiet = False
+  threadedServer.start()
+
+if __name__ == "__main__":
+  main()
+

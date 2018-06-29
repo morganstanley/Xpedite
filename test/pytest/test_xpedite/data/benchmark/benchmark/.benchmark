@@ -1,0 +1,8 @@
+[info]
+name = benchmark
+legend = benchmark run at 2018-06-30
+
+[cpuInfo]
+id = GenuineIntel-6-3E
+frequency = 2800000000
+

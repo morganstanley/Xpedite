@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sequences sunburst</title>
+  </head>
+  <body>
+    <div id="main{0}" class="main">
+      <div id="sequence{0}" class="sequence"></div>
+      <div id="chart{0}" class="chart">
+        <div id="explanation{0}" class="explanation" style="visibility: hidden;">
+          <span id="percentage{0}" class="percentage"></span><br/>
+        </div>
+      </div>
+    </div>
+    <div id="sidebar{0}" class="sidebar">
+      <input type="checkbox" id="togglelegend{0}" class="togglelegend"> Legend<br/>
+      <div id="legend{0}" class="legend" style="visibility: hidden;"></div>
+    </div>
+    <script>
+    require(['d3', 'sunburst'], function(d3, sunburst) {{
+        createSunburst({0}, {1});
+          d3.select(self.frameElement).style("height", "700px");}});
+  </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+/******************************************************************************************
+**
+** Styling for xpedite dark theme in jupyter notebook
+**
+** Author: Manikandan Dhamodharan, Morgan Stanley
+**
+*******************************************************************************************/
+
+@import 'flot.css';
+@import 'notebook.css';
+@import 'sunburst.css';
+@import 'bipartite.css';
+@import 'xpedite.css';
+@import 'darkTheme.css';
+
+body.notebook_app, body.notebook_app.command_mode {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body.notebook_app div#maintoolbar {
+  display: block !important;
+}
+
+.notebook_app > #header, .edit_app > #header {
+  background-color: #3a3a3a;
+}
+
+@media not print {
+  .notebook_app #site #notebook {
+    background: #262626;
+  }
+
+  .notebook_app #site #notebook-container, .edit_app #texteditor-backdrop {
+    background: #3a3a3a;
+  }
+}
+
+#notebook .container {
+  width: 1350px;
+}
+.rendered_html h2, .rendered_html h3 {
+  color: #d78787;
+}

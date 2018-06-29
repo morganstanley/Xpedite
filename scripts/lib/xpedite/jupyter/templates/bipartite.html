@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+<div class="bipartite%s"></div>
+<script>
+require(['d3v4'], function(d3) {
+  %s
+  var data= %s;
+  var probeLabels = %s;
+  var pmcSum = %s;
+  var scale = %s;
+  var pmcCount = %s;
+  scale = parseFloat(scale);
+  pmcCount = parseInt(pmcCount);
+
+  var colorPallette = ["#3366CC","#DC3912","#FF9900","#109618","#990099","#0099C6","#de9ed6","#b5cf6b","#e6550d","#6baed6","#fd8d3c","#74c476","#9e9ac8","#a55194","#bd9e39","#8ca252","#5254a3","#3182bd","#e6550d","#31a354","#756bb1","#7b4173","#843c39","#8c6d31","#637939","#393b79","#9edae5","#f7b6d2","#17becf","#bdbdbd"];
+
+  var color = {};
+
+  for(var i =0; i < pmcCount; i++){
+    pmcName = data[i][0];
+    color[pmcName] = colorPallette[i];
+  }
+
+  var svg = d3.select(".bipartite%s").append("svg").attr("width", 1500).attr("height", 800);
+  var g = svg.append("g").attr("transform","translate(0,50)");
+
+  var bp=viz.biPartite()
+      .data(data)
+      .min(25)
+      .pad(1)
+      .height(550)
+      .width(1200)
+      .orient("horizontal")
+      .barSize(45)
+      .fill(d=>color[d.primary]);
+
+  g.call(bp);
+
+  g.selectAll(".viz-biPartite-mainBar")
+    .on("mouseover",mouseover)
+    .on("mouseout",mouseout)
+
+  g.selectAll(".viz-biPartite-mainBar").append("text").attr("class","label").style('fill', 'white').style('font-size', '9px').attr("transform", "rotate(20)")
+    .attr("x",d=>+6)
+      .attr("y",d=>(d.part=="primary"? -30: 30))
+    .text(d=>probeLabels[d.key])
+    .attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+
+  g.selectAll(".viz-biPartite-mainBar").append("text").attr("class","perc").style('fill', 'white').style('font-size', '9px')
+      .attr("x",d=>+6)
+    .attr("y",d=>(d.part=="primary"? 0: 70))
+
+  function mouseover(d){
+    if(d.part=="primary"){
+      total = pmcSum[d.key]
+      bp.mouseover(d);
+      g.selectAll(".viz-biPartite-mainBar")
+      .select(".perc")
+      .text(function(d){if(d.part=="secondary"){ var res=(d.value*total)/scale; return Math.round(res*100)/100;}})
+    }
+    if(d.part=="secondary"){
+      bp.mouseover(d);
+      g.selectAll(".viz-biPartite-mainBar")
+      .select(".perc")
+      .text(function(d){if(d.part=="primary"){ var res=(d.value*pmcSum[d.key])/scale; return Math.round(res*100)/100;}})
+    }
+  }
+  function mouseout(d){
+    bp.mouseout(d);
+  }
+  d3.select(self.frameElement).style("height", "800px");
+});
+</script>
+</body>
+</html>
+

@@ -1,0 +1,276 @@
+/******************************************************************************************
+**
+** Styling for xpedite dark theme
+**
+** Author: Manikandan Dhamodharan, Morgan Stanley
+**
+*******************************************************************************************/
+
+table {
+  border-collapse:collapse;
+  margin: 0px;
+}
+
+.tableReportContainer {
+  padding-right: 400px;
+}
+
+th {
+  padding: 4px;
+}
+
+.tableReport .tableRowNo {
+  min-width: 2em;
+}
+
+.tableReport .tableRowData {
+  min-width: 4em;
+}
+
+td {
+  padding: 1px;
+}
+
+#notebook .tableSummary td, #notebook .tableReport td, #notebook .tableEnv td,
+.tableSummary td, .tableReport td, .tableEnv td {
+  background: #3a3a3a;
+}
+
+.tableSummary td,  .tableReport td {
+  text-align:right;
+}
+
+h3 {
+  color: #d78787;
+  margin-left: 15px;
+  margin-top: 18px;
+  clear: both;
+}
+
+#notebook .tableSummary .tdKey, #notebook .tableReport .tdKey,
+.tableSummary .tdKey, .tableReport .tdKey, .tableEnv .tdKey {
+  background: #262626;
+  padding: 4px 4px;
+}
+
+.tableReport .tdKey  {
+  text-align: right;
+}
+
+.tableSummary .tdEnd, .tableReport .tdEnd {
+  background: #3a3a3a;
+  color: #fbfbfb;
+  padding: 1px 8px 1px 1px;
+  text-align:right;
+}
+
+.tableReport .thDebug {
+  color: #87d7d7;
+  padding: 4px;
+}
+
+.tableReport .tdDebug {
+  background: #3a3a3a;
+  color: #87af87;
+  padding: 1px;
+  text-align:center;
+}
+
+.tableEnv {
+  margin: 4px 4px 30px 4px;
+}
+
+.tableSummary .tdKey, .tableEnv .tdKey  {
+  padding: 4px 18px;
+  text-align:left;
+}
+
+.tableenv td {
+  text-align:left;
+  padding: 4px;
+}
+
+.timePointStatsTitle {
+  padding: 10px 0;
+}
+
+#notebook .tableSummary .positiveDelta, .tableSummary .positiveDelta {
+  color: red;
+  font-weight: bold;
+}
+
+#notebook .tableSummary .negativeDelta, .tableSummary .negativeDelta {
+  color: #87AF87;
+}
+
+.flotChoiceContainer {
+  border: 1px solid #545454;
+  padding: 1px 7px 1px 7px;
+}
+
+#notebook .flotChoice, .flotChoice {
+  margin: 4px 0px 4px 0px;
+}
+
+.flotChoiceContainer label {
+  padding-right: 15px;
+}
+
+.selector {
+  background: #d7d7af;
+}
+
+.benchmarkStatsContainer {
+  display: inline-block;
+}
+
+.legendColorBoxContainer {
+  border: 1px solid #ccc;
+  padding: 1px;
+  width: 14px;
+  margin: 4px 10px 2px 0px;
+  float: left;
+}
+
+.legendColorBox {
+  width:4px;
+  height:0;
+  overflow:hidden;
+}
+
+.legendLabel {
+  padding-left: 4px;
+}
+
+.legendContainer p {
+  margin: 1px auto 4px auto;
+}
+
+.legendContainer {
+  margin: 10px 0px 30px auto;
+  border: 1px solid #545454;
+  padding: 2px 0px 2px 20px;
+}
+
+.legendRedBox {
+  border:5px solid red;
+}
+
+.legendGreenBox {
+  border:5px solid #87AF87;
+}
+
+.legendGreyBox {
+  border:5px solid #fbfbfb;
+}
+
+#notebook .tipsy, #xpedite-report .tipsy {  
+  font-size: 15px;
+}
+
+#notebook .tipsy-inner, #xpedite-report .tipsy-inner {
+  max-width: 400px;
+}
+
+.tableReport td a {
+  text-decoration: none;
+  cursor: context-menu;
+}
+
+.pmu {
+  text-align: left;
+}
+
+.pmu .pmn {
+  font-weight: bold;
+  color: #ffc90e;
+}
+
+.pmu .pmv {
+  text-align: right;
+  color: #fbfbfb;
+}
+a:focus {
+  outline:0;
+}
+
+/** for bootstrap **/
+
+#notebook .xpedite-tabs-panel li {
+  display: inline-block;
+}
+
+#notebook .xpedite-tab-content > .xpedite-tab-pane, .xpedite-tab-content > .xpedite-tab-pane {
+  display: none;
+}
+
+#notebook .xpedite-tab-content > .active, .xpedite-tab-content > .active {
+  display: block;
+}
+
+.fade {
+  opacity: 0;
+  webkit-transition: opacity .15s linear;
+  transition: opacity .15s linear;
+}
+
+.fade.in {
+    opacity: 1;
+}
+
+#notebook .xpedite-tabs-panel, .xpedite-tabs-panel {
+  margin-bottom: 0;
+}
+
+#notebook .xpedite-tabs-panel li, .xpedite-tabs-panel li {
+  display: inline-block;
+  border: 1px solid grey;
+  border-bottom: 1px solid #262626;
+}
+
+#notebook .xpedite-tabs-panel li.active, .xpedite-tabs-panel li.active {
+  border: 1px solid #d78787;
+  border-bottom: 1px solid #262626;
+  padding-bottom: 4px;
+  z-index: 10;
+  position: relative;
+}
+  
+#notebook .xpedite-tabs-panel li a, .xpedite-tabs-panel li a {
+  display: inline-block;
+  color: #b2b2b2;
+  text-decoration: none;
+  padding: .5em 1em;
+  font-weight: bold;
+}
+
+#notebook .xpedite-tabs-panel li.active a, .xpedite-tabs-panel li.active a {
+  color: #d78787;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+ 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+ 
+::-webkit-scrollbar-thumb {
+  background-color: #cf4a4c;
+  outline: 1px solid slategrey;
+}
+
+.tipsy { padding: 5px; font-size: 10px; position: absolute; z-index: 100000; }
+.tipsy-inner { padding: 5px 8px 4px 8px; background-color: black; color: white; max-width: 200px; text-align: center; }
+.tipsy-inner { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
+.tipsy-arrow { position: absolute; width: 9px; height: 5px; }
+.tipsy-n .tipsy-arrow { top: 0; left: 50%; margin-left: -4px; }
+.tipsy-nw .tipsy-arrow { top: 0; left: 10px; }
+.tipsy-ne .tipsy-arrow { top: 0; right: 10px; }
+.tipsy-s .tipsy-arrow { bottom: 0; left: 50%; margin-left: -4px; background-position: bottom left; }
+.tipsy-sw .tipsy-arrow { bottom: 0; left: 10px; background-position: bottom left; }
+.tipsy-se .tipsy-arrow { bottom: 0; right: 10px; background-position: bottom left; }
+.tipsy-e .tipsy-arrow { top: 50%; margin-top: -4px; right: 0; width: 5px; height: 9px; background-position: top right; }
+.tipsy-w .tipsy-arrow { top: 50%; margin-top: -4px; left: 0; width: 5px; height: 9px; }

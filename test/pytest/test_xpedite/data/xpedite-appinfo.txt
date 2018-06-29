@@ -1,0 +1,6 @@
+pid: 6033
+port: 56607
+binary: install/bin/xpediteDemo
+tscHz: 2800149664
+Id=0001 | Probe=0x6356c0 | CallSite=0x406bb0 | Status=disabled | Name=WorkEnd | File=demo/Demo.H | Line=54 | Function=xpedite::demo::doWork(xpedite::demo::Indices&, int64_t)::XpediteGuardWork54::~XpediteGuardWork54() | Attributes=canEndTxn
+Id=0000 | Probe=0x635680 | CallSite=0x406b80 | Status=disabled | Name=WorkBegin | File=demo/Demo.H | Line=54 | Function=xpedite::demo::doWork(xpedite::demo::Indices&, int64_t)::XpediteGuardWork54::XpediteGuardWork54() | Attributes=canBeginTxn

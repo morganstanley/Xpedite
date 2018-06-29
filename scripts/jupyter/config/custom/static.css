@@ -1,0 +1,89 @@
+/******************************************************************************************
+**
+** Styling for xpedite dark theme
+**
+** Author: Manikandan Dhamodharan, Morgan Stanley
+**
+*******************************************************************************************/
+
+body {
+  background: #262626;
+  color: #d7d7d7;
+  margin: auto;
+  width: 1400px;
+}
+
+.tableSummary, .tableReport {
+  background: #262626;
+  color: #d7d7d7;
+  word-break: break-all;
+  width: 1350px;
+}
+
+.tableSummary td, .tableReport td, .tableEnv td {
+  color: #fbfbfb;
+}
+
+.tableSummary th, .tableReport th , .tableEnv th {
+  color: #d78787;
+  min-width: 3em;
+}
+
+.tableSummary, #tabs {
+  min-width: 1350px;
+}
+
+.tableEnv {
+  width: 1350px;
+}
+
+.tableEnv td  {
+  padding: 5px;
+}
+
+.tableReport td a {
+  color: #fbfbfb;
+}
+
+.flotContainer {
+  width: 1350px;
+  height: 500px;
+}
+
+.flotPlaceholder {
+  width: 1160px;
+  height: 500px;
+  float: left;
+}
+
+.flotChoiceContainer {
+  width: 168px;
+  float: right;
+}
+
+.flotChoiceContainer label {
+  margin-bottom: 30px;
+}
+
+.legendContainer {
+  width: 700px;
+}
+
+#xpedite-report .xpedite-tab-pane .tableSummary, #xpedite-report .xpedite-tab-content .envInfoBody {
+  border-top: 1px solid #d78787;
+  margin-top: -1px;
+  z-index: -1;
+  position: relative;
+}
+
+.xpedite-tabs-panel li.active {
+  background: #262626;
+}
+
+#profileInfo {
+  padding-top: 15px;
+}
+
+#profileInfo p {
+  margin: 5px 0 0 0;
+}

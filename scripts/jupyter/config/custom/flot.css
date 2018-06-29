@@ -1,0 +1,30 @@
+/******************************************************************************************
+**
+** Styling for latency distribution histograms
+**
+*******************************************************************************************/
+
+.bar {
+  fill: steelblue;
+}
+
+.tick line {
+    opacity: 0.1;
+}
+
+.axis text {
+  font: 12px sans-serif;
+  fill: white;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: white;
+  shape-rendering: crispEdges;
+}
+
+.legend {
+  font: 10px sans-serif;
+  fill: white;
+}

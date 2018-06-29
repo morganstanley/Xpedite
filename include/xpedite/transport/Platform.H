@@ -1,0 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// Invariants and constexpr literals for a platform
+//
+// Author: Manikandan Dhamodharan, Morgan Stanley
+//
+///////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+namespace xpedite { namespace transport { namespace platform {
+  constexpr int invalidFileDescriptor = -1;
+}}}
