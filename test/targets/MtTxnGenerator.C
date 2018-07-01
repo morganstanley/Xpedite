@@ -35,7 +35,7 @@ void parseArgs(int argc_, char** argv_) {
       break;
     case '?':
     default:
-      std::cerr << argv_[0] << " [-T <thread count>] [-t <txn count>]" << std::endl;
+      std::cerr << argv_[0] << " [-T <thread count>] [-t <txn count>] [-g graphChildCount]" << std::endl;
       throw std::invalid_argument{"Invalid argument"};
     }
   }

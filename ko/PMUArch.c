@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PMUArch.h"
+#include <linux/sched.h>
 #include <asm/msr.h>
 #include <linux/smp.h>        // Contains types, macros, functions for the kernel
 #include <linux/kernel.h>     // Contains types, macros, functions for the kernel

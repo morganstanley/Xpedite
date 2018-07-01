@@ -9,7 +9,7 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 import os
 import time
-import futures
+from concurrent import futures
 import logging
 from enum import Enum
 

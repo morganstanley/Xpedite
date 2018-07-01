@@ -114,7 +114,9 @@ class OffCoreEvent(GenericCoreEvent):
   def __repr__(self):
     """str representation of a PMUGpEvent"""
     return '{:60s} [0x{:02X},0x{:02X}|0x{:02X}] - {}'.format(
-      self.name, self.eventSelect[0], self.eventSelect[1], self.unitMask, self.briefDescription # pylint: disable=unsubscriptable-object
+      self.name,
+      self.eventSelect[0], self.eventSelect[1] if len(self.eventSelect) > 1 else 0,  # pylint: disable=unsubscriptable-object
+      self.unitMask, self.briefDescription
     )
 
 class UnCoreEvent(object):

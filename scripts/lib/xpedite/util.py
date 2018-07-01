@@ -175,7 +175,7 @@ def logPath(name=None):
     logpath = os.path.join(logpath, name)
   return logpath
 
-def makeLogPath(name):
+def makeLogPath(name=None):
   """
   Creates the directory for storing log files
 
@@ -203,7 +203,7 @@ def getCpuInfo():
   from xpedite.dependencies import Package, DEPENDENCY_LOADER
   DEPENDENCY_LOADER.load(Package.PyCpuInfo)
   from cpuinfo import cpuinfo
-  fullCpuInfo = cpuinfo.get_cpu_info_from_proc_cpuinfo()
+  fullCpuInfo = cpuinfo.get_cpu_info()
   return fullCpuInfo
 
 def getCpuId():
