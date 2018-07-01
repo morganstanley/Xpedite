@@ -47,12 +47,12 @@ class StatsBuilder(object):
     """
 
     title = '{} latency statistics ({} transactions) {}'.format(
-      category, transactionCount, ' vs benchmark - ' if len(benchmarkNames) else ''
+      category, transactionCount, ' vs benchmark - ' if benchmarkNames else ''
     )
     element = HTML().div(klass=TIME_POINT_STATS_TITLE)
     element.h3(title, style='display: inline')
 
-    if len(benchmarkNames):
+    if benchmarkNames:
       bechmarkSelector = element.select(onchange='onSelectBenchmark(this)', klass=SELECTOR)
       for benchmarkName in benchmarkNames:
         bechmarkSelector.option(benchmarkName)
@@ -164,7 +164,7 @@ class StatsBuilder(object):
 
     """
     statsReport = ''
-    if len(benchmarkTlsMap):
+    if benchmarkTlsMap:
       benchmarkIndex = 0
       for benchmarkTls in benchmarkTlsMap.values():
         klass = TIME_POINT_STATS.format(benchmarkIndex)

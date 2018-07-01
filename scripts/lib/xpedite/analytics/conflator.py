@@ -74,6 +74,7 @@ class Conflator(object):
       for key in topdownKeys:
         topdownMetrics.add(topdown, key)
       return topdownMetrics
+    return None
 
   @staticmethod
   def copyProfileLayout(srcProfile, category, route):
@@ -136,6 +137,7 @@ class Conflator(object):
         src.buildEventsMap(), topdownMetrics
       )
       return True
+    return None
 
   def conflateTimelineCollection(self, routeIndices, src, dst, eventsMap, topdownMetrics):
     """

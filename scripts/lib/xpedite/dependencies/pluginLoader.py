@@ -33,6 +33,7 @@ class PluggableObject(object):
     objFactory = getattr(self.module, 'xpedite_instantiate', None)
     if objFactory:
       return objFactory(self.objType, self.name)
+    return None
 
 def loadPluggableObjects():
   """
@@ -73,4 +74,3 @@ def loadObject(objType, objName=None, default=None):
     index = pluggableObjects.index(objName) if objName and objName in pluggableObjects else 0
     return pluggableObjects[index].instantiate()
   return default
-

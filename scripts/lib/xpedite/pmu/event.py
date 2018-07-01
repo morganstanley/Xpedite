@@ -89,6 +89,7 @@ class TopdownMetrics(object):
       if condition(metric):
         self.metrics.append(metric)
         return metric
+    return None
 
   def nodeKeys(self):
     """Returns a list of topdown nodes in this collection"""
@@ -201,4 +202,3 @@ class EventState(object):
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
-

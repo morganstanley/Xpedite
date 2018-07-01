@@ -6,12 +6,12 @@ This package provides modules to build reports from timeline and delta series ob
 Author: Manikandan Dhamodharan, Morgan Stanley
 
 """
-from xpedite.dependencies import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.HTML, Package.Pygments)
 import os
 import time
 import xpedite.util
-from html import HTML
+from xpedite.dependencies import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.HTML, Package.Pygments)
+from html import HTML # pylint: disable=wrong-import-position
 
 TABLE_ENV = 'tableEnv tablesorter'
 TABLE_SUMMARY = 'tableSummary tablesorter'

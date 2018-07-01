@@ -92,7 +92,7 @@ def buildPmcPlot(timeline):
   try:
     pmcCount = len(timeline[0].pmcNames) if timeline[0].pmcNames else 0
     if pmcCount <= 0:
-      return
+      return None
     pmcBarScale = 100 / pmcCount #get scale size
     pmuJson, plotLabelsJson, pmcSumJson = buildPmcJson(timeline, pmcBarScale)
     bipartiteHtml = loadTxnPmcMarkup()

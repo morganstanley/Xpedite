@@ -77,8 +77,7 @@ def buildFlotHistograms(ticks, series, stack=False):
       """Calculates horizontal offset"""
       if stack:
         return xval
-      else:
-        return xval - totalWidth / 2 + (index + 1) * width
+      return xval - totalWidth / 2 + (index + 1) * width
 
     data.append(
       {

@@ -11,12 +11,13 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import os
 
 def loadRequirements():
+  """Loads a map of minimum version for all required dependencies"""
   requirements = {}
   reqFile = os.path.join(os.path.dirname(__file__), '../requirements.txt')
   with open(reqFile) as reqFileHandle:
     for record in reqFileHandle:
       fields = record.split('>=')
-      if fields and len(fields) >=2:
+      if fields and len(fields) >= 2:
         name = fields[0].strip()
         minVersion = fields[1].strip()
         requirements.update({name:minVersion})
@@ -38,7 +39,8 @@ class Dependency(object):
 
   @staticmethod
   def get(name, required):
-    return Dependency(name, True, Dependency.requirements.get(name, None))
+    """Returns an instance of dependency"""
+    return Dependency(name, required, Dependency.requirements.get(name, None))
 
 class Package(object):
   """Enumeration of python packages needed by Xpedite"""
@@ -96,6 +98,7 @@ def loadDriver(name=None):
     driver = loadObject('driver')
     if driver:
       return driver
+  return None
 
 def binPath(binaryName):
   """
@@ -104,7 +107,6 @@ def binPath(binaryName):
   :param binaryName: Name of the executable
 
   """
-  import os
   from distutils.spawn import find_executable
   envVariable = 'XPEDITE_{}'.format(binaryName.upper())
   if envVariable in os.environ.keys():

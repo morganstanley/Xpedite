@@ -125,7 +125,7 @@ class TxnFragments(object):
 
   def joinFragments(self, txns, txn, fragments):
     """Joins fragments in a link to compose a compound transaction"""
-    if not fragments or len(fragments) == 0:
+    if not fragments:
       self.nextTxnId += 1
       txn.txnId = self.nextTxnId
       txns.append(txn)

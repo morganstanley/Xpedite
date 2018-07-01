@@ -119,11 +119,11 @@ class FlotBuilder(object):
     constituentNames = ['{} -> {}'.format(deltaSeries.beginProbeName,
       deltaSeries.endProbeName) for deltaSeries in timelineStats.getTscDeltaSeriesCollection()]
 
-    title = '{} {} charts {}'.format(category, title, ' for constituent - ' if len(constituentNames) else '')
+    title = '{} {} charts {}'.format(category, title, ' for constituent - ' if constituentNames else '')
     element = HTML().div(klass=TIME_POINT_STATS_TITLE)
     element.h3(title, style='display: inline')
 
-    if len(constituentNames):
+    if constituentNames:
       elementId = '{}ConstituentSelector'.format(uid)
       constituentSelector = element.select(id=elementId, klass=SELECTOR)
       for i, constituentName in enumerate(constituentNames):

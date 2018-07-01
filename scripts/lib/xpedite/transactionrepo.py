@@ -182,4 +182,3 @@ class TransactionRepoFactory(object):
         )
       )
     return repo
-

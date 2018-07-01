@@ -9,7 +9,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 from xpedite.dependencies import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Termcolor)
-from termcolor import colored
+from termcolor import colored # pylint: disable=wrong-import-position
 
 class Node(object):
   """A node in a N-ary tree hierarchy"""
@@ -106,5 +106,3 @@ def buildTimelineTree(timeline, threshold=None, begin=None, end=None, childCount
       groupBegin = i + 1
       duration = 0
   return node
-
-

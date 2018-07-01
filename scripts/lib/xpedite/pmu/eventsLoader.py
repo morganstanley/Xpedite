@@ -140,9 +140,8 @@ class EventsLoader(object):
     elif record[u'Counter'].startswith(EventsLoader.fixedCounterPrefix):
       factory = self.jsonFixedCoreFactory()
       return lambda r : factory.build(FixedCoreEvent(), r)
-    else:
-      factory = self.jsonGenericCoreFactory()
-      return lambda r : factory.build(GenericCoreEvent(), r)
+    factory = self.jsonGenericCoreFactory()
+    return lambda r : factory.build(GenericCoreEvent(), r)
 
   @staticmethod
   def isOffcoreEventRecord(record):
@@ -158,7 +157,6 @@ class EventsLoader(object):
 
     """
     import json
-    import copy
     eventsDb = {}
     incompatibleRecords = []
     uninitializedEvents = []
@@ -183,4 +181,3 @@ class EventsLoader(object):
     if incompatibleRecords:
       raise Exception('failed to load {} uarch event records'.format(len(incompatibleRecords)))
     return eventsDb
-

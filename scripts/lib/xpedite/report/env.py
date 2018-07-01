@@ -72,6 +72,7 @@ class EnvReportBuilder(object):
         row.td('{} '.format(k), klass=TD_KEY)
         row.td('{} '.format(val))
       return table
+    return None
 
   def buildEnvironmentReportFile(self, app, repo, resultOrder, classifier, txnFilter, benchmarkPaths):
     """

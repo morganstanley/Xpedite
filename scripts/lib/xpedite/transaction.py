@@ -158,6 +158,7 @@ class Transaction(object):
     """
     if probe in self.probeMap:
       return self.counters[self.probeMap[probe][index]]
+    return None
 
   def getElapsedTsc(self):
     """Computes the elapsed time for this transaction"""

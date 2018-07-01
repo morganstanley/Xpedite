@@ -65,8 +65,7 @@ class XpediteApp(object):
     """Returns wildcard pattern for the xpedite sample files"""
     if self.sampleFilePath:
       return self.sampleFilePath
-    else:
-      return '/dev/shm/xpedite-*-{}-[0-9]*.data'.format(self.env.pid)
+    return '/dev/shm/xpedite-*-{}-[0-9]*.data'.format(self.env.pid)
 
   def beginProfile(self, pollInterval, timeout=10):
     """
@@ -80,7 +79,7 @@ class XpediteApp(object):
     self.sampleFilePath = '/dev/shm/xpedite-{}-{}-*.data'.format(self.name, self.runId)
     self.env.client.send('beginProfile {} {}'.format(self.sampleFilePath, pollInterval))
     rc = self.env.client.readFrame(timeout)
-    if len(rc) != 0:
+    if rc:
       errmsg = 'failed to begin profiling - {}'.format(rc)
       raise Exception(errmsg)
     return True

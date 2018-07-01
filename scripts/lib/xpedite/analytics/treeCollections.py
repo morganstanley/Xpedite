@@ -253,4 +253,3 @@ class TreeCollectionFactory(object):
       tree = TreeCollectionFactory.buildTreeCollection(name, collection, treeClassifiers)
       compositeTree.addTree(tree)
     return compositeTree
-

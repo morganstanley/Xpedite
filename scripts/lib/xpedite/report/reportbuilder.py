@@ -158,8 +158,7 @@ class ReportBuilder(object):
     timepoint = timeline[0]
     if timepoint.pmcNames:
       return PMU_BEGIN + PMU_BODY.format(uid, len(timelineCollection), len(timeline)+1) + PMU_END
-    else:
-      return ''
+    return ''
 
   @staticmethod
   def reorderTimelineRecords(timelineCollection, resultOrder):

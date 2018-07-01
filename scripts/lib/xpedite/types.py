@@ -7,7 +7,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import os
 from xpedite.dependencies import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Enum)
-from enum import Enum
+from enum import Enum # pylint: disable=wrong-import-position
 
 class Counter(object):
 
@@ -49,7 +49,7 @@ class Counter(object):
     rep = 'Counter: {}'.format(str(self.probe))
     if self.txnId:
       rep += ' | id {}'.format(self.txnId)
-    if len(self.pmcs):
+    if self.pmcs:
       rep += ' | {} pmc counters'.format(len(self.pmcs))
     return rep
 
@@ -80,6 +80,7 @@ class ResultOrder(Enum):
   def __eq__(self, other):
     if other:
       return self.__dict__ == other.__dict__
+    return None
 
 class CpuInfo(object):
   """Info about cpu model and configuration"""

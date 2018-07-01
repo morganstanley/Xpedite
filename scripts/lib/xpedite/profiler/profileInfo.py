@@ -83,4 +83,3 @@ def loadProfileInfo(profilePath):
   except Exception:
     LOGGER.exception('failed to load profile file "%s"', profilePath)
     sys.exit(2)
-

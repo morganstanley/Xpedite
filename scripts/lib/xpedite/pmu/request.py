@@ -198,6 +198,7 @@ class RequestSorter(object):
           for i, req in enumerate(requests):
             sortedRequests[allocation[i]] = req
           return sortedRequests
+    return None
 
   @staticmethod
   def reportConstraints(requests):

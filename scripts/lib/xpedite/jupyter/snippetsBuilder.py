@@ -57,7 +57,7 @@ def buildSnippets(profiles):
     if len(profile.current) > 3:
       snippets.append({'name':'txnsDiff{}'.format(routeName), 'code':txnsDiffCode})
 
-    if count is 5:
+    if count >= 5:
       break
   snippets.append({'name':'plot-one', 'code':['plot()']})
   return json.dumps(snippets)

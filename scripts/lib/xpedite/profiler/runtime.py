@@ -158,7 +158,7 @@ class AbstractRuntime(object):
     from xpedite.pmu.event import TopdownMetrics
     from xpedite.pmu.event import Event, TopdownNode, Metric
     topdownNodes = [i for i, counter in enumerate(pmc) if isinstance(counter, (TopdownNode, Metric))]
-    if len(topdownNodes):
+    if topdownNodes:
       topdown = self.topdownCache.get(self.cpuInfo.cpuId)
       self.topdownMetrics = TopdownMetrics()
       for index in topdownNodes:
@@ -265,7 +265,6 @@ class Runtime(AbstractRuntime):
         if self.eventState:
           self.app.disablePMU()
 
-      from xpedite.pmu.event import EventState
       repoFactory = TransactionRepoFactory(buildPrefix)
       pmc = [Event(req.name, req.uarchName) for req in self.eventState.requests()] if self.eventState  else []
       repo = repoFactory.buildTransactionRepo(
@@ -290,4 +289,3 @@ class Runtime(AbstractRuntime):
     """
     from xpedite import benchmark
     return benchmark.makeBenchmark(self.profiles, path)
-
