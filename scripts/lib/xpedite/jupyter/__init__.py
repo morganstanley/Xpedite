@@ -15,13 +15,8 @@ from xpedite.dependencies import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(
   Package.Enum,
   Package.Futures,
-  Package.NbFormat,
-  Package.JsonSchema,
   Package.FuncTools,
-  Package.Traitlets,
-  Package.Six,
-  Package.Notebook,
-  Package.IPythonGenUtils
+  Package.Jupyter,
 )
 
 DATA_DIR = 'xpData'
