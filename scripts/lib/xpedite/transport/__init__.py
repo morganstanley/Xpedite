@@ -10,14 +10,14 @@ This package provide modules to
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.dependencies         import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.Netifaces, Package.Rpyc)
 import os
 import sys
 import socket
 import logging
 from xpedite.util                 import promptUser
 from xpedite.transport.client     import Client
+from xpedite.dependencies         import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Netifaces, Package.Rpyc)
 
 LOGGER = logging.getLogger(__name__)
 

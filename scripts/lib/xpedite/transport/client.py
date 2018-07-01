@@ -120,4 +120,3 @@ class Client(object):
     if self.socket is not None:
       self.socket.close()
     LOGGER.debug('Closed socket')
-

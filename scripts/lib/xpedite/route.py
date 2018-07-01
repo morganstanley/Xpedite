@@ -48,4 +48,4 @@ def conflateRoutes(srcRoute, dstRoute):
       probeIndex -= 1
   if len(dstRoute) == len(indices):
     return indices[::-1]
-
+  return None

@@ -45,7 +45,7 @@ def conflate(profiles, routePoints):
     probes = [Probe(probeName, probeName) for probeName in routePoints]
     route = Route(probes)
   profile = context.conflator.conflateProfiles(profiles, route, '')
-  if len(profile.current.timelineCollection) == 0:
+  if not profile.current.timelineCollection:
     LOGGER.error('Route %s not found.', route)
     return None
   return profile
@@ -174,7 +174,7 @@ def diffTxns(lhs, rhs, profiles):
     rhsProfile = Conflator().conflateProfiles(rhsProfiles.profiles, profile.route, category)
     if rhsProfile and len(rhsProfile.current) == 1 and len(profile.current) == 1:
       diffTxn(profile.current[0].txnId, rhsProfile.current[0].txnId, profiles)
-    elif rhsProfile and len(rhsProfile.current) > 0:
+    elif rhsProfile and rhsProfile.current:
       display(HTML(str(StatsBuilder().buildStatsTable(category, profile.current, {category : rhsProfile.current}))))
     else:
       display(HTML(ERROR_TEXT.format(

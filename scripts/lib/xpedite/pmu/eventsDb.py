@@ -63,6 +63,7 @@ class EventsDb(object):
     qualifier = CmaskQualifier.match(qualifiers)
     if qualifier:
       return qualifier.apply(event)
+    return None
 
   def uarchName(self):
     """Returns  micro architecture name of the events database"""
@@ -115,10 +116,9 @@ class EventsDbCache(object):
     """
     if cpuId in self.cache:
       return self.cache[cpuId]
-    else:
-      eventsDb = loadEventsDb(cpuId)
-      self.cache.update({cpuId : eventsDb})
-      return eventsDb
+    eventsDb = loadEventsDb(cpuId)
+    self.cache.update({cpuId : eventsDb})
+    return eventsDb
 
 def loadEventsDb(cpuId):
   """

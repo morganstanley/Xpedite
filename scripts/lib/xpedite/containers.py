@@ -46,6 +46,7 @@ class ProbeMap(object):
       return probe.sysName in self.namedProbeMap
     elif probe.isAnchored():
       return probe in self.anchoredProbeMap
+    return None
 
   def get(self, probe, defaultValue):
     """
@@ -59,12 +60,14 @@ class ProbeMap(object):
       return self.namedProbeMap.get(probe.sysName, defaultValue)
     elif probe.isAnchored():
       return self.anchoredProbeMap.get(probe, defaultValue)
+    return None
 
   def __getitem__(self, probe):
     if probe.sysName:
       return self.namedProbeMap[probe.sysName]
     elif probe.isAnchored():
       return self.anchoredProbeMap[probe]
+    return None
 
   def update(self, probeMap):
     """

@@ -66,9 +66,6 @@ class DiffBuilder(object):
                                    getDeltaMarkup, getDeltaType
                                  )
 
-    from xpedite.report.stats    import StatsBuilder
-    from xpedite.types           import CpuInfo
-
     klass = '{} {}'.format(TABLE_SUMMARY, TRIVIAL_STATS_TABLE)
     table = HTML().table(border='1', klass=klass)
 

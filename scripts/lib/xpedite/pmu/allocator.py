@@ -42,11 +42,12 @@ class Allocator(object):
       if self.slots[cn] == -1:
         self.slots[cn] = allocatable.index
         self.allocation[allocatable.index] = cn
-        if len(self.allocatables):
+        if self.allocatables:
           for allocatable in self.allocatables:
             allocatable.constraint.discard(cn)
             return self.allocate()
         return self.allocation
+    return None
 
   def report(self):
     """Returns a report of allocations"""

@@ -37,3 +37,4 @@ class ProbeResolver(object):
 
     if self.anchoredProbeMap and probe.sysName in self.anchoredProbeMap:
       return self.anchoredProbeMap[probe.sysName]
+    return None

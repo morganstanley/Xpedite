@@ -88,12 +88,14 @@ class Topdown(object):
       return nodes.values()
     elif name in nodes:
       return [nodes[name]]
+    return None
 
   def nodesToString(self, name):
     """Filters nodes by name and returns a formatted string"""
     nodes = self.filterNode(self.hierarchy.nodes, name)
     if nodes:
       return NodeFormatter.toString(nodes)
+    return None
 
   def metricsToString(self, name):
     """Filters metrics by name and returns a formatted string"""
@@ -119,11 +121,10 @@ class TopdownCache(object):
     """
     if cpuId in self.cache:
       return self.cache[cpuId]
-    else:
-      eventsDb = self.eventsDbCache.get(cpuId)
-      topdown = Topdown(eventsDb)
-      self.cache.update({cpuId : topdown})
-      return topdown
+    eventsDb = self.eventsDbCache.get(cpuId)
+    topdown = Topdown(eventsDb)
+    self.cache.update({cpuId : topdown})
+    return topdown
 
 def main():
   """Displays topdown hierarchy for localhost"""

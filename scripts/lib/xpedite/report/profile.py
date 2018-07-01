@@ -85,27 +85,27 @@ class Profiles(object):
   @property
   def cpuInfo(self):
     """Cpu Info of the host running the current profile session"""
-    return self.profiles[0].current.cpuInfo if len(self.profiles) > 0 else None
+    return self.profiles[0].current.cpuInfo if self.profiles else None
 
   @property
   def pmcNames(self):
     """A list of pmu event names collected in the current profile session"""
-    return self.profiles[0].pmcNames if len(self.profiles) > 0 else None
+    return self.profiles[0].pmcNames if self.profiles else None
 
   @property
   def topdownKeys(self):
     """A list of topdown nodes computed in the current profile session"""
-    return self.profiles[0].topdownKeys if len(self.profiles) > 0 else None
+    return self.profiles[0].topdownKeys if self.profiles else None
 
   @property
   def events(self):
     """A list of pmu events collected in the current profile session"""
-    return self.profiles[0].events if len(self.profiles) > 0 else None
+    return self.profiles[0].events if self.profiles else None
 
   @property
   def eventsMap(self):
     """Returns a map of event names to index for computation of topdown metrics"""
-    return self.profiles[0].current.deltaSeriesRepo.buildEventsMap() if len(self.profiles) > 0 else None
+    return self.profiles[0].current.deltaSeriesRepo.buildEventsMap() if self.profiles else None
 
   def __len__(self):
     return len(self.profiles)

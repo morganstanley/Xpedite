@@ -92,6 +92,7 @@ class AnonymousCounterFilter(object):
           self.nullIdCounters, self.extraneousCounters
         )
       )
+    return None
 
 class BoundedTransactionFilter(object):
   """Warmup filter for bounded transactions"""
@@ -109,4 +110,3 @@ class BoundedTransactionFilter(object):
     """
     probeSet = set(beginProbe, endProbe)
     return [txn for txn in transactions[warmupThreshold:] if txn.has(probeSet)]
-

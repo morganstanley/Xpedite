@@ -133,6 +133,7 @@ class BenchmarksCollector(object):
           eventFields = eventStr.split(',')
           events.append(Event(eventFields[0], eventFields[1], bool(eventFields[2]), bool(eventFields[3])))
       return Benchmark(benchmarkName, cpuInfo, path, legend, events)
+    return None
 
 
   def gatherBenchmarks(self, count):

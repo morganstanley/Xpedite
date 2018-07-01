@@ -59,17 +59,17 @@ class AbstractTransactionLoader(object):
     """Returns True, if any of the counters were skipped, due to data inconsistency"""
     return len(self.nonTransactionCounters) > 0
 
-  def appendTransaction(self, transaction):
+  def appendTransaction(self, txn):
     """
     Inserts or updates transaction to collection
 
-    :param transaction: Transaction to be appended
+    :param txn: Transaction to be appended
 
     """
-    if transaction.txnId in self.transactions:
-      self.transactions[transaction.txnId].join(transaction)
+    if txn.txnId in self.transactions:
+      self.transactions[txn.txnId].join(txn)
     else:
-      self.transactions.update({transaction.txnId : transaction})
+      self.transactions.update({txn.txnId : txn})
 
   def report(self):
     """Returns loader statistics"""
@@ -291,10 +291,9 @@ class BoundedTransactionLoader(AbstractTransactionLoader):
       txn = Transaction(counter, txnId)
       self.resumeFragment = self.fragments.addResumeFragment(txnId, txn)
       return txn
-    else:
-      self.resumeFragment = None
-      self.nextFragmentId += 1
-      return Transaction(counter, self.nextFragmentId)
+    self.resumeFragment = None
+    self.nextFragmentId += 1
+    return Transaction(counter, self.nextFragmentId)
 
   def endLoad(self):
     """Marks end of the current load session"""

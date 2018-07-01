@@ -9,15 +9,15 @@ This package includes
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
+import sys
+import logging
+from xpedite.util                        import timeAction
 
 from xpedite.dependencies                import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Numpy)
-import sys
-from xpedite.analytics.aggregator        import TransactionAggregator, RouteAggregator, RouteConflatingAggregator
-from xpedite.util                        import timeAction
-from xpedite.analytics.timeline          import buildTimelineStats
-from xpedite.analytics.treeCollections   import TreeCollectionFactory
-import logging
+from xpedite.analytics.aggregator        import TransactionAggregator, RouteAggregator, RouteConflatingAggregator # pylint: disable=wrong-import-position
+from xpedite.analytics.timeline          import buildTimelineStats # pylint: disable=wrong-import-position
+from xpedite.analytics.treeCollections   import TreeCollectionFactory # pylint: disable=wrong-import-position
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class Analytics(object):
           txnsc, txnCollection.cpuInfo, classifier=classifier
         )
       )
-      if len(elapsedTscMap) > 0:
+      if elapsedTscMap:
         for category, elapsedTscList in elapsedTscMap.iteritems():
           if category in elapsedTscBundles:
             elapsedTscBundles[category].append(elapsedTscList)

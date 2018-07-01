@@ -138,7 +138,7 @@ class TransactionAggregator(object):
     """
     elapsedTscGroup = {}
     for txn in txnSubCollection:
-      if len(txn) > 0:
+      if txn:
         time = cpuInfo.convertCyclesToTime(txn.getElapsedTsc())
         TransactionAggregator._addOrUpdateContainer(elapsedTscGroup, lambda v: [v], classifier, txn, time)
     return elapsedTscGroup

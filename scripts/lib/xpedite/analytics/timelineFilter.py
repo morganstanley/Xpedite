@@ -49,12 +49,12 @@ class TimelineFilter(object):
 
     """
     current = self.filterTimelineStats(srcProfile.current)
-    if len(current) == 0:
+    if not current:
       return None
     dstProfile = Profile(srcProfile.name, current, {})
     for name, tls in srcProfile.benchmarks.iteritems():
       filteredtls = self.filterTimelineStats(tls)
-      if len(filteredtls) > 0:
+      if filteredtls:
         dstProfile.benchmarks.update({name:filteredtls})
     return dstProfile
 
@@ -84,4 +84,4 @@ def locateTimeline(profiles, txnId):
     for timeline in profile.current.timelineCollection:
       if timeline.txnId == txnId:
         return timeline
-
+  return None

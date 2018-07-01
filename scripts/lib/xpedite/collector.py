@@ -143,4 +143,3 @@ class Collector(Extractor):
       LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1,
         loader.getCount(), elapsed)
       return recordCount
-

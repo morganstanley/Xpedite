@@ -220,9 +220,8 @@ def validatePath(homeDir, reportName):
   from xpedite.jupyter import DATA_DIR, DATA_FILE_EXT, TEMP_PREFIX, NOTEBOOK_EXT
   if homeDir is None:
     homeDir = tempfile.mkdtemp(prefix=TEMP_PREFIX, dir='/tmp')
-    LOGGER.warn('Path to xpedite home directory not specified. xpedite uses this path to store and load reports.\n'+
-     'Creating a temp directory to store reports at - /tmp.To persist reports, specify a valid path using '+
-     'homeDir variable in profileInfo.py')
+    LOGGER.warn('Xpedite home directory not found in profileInfo (using temp dir).\n'
+      'To keep all reports in one place, set variable homeDir in profileInfo to a valid path.')
 
   dataDir = os.path.join(homeDir, DATA_DIR)
   notebookPath = '{}/{}{}'.format(homeDir, reportName, NOTEBOOK_EXT)
@@ -256,7 +255,7 @@ class Driver(object):
         duration=duration, cprofile=cprofile
       )
 
-    if len(result.reportCells) > 0:
+    if result.reportCells:
       rc = buildNotebook(profileInfo.appName, result, profiler.profiles, notebookPath, dataFilePath, app.runId)
       if cprofile:
         cprofile.disable()
@@ -264,4 +263,3 @@ class Driver(object):
         launchJupyter(profileInfo.homeDir)
     else:
       LOGGER.error('Aborting profile - no txn collected. Did you generate any transactions ?')
-

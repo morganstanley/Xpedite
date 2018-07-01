@@ -77,9 +77,8 @@ class XpediteDataReader(object):
 
     if layoutEntry.isMarshalled:
       return pickle.loads(data)
-    else:
-      recordData = data
-      return recordData
+    recordData = data
+    return recordData
 
 class XpediteDataFactory(object):
   """Factory to encode binary records to a xpedite data file"""

@@ -137,7 +137,7 @@ class DeltaSeries(object):
 
   def _computeStats(self):
     """Computes statistics for a series of druation/counter values"""
-    if len(self.series) and self._count != len(self.series):
+    if self.series and self._count != len(self.series):
       self._count = len(self.series)
       self._min = min(self.series)
       self._max = max(self.series)
@@ -556,4 +556,3 @@ def buildTimelineStats(category, route, probes, txnSubCollection): # pylint: dis
       timeline.inception = int(cpuInfo.convertCyclesToTime(firstCounter.tsc - inceptionTsc) / 1000)
 
   return timelineStats
-

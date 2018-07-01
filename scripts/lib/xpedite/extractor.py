@@ -95,7 +95,7 @@ class Extractor(object):
         inflateFd.close()
       elapsed = time.time() - begin
       self.logCounterFilterReport()
-      if len(self.orphanedRecords) > 0:
+      if self.orphanedRecords:
         LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', len(self.orphanedRecords))
       LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1, loader.getCount(), elapsed)
     if loader.isCompromised() or loader.getTransactionCount() <= 0:
@@ -126,7 +126,7 @@ class Extractor(object):
     addr = fields[self.INDEX_ADDR]
     if addr not in probes:
       self.orphanedRecords.append(record)
-      return
+      return None
     data = fields[self.INDEX_DATA]
     tsc = long(fields[self.INDEX_TSC], 16)
 

@@ -62,4 +62,3 @@ class ProbeDataClassifier(object):
     else:
       return self.typeMapper(None)
     return 'Transaction'
-

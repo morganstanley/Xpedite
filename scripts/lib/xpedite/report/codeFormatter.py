@@ -22,4 +22,3 @@ class CodeFormatter(object):
     formattedCode = highlight(sourceCode, lexers.PythonLexer(), formatter)
     formattedCode = wrapperBegin + formattedCode + wrapperEnd
     return formattedCode
-

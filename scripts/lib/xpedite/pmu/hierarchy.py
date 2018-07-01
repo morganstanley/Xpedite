@@ -13,7 +13,7 @@ from collections            import defaultdict, Counter
 from xpedite.pmu.uarchEvent import GenericCoreEvent, FixedCoreEvent, OffCoreEvent
 from xpedite.dependencies   import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Termcolor)
-from termcolor              import colored
+from termcolor              import colored  # pylint: disable=wrong-import-position
 
 
 class Root(object):
@@ -111,19 +111,19 @@ class Hierarchy(object):
       if hasattr(node, 'parent'):
         node.parent.children.append(node)
       if node.level == 1:
-        node.parent = self.root
+        node.parent = self.root # pylint: disable=attribute-defined-outside-init
         self.root.children.append(node)
       self.levels[node.level].append(node)
 
     for node in self.nodes.values():
-      node.events = self.events(node)
-      node.computeValue = types.MethodType(Hierarchy.computeTopdownNodeMetrics, node)
+      node.events = self.events(node) # pylint: disable=attribute-defined-outside-init
+      node.computeValue = types.MethodType(Hierarchy.computeTopdownNodeMetrics, node) # pylint: disable=attribute-defined-outside-init
       evtMap = self.aggregateEventsByType(node.events)
-      node.genericPmcCount = evtMap[GenericCoreEvent.eventType] if GenericCoreEvent.eventType in evtMap else 0
-      node.fixedPmcCount = evtMap[FixedCoreEvent.eventType]   if FixedCoreEvent.eventType in evtMap else 0
-      node.offcorePmcCount = evtMap[OffCoreEvent.eventType] if OffCoreEvent.eventType in evtMap else 0
-      node.uncorePmcCount = evtMap[UnknownEvent.eventType] if UnknownEvent.eventType in evtMap else 0
-      node.supported = self.isNodeSupported(node)
+      node.genericPmcCount = evtMap[GenericCoreEvent.eventType] if GenericCoreEvent.eventType in evtMap else 0 # pylint: disable=attribute-defined-outside-init
+      node.fixedPmcCount = evtMap[FixedCoreEvent.eventType]   if FixedCoreEvent.eventType in evtMap else 0 # pylint: disable=attribute-defined-outside-init
+      node.offcorePmcCount = evtMap[OffCoreEvent.eventType] if OffCoreEvent.eventType in evtMap else 0 # pylint: disable=attribute-defined-outside-init
+      node.uncorePmcCount = evtMap[UnknownEvent.eventType] if UnknownEvent.eventType in evtMap else 0 # pylint: disable=attribute-defined-outside-init
+      node.supported = self.isNodeSupported(node) # pylint: disable=attribute-defined-outside-init
 
     for metric in self.metrics.values():
       events = set()
