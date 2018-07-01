@@ -16,6 +16,10 @@
   width: 1200px;
 }
 
+#notebook div.cell.selected::before {
+  background: transparent;
+}
+
 #notebook .tableSummary th, #notebook .tableSummary tr, #notebook .tableSummary td {
   border-top: none;
 }

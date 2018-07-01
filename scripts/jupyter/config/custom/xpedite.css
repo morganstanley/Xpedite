@@ -17,6 +17,7 @@ table {
 
 th {
   padding: 4px;
+  border: 1px  grey solid;
 }
 
 .tableReport .tableRowNo {
@@ -29,6 +30,7 @@ th {
 
 td {
   padding: 1px;
+  border: 1px  grey solid;
 }
 
 #notebook .tableSummary td, #notebook .tableReport td, #notebook .tableEnv td,

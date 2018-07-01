@@ -8,43 +8,53 @@ dependencies and micro architectural specifications.
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
+import os
+
+def loadRequirements():
+  requirements = {}
+  reqFile = os.path.join(os.path.dirname(__file__), '../requirements.txt')
+  with open(reqFile) as reqFileHandle:
+    for record in reqFileHandle:
+      fields = record.split('>=')
+      if fields and len(fields) >=2:
+        name = fields[0].strip()
+        minVersion = fields[1].strip()
+        requirements.update({name:minVersion})
+  return requirements
 
 class Dependency(object):
   """Class to model xpedite dependency on a python package"""
 
-  def __init__(self, name, version, required):
+  requirements = loadRequirements()
+
+  def __init__(self, name, required, minVersion=None):
     self.name = name
-    self.version = version
     self.required = required
+    self.minVersion = minVersion
     self.isAvailable = None
 
   def __repr__(self):
-    return '{} version {} - required = {}'.format(self.name, self.version, self.required)
+    return '{} - required = {}'.format(self.name, self.required)
+
+  @staticmethod
+  def get(name, required):
+    return Dependency(name, True, Dependency.requirements.get(name, None))
 
 class Package(object):
   """Enumeration of python packages needed by Xpedite"""
 
-  Enum = Dependency('enum34', '1.1.6', True)
-  FuncTools = Dependency('functools32', '3.2.3-1', True)
-  Futures = Dependency('futures', '2.1.6', True)
-  HTML = Dependency('html', '1.16', True)
-  Netifaces = Dependency('netifaces', '0.10.4-py27', True)
-  Numpy = Dependency('numpy', '1.6.1-mkl', True)
-  Pygments = Dependency('pygments', '2.0.2-py27', True)
-  Rpyc = Dependency('rpyc', '3.3.0-py27', False)
-  Cement = Dependency('cement', '2.8.2', True)
-  Termcolor = Dependency('termcolor', '1.1.0', True)
-  PyCpuInfo = Dependency('py-cpuinfo', '0.1.2', True)
-
-  # needed by jupyter nb format - 'Futures', 'NbFormat', 'JsonSchema', 'FuncTools',
-  #'Traitlets', 'Six', 'Notebook', 'Tornado', 'IPythonGenUtils'
-  IPythonGenUtils = Dependency('ipython_genutils', '0.1.0', True)
-  JsonSchema = Dependency('jsonschema', '2.5.0', True)
-  NbFormat = Dependency('nbformat', '4.4.0', True)
-  Notebook = Dependency('notebook', '4.3.1-py27', True)
-  Six = Dependency('six', '1.10.0', True)
-  Tornado = Dependency('tornado', '4.4.2-py27', True)
-  Traitlets = Dependency('traitlets', '4.3.1-py27', True)
+  Enum = Dependency.get('enum34', True)
+  FuncTools = Dependency.get('functools32', True)
+  Futures = Dependency.get('futures', True)
+  HTML = Dependency.get('html', True)
+  Netifaces = Dependency.get('netifaces', True)
+  Numpy = Dependency.get('numpy', True)
+  Pygments = Dependency.get('pygments', True)
+  Rpyc = Dependency.get('rpyc', False)
+  Cement = Dependency.get('cement', True)
+  Termcolor = Dependency.get('termcolor', True)
+  PyCpuInfo = Dependency.get('py-cpuinfo', True)
+  Jupyter = Dependency.get('jupyter', True)
 
 def buildDependencyLoader():
   """Builds an instance of dependency loader"""

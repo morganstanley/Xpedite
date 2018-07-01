@@ -11,6 +11,7 @@ body {
   color: #d7d7d7;
   margin: auto;
   width: 1400px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .tableSummary, .tableReport {
