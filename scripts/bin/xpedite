@@ -20,11 +20,9 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import os, sys
 xpeditePath = os.path.normpath(os.path.join(__file__, '../../lib'))
 sys.path.append(xpeditePath)
-from logger                             import LOG_CONFIG_PATH, enableVerboseLogging
-import logging
-import logging.config
-logging.config.fileConfig(LOG_CONFIG_PATH)
 
+import logger
+logger.init()
 
 from xpedite.dependencies               import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Cement)
@@ -32,6 +30,8 @@ from cement.core.foundation             import CementApp
 from cement.ext.ext_argparse            import ArgparseController, expose
 from xpedite.profiler.app               import XpediteApp, XpediteDormantApp, pingApp
 from xpedite.profiler.profileInfo       import loadProfileInfo
+from logger                             import enableVerboseLogging
+import logging
 import xpedite
 
 LOGGER = logging.getLogger(__name__)

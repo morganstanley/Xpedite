@@ -13,6 +13,10 @@ import datetime
 
 LOG_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'conf.ini')
 
+def init():
+  import logging.config
+  logging.config.fileConfig(LOG_CONFIG_PATH)
+
 def enableVerboseLogging():
   """Set console handler level to debug to display information in verbose mode"""
   logger = logging.getLogger()
@@ -63,8 +67,8 @@ class FileFormatter(logging.Formatter):
 class FileHandler(logging.FileHandler):
   """Create a custom handler to write to an xpedite log file"""
   def __init__(self, mode):
-    from xpedite.util import logPath
-    path = '{}/xpedite.log'.format(logPath())
+    from xpedite.util import makeLogPath
+    path = '{}/xpedite.log'.format(makeLogPath())
     logging.FileHandler.__init__(self, path, mode)
 
 class ConsoleHandler(logging.StreamHandler):
