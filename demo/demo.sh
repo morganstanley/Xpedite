@@ -60,6 +60,11 @@ if [ ! -x ${DEMO_APP} ]; then
   exit 1
 fi
 
+if [ -d ${DEMO_DIR}/../install/runtime/bin ]; then
+  echo detected virtual environment. resolving python dependencies from ${DEMO_DIR}/../install/runtime
+  export PATH=${DEMO_DIR}/../install/runtime/bin:${PATH}
+fi
+
 LOG_DIR=`${APP_LAUNCHER} "mktemp -d"`
 echo Xpedite demo log dir - $LOG_DIR
 if [ ! -z ${APP_HOST} ]; then
