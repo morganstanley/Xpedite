@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 ################################################################################################
 #
+# Creates a virtual environment and installs xpedite python dependencies
+#
 # Download and install juypter theme, uarch spec and topdown metrics
 #
 # Author: Manikandan Dhamodharan, Morgan Stanley
@@ -64,7 +66,6 @@ if [ $? -ne 0 ]; then
   echo failed to install python dependencies...
   exit 1
 fi
-
 
 export PATH=${RUNTIME_DIR}/bin:${PATH}
 

@@ -42,7 +42,10 @@ To build xpedite, you will need [cmake](http://cmake.org/) 3.4 or later, [GNU gc
 With cmake, and g++ installed, after downloading this code you should be able to build and install xpedite just by running:
 
 ```
-$ build.sh
+$ build.sh      # builds xpedite c++ library
+
+$ install.sh    # creates a virtual environment and installs xpedite python dependencies
+
 ```
 
 The build process will produce a static library, `libxpedite.a`, which can be linked into a C++ executable 
