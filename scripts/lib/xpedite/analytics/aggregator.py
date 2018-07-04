@@ -1,7 +1,7 @@
 """
 Module to aggregate transactions, routes and counters
   1. RouteAggregator - Conflates long routes to short ones
-  2. TransactionAggregator - Classifies transaction based on a predicate and aggregates elasped cycles
+  2. TxnAggregator - Classifies transaction based on a predicate and aggregates elasped cycles
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
@@ -20,26 +20,26 @@ def txnSubCollectionFactory(txnSubCollection, txn):
   subCollection.append(txn)
   return subCollection
 
-def addTransaction(routeMap, txnSubCollection, route, transaction):
+def addTxn(routeMap, txnSubCollection, route, txn):
   """
   Adds transaction to a transaction subcollection with matching route
 
   :param routeMap: Map of routes taken by all the transaction in the profile
   :param route: Route taken by the given transaction
   :param txnSubCollection: Transaction subcollection to clone meta data from
-  :param transaction: Transaction to be added
+  :param txn: Transaction to be added
 
   """
   if route in routeMap:
-    routeMap[route].append(transaction)
+    routeMap[route].append(txn)
   else:
-    routeMap.update({route : txnSubCollectionFactory(txnSubCollection, transaction)})
+    routeMap.update({route : txnSubCollectionFactory(txnSubCollection, txn)})
 
 class RouteAggregator(object):
   """Aggregates transactions based their respective routes"""
 
   @staticmethod
-  def aggregateTransactionsByRoutes(txnSubCollection):
+  def aggregateTxnsByRoutes(txnSubCollection):
     """
     Aggregates transactions in a given source subcollection, to multiple subcollections
     based on their respective routes
@@ -49,7 +49,7 @@ class RouteAggregator(object):
     """
     routeMap = {}
     for txn in txnSubCollection:
-      addTransaction(routeMap, txnSubCollection, txn.route, txn)
+      addTxn(routeMap, txnSubCollection, txn.route, txn)
     return routeMap
 
 class RouteConflatingAggregator(object):
@@ -58,7 +58,7 @@ class RouteConflatingAggregator(object):
   def __init__(self, srcTree):
     self.srcTree = srcTree
 
-  def aggregateTransactionsByRoutes(self, txnSubCollection, ancestry):
+  def aggregateTxnsByRoutes(self, txnSubCollection, ancestry):
     """
     Aggregates transactions in a given subcollection to child collections
     in an ancestry node with conflatable routes
@@ -74,10 +74,10 @@ class RouteConflatingAggregator(object):
     for txn in txnSubCollection:
       for dstRoute in routes:
         if conflateRoutes(txn.route, dstRoute):
-          addTransaction(routeMap, txnSubCollection, dstRoute, txn)
+          addTxn(routeMap, txnSubCollection, dstRoute, txn)
     return routeMap
 
-class TransactionAggregator(object):
+class TxnAggregator(object):
   """Aggregates transaction by categories"""
 
   begin = 0
@@ -117,7 +117,7 @@ class TransactionAggregator(object):
       if txn.hasProbes([beginProbe, endProbe]):
         beginCounter = txn.getCounterForProbe(beginProbe)
         endCounter = txn.getCounterForProbe(endProbe)
-        TransactionAggregator._addOrUpdateContainer(
+        TxnAggregator._addOrUpdateContainer(
           elapsedTscGroup, lambda v: [v], classifier, txn,
           endCounter.tsc - beginCounter.tsc
         )
@@ -140,11 +140,11 @@ class TransactionAggregator(object):
     for txn in txnSubCollection:
       if txn:
         time = cpuInfo.convertCyclesToTime(txn.getElapsedTsc())
-        TransactionAggregator._addOrUpdateContainer(elapsedTscGroup, lambda v: [v], classifier, txn, time)
+        TxnAggregator._addOrUpdateContainer(elapsedTscGroup, lambda v: [v], classifier, txn, time)
     return elapsedTscGroup
 
   @staticmethod
-  def groupTransactions(txnSubCollection, classifier=DefaultClassifier(), mustHaveProbes=None):
+  def groupTxns(txnSubCollection, classifier=DefaultClassifier(), mustHaveProbes=None):
     """
     Aggregates transactions by their resepective categories
 
@@ -158,7 +158,7 @@ class TransactionAggregator(object):
     # classifiy the counter breakups into categories
     for txn in txnSubCollection:
       if not mustHaveProbes or txn.hasProbes(mustHaveProbes):
-        TransactionAggregator._addOrUpdateContainer(
+        TxnAggregator._addOrUpdateContainer(
           groupMap, lambda t: txnSubCollectionFactory(txnSubCollection, t),
           classifier, txn, txn
         )

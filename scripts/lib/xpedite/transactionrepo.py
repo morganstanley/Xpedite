@@ -12,7 +12,7 @@ from collections      import OrderedDict
 
 LOGGER = logging.getLogger(__name__)
 
-class TransactionRepo(object):
+class TxnRepo(object):
   """A repository transactions from current profile session and all benchmarks"""
 
   def __init__(self):
@@ -72,7 +72,7 @@ class TransactionRepo(object):
     """
     return self._benchmarkCollections[name]
 
-  def getTransactionCollections(self):
+  def getTxnCollections(self):
     """Returns transaction collections for current profile session and benchmarks"""
     return [self._currentCollection] + self._benchmarkCollections.values()
 
@@ -114,7 +114,7 @@ def loaderFactory(loaderType, benchmark, probes, benchmarkProbes, topdownCache, 
       benchmarkTopdownMetrics.add(topdown, topdownKey, canAdd)
   return loaderType(benchmark.name, benchmark.cpuInfo, loaderProbes, benchmarkTopdownMetrics, benchmark.events)
 
-class TransactionRepoFactory(object):
+class TxnRepoFactory(object):
   """Factory to build a repository of transactions"""
 
   def __init__(self, buildPrefix):
@@ -126,7 +126,7 @@ class TransactionRepoFactory(object):
     """
     self.buildPrefix = buildPrefix
 
-  def buildTransactionRepo(self, app, cpuInfo, probes, topdownCache, topdownMetrics,
+  def buildTxnRepo(self, app, cpuInfo, probes, topdownCache, topdownMetrics,
     events, benchmarkProbes, benchmarkPaths):
     """
     Builds a repository of transactions for current profile session and benchmarks
@@ -143,7 +143,7 @@ class TransactionRepoFactory(object):
     """
     from xpedite.collector            import Collector
     from xpedite.benchmark            import BenchmarksCollector
-    from xpedite.transactionLoader    import ChaoticTransactionLoader, BoundedTransactionLoader
+    from xpedite.transactionLoader    import ChaoticTxnLoader, BoundedTxnLoader
     from xpedite.filter               import TrivialCounterFilter
     from xpedite.analytics            import CURRENT_RUN
     from xpedite.util                 import timeAction
@@ -152,9 +152,9 @@ class TransactionRepoFactory(object):
 
 
     if any(probe.canBeginTxn or probe.canEndTxn for probe in probes):
-      loaderType = BoundedTransactionLoader
+      loaderType = BoundedTxnLoader
     else:
-      loaderType = ChaoticTransactionLoader
+      loaderType = ChaoticTxnLoader
 
     loader = loaderType(CURRENT_RUN, cpuInfo, probes, topdownMetrics, events)
 
@@ -171,7 +171,7 @@ class TransactionRepoFactory(object):
         LOGGER.error(msg)
         raise Exception(msg)
 
-    repo = TransactionRepo()
+    repo = TxnRepo()
     repo.addCurrent(currentTransactions)
 
     if benchmarkPaths:

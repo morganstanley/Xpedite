@@ -44,21 +44,21 @@ class ReportGenerator(object):
     Generates latency distribuion histograms for each category/route combination
 
     :param repo: Repository of transaction collection
-    :type repo: xpedite.transaction.TransactionRepo
+    :type repo: xpedite.transaction.TxnRepo
     :param classifier: Classifier to categorize transactions into various types
     :param runId: Epoch time stamp to uniquely identify a profiling session
 
     """
     flots = {}
-    transactionCollections = [repo.getCurrent()] + repo.getBenchmarks().values()
-    if not transactionCollections[0].isCurrent() or transactionCollections[0].name != CURRENT_RUN:
+    txnCollections = [repo.getCurrent()] + repo.getBenchmarks().values()
+    if not txnCollections[0].isCurrent() or txnCollections[0].name != CURRENT_RUN:
       from xpedite.types import InvariantViloation
       raise InvariantViloation(
         'expecing transactions for current run at index 0 in the repository. '
-        'instead found {}'.format(transactionCollections[0].name)
+        'instead found {}'.format(txnCollections[0].name)
       )
 
-    elapsedTimeBundles = self.analytics.buildElapsedTimeBundles(transactionCollections, classifier)
+    elapsedTimeBundles = self.analytics.buildElapsedTimeBundles(txnCollections, classifier)
 
     for category, elaspsedTimeBundle in elapsedTimeBundles.iteritems():
       buckets = buildBuckets(elaspsedTimeBundle[0], 35)
@@ -77,7 +77,7 @@ class ReportGenerator(object):
         )
         conflatedCounts.append(conflatedCountersCount)
         LOGGER.debug('%s', bucketValues)
-        title = transactionCollections[i].name
+        title = txnCollections[i].name
         legend = formatLegend(
           title, min(elapsedTimeList), max(elapsedTimeList), numpy.mean(elapsedTimeList), numpy.median(elapsedTimeList),
           numpy.percentile(elapsedTimeList, 95), numpy.percentile(elapsedTimeList, 99)
@@ -163,29 +163,29 @@ class ReportGenerator(object):
         )
       )
 
-  def generateProfiles(self, transactionRepo, classifier):
+  def generateProfiles(self, txnRepo, classifier):
     """
     Generates profiles for the current profile session
 
-    :param transactionRepo: Repository of loaded transactions
+    :param txnRepo: Repository of loaded transactions
     :param classifier: Predicate to classify transactions into different categories
 
     """
-    transactionTree, benchmarkCompositeTree = self.analytics.buildTransactionTree(transactionRepo, classifier)
-    profiles = Profiles(transactionRepo)
+    txnTree, benchmarkCompositeTree = self.analytics.buildTxnTree(txnRepo, classifier)
+    profiles = Profiles(txnRepo)
 
-    for category, categoryNode in transactionTree.getChildren().iteritems():
+    for category, categoryNode in txnTree.getChildren().iteritems():
       i = 1
-      for route, transactionNode in categoryNode.children.iteritems():
+      for route, txnNode in categoryNode.children.iteritems():
         routeName = ' [route - {}]'.format(i) if len(categoryNode.children) > 1 else ''
         profileName = '{} - {}{}'.format(self.reportName, category, routeName)
         begin = time.time()
-        LOGGER.info('generating profile %s (txns - %d) -> ', profileName, len(transactionNode.collection))
+        LOGGER.info('generating profile %s (txns - %d) -> ', profileName, len(txnNode.collection))
 
-        benchmarkTransactionsMap = benchmarkCompositeTree.getCollectionMap([category, route])
-        reportProbes = self.getReportProbes(route, transactionRepo.getCurrent().probes)
+        benchmarkTxnsMap = benchmarkCompositeTree.getCollectionMap([category, route])
+        reportProbes = self.getReportProbes(route, txnRepo.getCurrent().probes)
         timelineStats, benchmarkTimelineStats = self.analytics.computeStats(
-          transactionRepo, category, route, reportProbes, transactionNode.collection, benchmarkTransactionsMap
+          txnRepo, category, route, reportProbes, txnNode.collection, benchmarkTxnsMap
         )
         profiles.addProfile(Profile(profileName, timelineStats, benchmarkTimelineStats))
         elapsed = time.time() - begin
@@ -230,7 +230,7 @@ class ReportGenerator(object):
 
     :param app: An instance of xpedite app, to interact with target application
     :param repo: Repository of transaction collection
-    :type repo: xpedite.transaction.TransactionRepo
+    :type repo: xpedite.transaction.TxnRepo
     :param result: Handle to gather and store profiling results
     :param classifier: Predicate to classify transactions into different categories (Default value = DefaultClassifier()
     :param resultOrder: Sort order of transactions in latency constituent reports
@@ -241,7 +241,7 @@ class ReportGenerator(object):
     """
     try:
       if txnFilter:
-        self.analytics.filterTransactions(repo, txnFilter)
+        self.analytics.filterTxns(repo, txnFilter)
       flots = self.generateFlots(repo, classifier, app.runId)
       profiles = self.generateProfiles(repo, classifier)
       self.generateLatencyReports(profiles, flots, result, resultOrder, reportThreshold)

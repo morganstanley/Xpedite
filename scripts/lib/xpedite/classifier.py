@@ -47,14 +47,14 @@ class ProbeDataClassifier(object):
     self.probe = probe
     self.typeMapper = typeMapper
 
-  def classify(self, transaction):
+  def classify(self, txn):
     """
     Extracts data and from a given probe and invokes callback to get transaction category
 
-    :param transaction: Transaction to be classified
+    :param txn: Transaction to be classified
 
     """
-    counter = transaction.getCounterForProbe(self.probe)
+    counter = txn.getCounterForProbe(self.probe)
     if counter:
       data = counter.data
       if self.typeMapper:

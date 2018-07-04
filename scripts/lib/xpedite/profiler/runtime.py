@@ -254,7 +254,7 @@ class Runtime(AbstractRuntime):
 
     """
     from xpedite.reportgenerator import ReportGenerator
-    from xpedite.transactionrepo import TransactionRepoFactory
+    from xpedite.transactionrepo import TxnRepoFactory
     from xpedite.pmu.event       import Event
     try:
       if not self.app.dryRun:
@@ -265,9 +265,9 @@ class Runtime(AbstractRuntime):
         if self.eventState:
           self.app.disablePMU()
 
-      repoFactory = TransactionRepoFactory(buildPrefix)
+      repoFactory = TxnRepoFactory(buildPrefix)
       pmc = [Event(req.name, req.uarchName) for req in self.eventState.requests()] if self.eventState  else []
-      repo = repoFactory.buildTransactionRepo(
+      repo = repoFactory.buildTxnRepo(
         self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
         pmc, self.benchmarkProbes, benchmarkPaths
       )

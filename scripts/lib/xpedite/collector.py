@@ -84,7 +84,6 @@ class Collector(Extractor):
     Loads counters for a profile session from csv sample files
 
     :param loader: Loader to build transactions out of the counters
-    :type loader: xpedite.transactionLoader.ChaoticTransactionLoader
     :param dataSource: Sample files for a thread with counter data in csv format
     :type dataSource: xpedite.types.DataSource
 
@@ -123,7 +122,6 @@ class Collector(Extractor):
     Loads counters for a thread from csv sample files
 
     :param loader: Loader to build transactions out of the counters
-    :type loader: xpedite.transactionLoader.ChaoticTransactionLoader
     :param threadId: Id of the thread, that captured the counters
     :type threadId: str
     :param probes: Map of probes instrumented in target application
