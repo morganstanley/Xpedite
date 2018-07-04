@@ -77,8 +77,8 @@ def makeBenchmark(profiles, path):
   path = os.path.join(path, BENCHMARK_DIR_NAME)
   if os.path.exists(path):
     raise Exception('Failed to make benchmark - path {} already exists'.format(path))
-  transactionCollection = profiles.transactionRepo.getCurrent()
-  for dataSource in transactionCollection.dataSources:
+  txnCollection = profiles.transactionRepo.getCurrent()
+  for dataSource in txnCollection.dataSources:
     shutil.copytree(dataSource.path, os.path.join(path, os.path.basename(dataSource.path)))
     shutil.copyfile(dataSource.appInfoPath, os.path.join(path, BENCHMARK_APPINFO_FILE_NAME))
   makeBenchmarkInfo(benchmarkName, profiles, path)

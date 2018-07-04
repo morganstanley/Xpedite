@@ -46,7 +46,6 @@ class Extractor(object):
     :param app: Handle to the instance of the xpedite app
     :type app: xpedite.profiler.environment.XpediteApp
     :param loader: Loader to build transactions out of the counters
-    :type loader: xpedite.transactionLoader.ChaoticTransactionLoader
     :param inflate: Flag to persist profile data in csv format (Default value = True)
 
     """

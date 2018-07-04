@@ -15,7 +15,7 @@ from xpedite.util                        import timeAction
 
 from xpedite.dependencies                import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Numpy)
-from xpedite.analytics.aggregator        import TransactionAggregator, RouteAggregator, RouteConflatingAggregator # pylint: disable=wrong-import-position
+from xpedite.analytics.aggregator        import TxnAggregator, RouteAggregator, RouteConflatingAggregator # pylint: disable=wrong-import-position
 from xpedite.analytics.timeline          import buildTimelineStats # pylint: disable=wrong-import-position
 from xpedite.analytics.treeCollections   import TreeCollectionFactory # pylint: disable=wrong-import-position
 
@@ -28,7 +28,7 @@ class Analytics(object):
   """Analytics logic to build transactions for current profile session and bechmarks"""
 
   @staticmethod
-  def buildElapsedTimeBundles(transactionCollections, classifier):
+  def buildElapsedTimeBundles(txnCollections, classifier):
     """
     Builds elapsed timestamp counters for each of the categories in given transaction collections
 
@@ -38,12 +38,12 @@ class Analytics(object):
     """
     elapsedTscBundles = {}
     categorySet = set()
-    for i, txnCollection in enumerate(transactionCollections):
+    for i, txnCollection in enumerate(txnCollections):
       txnSubCollection = txnCollection.getSubCollection()
       probes = txnCollection.probes
       elapsedTscMap = timeAction(
         'aggregating time stamp counters per transaction',
-        lambda txnsc=txnSubCollection, txnCollection=txnCollection: TransactionAggregator.groupElapsedTime(
+        lambda txnsc=txnSubCollection, txnCollection=txnCollection: TxnAggregator.groupElapsedTime(
           txnsc, txnCollection.cpuInfo, classifier=classifier
         )
       )
@@ -72,75 +72,75 @@ class Analytics(object):
     return elapsedTscBundles
 
   @staticmethod
-  def buildTransactionTree(transactionRepo, transactionClassifier):
+  def buildTxnTree(txnRepo, txnClassifier):
     """
     Builds Transaction tree collections for current profile sesssion and benchmarks
 
     :param repo: Repository of transaction collections from current profile session and benchmarks
-    :param transactionClassifier: Predicate to classify transactions into different categories
+    :param txnClassifier: Predicate to classify transactions into different categories
 
     """
     mustHaveProbes = None
     treeClassifiers = [
-      lambda txnSubCollection, ancestry: TransactionAggregator.groupTransactions(
-        txnSubCollection, classifier=transactionClassifier, mustHaveProbes=mustHaveProbes
+      lambda txnSubCollection, ancestry: TxnAggregator.groupTxns(
+        txnSubCollection, classifier=txnClassifier, mustHaveProbes=mustHaveProbes
       ),
-      lambda txnSubCollection, ancestry: RouteAggregator.aggregateTransactionsByRoutes(txnSubCollection)
+      lambda txnSubCollection, ancestry: RouteAggregator.aggregateTxnsByRoutes(txnSubCollection)
     ]
-    transactionTree = TreeCollectionFactory.buildTreeCollection(
-      transactionRepo.getCurrent().name, transactionRepo.getCurrent().getSubCollection(), treeClassifiers
+    txnTree = TreeCollectionFactory.buildTreeCollection(
+      txnRepo.getCurrent().name, txnRepo.getCurrent().getSubCollection(), treeClassifiers
     )
 
-    treeClassifiers[1] = RouteConflatingAggregator(transactionTree).aggregateTransactionsByRoutes
+    treeClassifiers[1] = RouteConflatingAggregator(txnTree).aggregateTxnsByRoutes
     benchmarkCompositeTree = TreeCollectionFactory.buildCompositeTreeCollection(
-      {name : collection.getSubCollection() for name, collection in transactionRepo.getBenchmarks().iteritems()},
+      {name : collection.getSubCollection() for name, collection in txnRepo.getBenchmarks().iteritems()},
       treeClassifiers
     )
-    return(transactionTree, benchmarkCompositeTree)
+    return(txnTree, benchmarkCompositeTree)
 
   @staticmethod
-  def computeStats(transactionRepo, category, route, probes, txnSubCollection, benchmarkTransactionsMap):
+  def computeStats(txnRepo, category, route, probes, txnSubCollection, benchmarkTxnsMap):
     """
     Computes timeline statistics for transactions from current profile session and all benchmarks
 
-    :param transactionRepo: Repository of transactions from current profile session and benchmarks
+    :param txnRepo: Repository of transactions from current profile session and benchmarks
     :param category: Category of transactions in the given subcollection
     :param route: Route taken by the transactions in subcollection
     :param probes: List of probes enabled during the current profile session
     :param txnSubCollection: Subcollection of transactions to compute statistics for
-    :param benchmarkTransactionsMap: Map of transaction subcollections in benchmarks
+    :param benchmarkTxnsMap: Map of transaction subcollections in benchmarks
 
     """
     timelineStats = buildTimelineStats(category, route, probes, txnSubCollection)
     benchmarkTimelineStats = {}
-    if benchmarkTransactionsMap:
+    if benchmarkTxnsMap:
       benchmarkTimelineStats = {
         txnSubCollection.name: buildTimelineStats(
-          category, route, probes, txnSubCollection) for txnSubCollection in benchmarkTransactionsMap.values()
+          category, route, probes, txnSubCollection) for txnSubCollection in benchmarkTxnsMap.values()
       }
-    elif transactionRepo.hasBenchmarks():
+    elif txnRepo.hasBenchmarks():
       LOGGER.warn('[benchmarks missing category/route]')
     return timelineStats, benchmarkTimelineStats
 
   @staticmethod
-  def filterTransactions(repo, txnFilter):
+  def filterTxns(repo, txnFilter):
     """
     Filters transactions using the given callable (txnFilter)
 
     :param repo: Repository of transactions from current profiling session and benchmarks
-    :type repo: xpedite.transaction.TransactionRepo
+    :type repo: xpedite.transaction.TxnRepo
     :param txnFilter: filter to be excluded transaction from reporting
     :type txnFilter: callable
 
     """
     totalFilteredCount = 0
-    for txnCollection in repo.getTransactionCollections():
-      transactionsMap = txnCollection.transactionsMap
+    for txnCollection in repo.getTxnCollections():
+      txnMap = txnCollection.txnMap
       filteredCount = 0
-      unfilteredCount = len(transactionsMap)
-      for tid, txn in transactionsMap.iteritems():
+      unfilteredCount = len(txnMap)
+      for tid, txn in txnMap.iteritems():
         if not txnFilter(txnCollection.name, txn):
-          del transactionsMap[tid]
+          del txnMap[tid]
           filteredCount += 1
       if filteredCount:
         LOGGER.debug('filtering txns from \"%s\" - removed %d out of %d',

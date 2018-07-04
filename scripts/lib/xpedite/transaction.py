@@ -15,7 +15,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 from collections  import OrderedDict
 from xpedite.probeFactory import ProbeIndexFactory
 
-class TransactionSubCollection(object):
+class TxnSubCollection(object):
   """A subset of transactions in a transaction collection"""
 
   def __init__(self, name, cpuInfo, transactions, probes, topdownMetrics, events):
@@ -43,21 +43,21 @@ class TransactionSubCollection(object):
 
   def cloneMetaData(self):
     """Creates a empty sub collection object with cloned meta data"""
-    return TransactionSubCollection(self.name, self.cpuInfo, [], self.probes, self.topdownMetrics, self.events)
+    return TxnSubCollection(self.name, self.cpuInfo, [], self.probes, self.topdownMetrics, self.events)
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
-class TransactionCollection(object):
+class TxnCollection(object):
   """A collection of transactions sharing a common route"""
 
-  def __init__(self, name, cpuInfo, transactionsMap, probes, topdownMetrics, events, dataSources):
+  def __init__(self, name, cpuInfo, txnMap, probes, topdownMetrics, events, dataSources):
     self.name = name
     self.cpuInfo = cpuInfo
-    for txn in transactionsMap.values():
+    for txn in txnMap.values():
       txn.finalize()
-    self.transactionsMap = OrderedDict(sorted(transactionsMap.iteritems(), key=lambda pair: pair[1].begin.tsc))
-    if len(self.transactionsMap) != len(transactionsMap):
+    self.txnMap = OrderedDict(sorted(txnMap.iteritems(), key=lambda pair: pair[1].begin.tsc))
+    if len(self.txnMap) != len(txnMap):
       raise Exception('failed to reorder transaction for {}'.format(name))
     self.probes = probes
     self.topdownMetrics = topdownMetrics
@@ -67,8 +67,8 @@ class TransactionCollection(object):
 
   def getSubCollection(self):
     """Builds an instance of transaction sub collection"""
-    return TransactionSubCollection(
-      self.name, self.cpuInfo, self.transactionsMap.values(), self.probes, self.topdownMetrics, self.events
+    return TxnSubCollection(
+      self.name, self.cpuInfo, self.txnMap.values(), self.probes, self.topdownMetrics, self.events
     )
 
   def isCurrent(self):

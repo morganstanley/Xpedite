@@ -3,18 +3,18 @@ TransactionLoader
 
 This module provides functionality to build transactions from a sequence of probes.
 Two types of grouping are supported
-  1. ChaoticTransactionLoader - builds transactions based on user supplied txnId
-  2. BoundedTransactionLoader - builds transactions based on scopes and bounds
+  1. ChaoticTxnLoader - builds transactions based on user supplied txnId
+  2. BoundedTxnLoader - builds transactions based on scopes and bounds
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.transaction     import Transaction, TransactionCollection
+from xpedite.transaction     import Transaction, TxnCollection
 from xpedite.containers      import ProbeMap
 from xpedite.txnFragment     import TxnFragments
 from collections             import OrderedDict
 
-class AbstractTransactionLoader(object):
+class AbstractTxnLoader(object):
   """Base class for building transactions from counters"""
 
   def __init__(self, name, cpuInfo, probes, topdownMetrics, events):
@@ -34,50 +34,50 @@ class AbstractTransactionLoader(object):
     self.probeMap = ProbeMap(probes)
     self.reset()
     self.dataSources = []
-    self.currentTransaction = None
+    self.currentTxn = None
     self.threadId = None
     self.tlsAddr = None
 
   def reset(self):
     """Resets the state of the loader"""
     self.processedCounterCount = 0
-    self.transactions = OrderedDict()
-    self.compromisedTransactions = []
-    self.nonTransactionCounters = []
+    self.txns = OrderedDict()
+    self.compromisedTxns = []
+    self.nonTxnCounters = []
     self.ephemeralCounters = []
-    self.currentTransaction = None
+    self.currentTxn = None
 
   def getTransactionCount(self):
     """Returns the number of transactions loaded"""
-    return len(self.transactions)
+    return len(self.txns)
 
   def isCompromised(self):
     """Returns True, if any of the loaded transactions were compromised or corrupted"""
-    return len(self.compromisedTransactions) > 0
+    return len(self.compromisedTxns) > 0
 
   def isNotAccounted(self):
     """Returns True, if any of the counters were skipped, due to data inconsistency"""
-    return len(self.nonTransactionCounters) > 0
+    return len(self.nonTxnCounters) > 0
 
-  def appendTransaction(self, txn):
+  def appendTxn(self, txn):
     """
     Inserts or updates transaction to collection
 
     :param txn: Transaction to be appended
 
     """
-    if txn.txnId in self.transactions:
-      self.transactions[txn.txnId].join(txn)
+    if txn.txnId in self.txns:
+      self.txns[txn.txnId].join(txn)
     else:
-      self.transactions.update({txn.txnId : txn})
+      self.txns.update({txn.txnId : txn})
 
   def report(self):
     """Returns loader statistics"""
-    transactionCount = len(self.transactions) + len(self.compromisedTransactions)
+    txnCount = len(self.txns) + len(self.compromisedTxns)
     report = 'processed {:,} counters to build {:,} trasactions ({:,} intact / {:,} compromised)'.format(
-      self.processedCounterCount, transactionCount, len(self.transactions), len(self.compromisedTransactions))
-    if self.nonTransactionCounters:
-      report += ' and {:,} were accounted extraneous'.format(len(self.nonTransactionCounters))
+      self.processedCounterCount, txnCount, len(self.txns), len(self.compromisedTxns))
+    if self.nonTxnCounters:
+      report += ' and {:,} were accounted extraneous'.format(len(self.nonTxnCounters))
     else:
       report += '.'
     return report
@@ -104,21 +104,21 @@ class AbstractTransactionLoader(object):
 
   def endLoad(self):
     """Marks end of the current load session"""
-    if self.currentTransaction:
-      self.compromisedTransactions.append(self.currentTransaction)
-      self.currentTransaction = None
+    if self.currentTxn:
+      self.compromisedTxns.append(self.currentTxn)
+      self.currentTxn = None
 
   def getData(self):
     """Returns a collection of all the loaded transactions"""
-    return TransactionCollection(
-      self.name, self.cpuInfo, self.transactions, self.probes, self.topdownMetrics, self.events, self.dataSources
+    return TxnCollection(
+      self.name, self.cpuInfo, self.txns, self.probes, self.topdownMetrics, self.events, self.dataSources
     )
 
   def getCount(self):
     """Returns the count of transactions loaded"""
-    return len(self.transactions) + (1 if self.currentTransaction else 0)
+    return len(self.txns) + (1 if self.currentTxn else 0)
 
-class ChaoticTransactionLoader(AbstractTransactionLoader):
+class ChaoticTxnLoader(AbstractTxnLoader):
   """Loads transactions from counters with tolerance for compromised transactions"""
 
   def __init__(self, name, cpuInfo, probes, topdownMetrics, events):
@@ -130,7 +130,7 @@ class ChaoticTransactionLoader(AbstractTransactionLoader):
     :param topdownMetrics: Top down metrics to be computed
     :param events: PMU events collected for the profile session
     """
-    AbstractTransactionLoader.__init__(self, name, cpuInfo, probes, topdownMetrics, events)
+    AbstractTxnLoader.__init__(self, name, cpuInfo, probes, topdownMetrics, events)
     self.distortionCount = 0
 
   @staticmethod
@@ -157,43 +157,43 @@ class ChaoticTransactionLoader(AbstractTransactionLoader):
     """
     self.processedCounterCount += 1
     userProbe = self.probeMap.get(counter.probe, None)
-    if self.currentTransaction:
+    if self.currentTxn:
       if userProbe:
         if not userProbe.isAnonymous:
           self.markCounter(counter)
         if counter.txnId or userProbe.isAnonymous:
-          if userProbe.isAnonymous or counter.txnId == self.currentTransaction.txnId:
-            self.currentTransaction.addCounter(counter, False)
+          if userProbe.isAnonymous or counter.txnId == self.currentTxn.txnId:
+            self.currentTxn.addCounter(counter, False)
           else:
             if self.distortionCount == 0:
-              self.appendTransaction(self.currentTransaction)
-              self.currentTransaction = Transaction(counter, counter.txnId)
+              self.appendTxn(self.currentTxn)
+              self.currentTxn = Transaction(counter, counter.txnId)
             else:
               self.distortionCount -= 1
-              self.compromisedTransactions.append(self.currentTransaction)
-              self.currentTransaction = Transaction(counter, counter.txnId)
+              self.compromisedTxns.append(self.currentTxn)
+              self.currentTxn = Transaction(counter, counter.txnId)
         else:
           # explicit probe missing id likely compromised - skip this and the next transaction
-          self.currentTransaction.addCounter(counter, False)
+          self.currentTxn.addCounter(counter, False)
           self.distortionCount = 2
       else:
-        self.currentTransaction.addCounter(counter, False)
+        self.currentTxn.addCounter(counter, False)
     elif userProbe and not userProbe.isAnonymous and self.markCounter(counter):
-      self.currentTransaction = Transaction(counter, counter.txnId)
+      self.currentTxn = Transaction(counter, counter.txnId)
     else:
-      self.nonTransactionCounters.append(counter)
+      self.nonTxnCounters.append(counter)
 
   def endLoad(self):
     """Marks end of the current load session"""
-    if self.currentTransaction:
+    if self.currentTxn:
       if self.distortionCount == 0:
-        self.appendTransaction(self.currentTransaction)
+        self.appendTxn(self.currentTxn)
       else:
-        self.compromisedTransactions.append(self.currentTransaction)
+        self.compromisedTxns.append(self.currentTxn)
     self.distortionCount = 0
-    self.currentTransaction = None
+    self.currentTxn = None
 
-class BoundedTransactionLoader(AbstractTransactionLoader):
+class BoundedTxnLoader(AbstractTxnLoader):
   """Loads transactions bounded by well defined begin/end probes"""
 
   def __init__(self, name, cpuInfo, probes, topdownMetrics, events):
@@ -207,7 +207,7 @@ class BoundedTransactionLoader(AbstractTransactionLoader):
     :param events: PMU events collected for the profile session
 
     """
-    AbstractTransactionLoader.__init__(self, name, cpuInfo, probes, topdownMetrics, events)
+    AbstractTxnLoader.__init__(self, name, cpuInfo, probes, topdownMetrics, events)
     self.nextTxnId = 0
     self.ephemeralCounters = []
     self.nextFragmentId = 0
@@ -215,7 +215,7 @@ class BoundedTransactionLoader(AbstractTransactionLoader):
     self.resumeFragment = None
     self.suspendingTxn = False
 
-  def appendTransaction(self, txn):
+  def appendTxn(self, txn):
     """
     Inserts or updates transaction to collection
 
@@ -225,7 +225,7 @@ class BoundedTransactionLoader(AbstractTransactionLoader):
     if not (self.resumeFragment or self.suspendingTxn):
       self.nextTxnId += 1
       txn.txnId = self.nextTxnId
-      AbstractTransactionLoader.appendTransaction(self, txn)
+      AbstractTxnLoader.appendTxn(self, txn)
 
   def loadCounter(self, counter):
     """
@@ -237,47 +237,47 @@ class BoundedTransactionLoader(AbstractTransactionLoader):
     """
     self.processedCounterCount += 1
     userProbe = self.probeMap.get(counter.probe, counter.probe)
-    if self.currentTransaction:
+    if self.currentTxn:
       if userProbe.canBeginTxn or userProbe.canResumeTxn:
-        if self.currentTransaction.hasEndProbe or userProbe.canResumeTxn:
+        if self.currentTxn.hasEndProbe or userProbe.canResumeTxn:
           if self.ephemeralCounters:
-            self.nonTransactionCounters.extend(self.ephemeralCounters)
+            self.nonTxnCounters.extend(self.ephemeralCounters)
             self.ephemeralCounters = []
-          self.appendTransaction(self.currentTransaction)
-          self.currentTransaction = self.buildTransaction(counter, userProbe.canResumeTxn)
+          self.appendTxn(self.currentTxn)
+          self.currentTxn = self.buildTxn(counter, userProbe.canResumeTxn)
         else:
-          self.currentTransaction.addCounter(counter, False)
+          self.currentTxn.addCounter(counter, False)
       elif userProbe.canEndTxn or userProbe.canSuspendTxn:
         if self.ephemeralCounters:
           for eCounter in self.ephemeralCounters:
-            self.currentTransaction.addCounter(eCounter, False)
+            self.currentTxn.addCounter(eCounter, False)
           self.ephemeralCounters = []
-        self.currentTransaction.addCounter(counter, True)
+        self.currentTxn.addCounter(counter, True)
         if userProbe.canSuspendTxn:
           self.suspendingTxn |= userProbe.canSuspendTxn
           linkId = '{:x}{}'.format(counter.tsc, self.tlsAddr)
-          self.fragments.addSuspendFragment(linkId, self.currentTransaction, self.resumeFragment)
+          self.fragments.addSuspendFragment(linkId, self.currentTxn, self.resumeFragment)
       else:
-        if self.currentTransaction.hasEndProbe:
+        if self.currentTxn.hasEndProbe:
           self.ephemeralCounters.append(counter)
         else:
-          self.currentTransaction.addCounter(counter, False)
+          self.currentTxn.addCounter(counter, False)
     else:
       if userProbe.canBeginTxn or userProbe.canResumeTxn:
-        self.currentTransaction = self.buildTransaction(counter, userProbe.canResumeTxn)
+        self.currentTxn = self.buildTxn(counter, userProbe.canResumeTxn)
         if self.ephemeralCounters:
-          self.nonTransactionCounters.extend(self.ephemeralCounters)
+          self.nonTxnCounters.extend(self.ephemeralCounters)
           self.ephemeralCounters = []
       elif userProbe.canEndTxn or userProbe.canSuspendTxn:
-        compromisedTransaction = self.buildTransaction(counter)
+        compromisedTxn = self.buildTxn(counter)
         for eCounter in self.ephemeralCounters:
-          compromisedTransaction.addCounter(eCounter, False)
-        self.compromisedTransactions.append(compromisedTransaction)
+          compromisedTxn.addCounter(eCounter, False)
+        self.compromisedTxns.append(compromisedTxn)
         self.ephemeralCounters = []
       else:
         self.ephemeralCounters.append(counter)
 
-  def buildTransaction(self, counter, resumeTxn=False):
+  def buildTxn(self, counter, resumeTxn=False):
     """
     Constructs a new transaction instance
 
@@ -297,15 +297,15 @@ class BoundedTransactionLoader(AbstractTransactionLoader):
 
   def endLoad(self):
     """Marks end of the current load session"""
-    if self.currentTransaction:
-      if self.currentTransaction.hasEndProbe:
-        self.appendTransaction(self.currentTransaction)
+    if self.currentTxn:
+      if self.currentTxn.hasEndProbe:
+        self.appendTxn(self.currentTxn)
       else:
-        self.compromisedTransactions.append(self.currentTransaction)
-    self.currentTransaction = None
+        self.compromisedTxns.append(self.currentTxn)
+    self.currentTxn = None
 
   def endCollection(self):
     """Ends loading of samples from multiple threads of a target process"""
     txns = self.fragments.join(self.nextTxnId)
     for txn in txns:
-      AbstractTransactionLoader.appendTransaction(self, txn)
+      AbstractTxnLoader.appendTxn(self, txn)
