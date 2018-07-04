@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/probes/CallSite.H>
 #include <xpedite/probes/FixedPmcSet.H>
 #include <xpedite/probes/Recorders.H>
 
@@ -54,6 +55,8 @@ namespace xpedite { namespace probes {
     int activeDataProbeRecorderIndex() noexcept;
     bool canActivateRecorder(int index_) noexcept;
     bool activateRecorder(int index_) noexcept;
+
+    Trampoline trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept;
 
     static RecorderCtl& get() {
       return _instance;

@@ -24,16 +24,7 @@ namespace xpedite { namespace probes {
     }
     else {
       instructions._bytes[0] = OPCODE_CALL;
-      Trampoline trampoline;
-      if(canStoreData()) {
-        trampoline = (recorderCtl().pmcCount() ? xpediteDataProbeRecorderTrampoline : xpediteDataProbeTrampoline);
-      }
-      else if(canSuspendTxn()) {
-        trampoline = (recorderCtl().pmcCount() ? xpediteIdentityRecorderTrampoline : xpediteIdentityTrampoline);
-      }
-      else {
-        trampoline = (recorderCtl().pmcCount() ? xpediteRecorderTrampoline : xpediteTrampoline);
-      }
+      Trampoline trampoline {recorderCtl().trampoline(canStoreData(), canSuspendTxn())};
       uint32_t jmpOffset {offset(_callSite, trampoline)};
       memcpy(instructions._bytes + 1, &jmpOffset, sizeof(jmpOffset));
       XpediteLogInfo << "Enable probe " << toString() << " | trampoline - " << reinterpret_cast<void*>(trampoline)

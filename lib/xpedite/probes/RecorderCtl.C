@@ -17,6 +17,11 @@ XpediteRecorder activeXpediteRecorder {xpediteExpandAndRecord};
 
 XpediteDataProbeRecorder activeXpediteDataProbeRecorder {xpediteExpandAndRecordWithData};
 
+void* xpediteTrampolinePtr {reinterpret_cast<void*>(xpediteTrampoline)};
+
+void* xpediteDataProbeTrampolinePtr {reinterpret_cast<void*>(xpediteDataProbeTrampoline)};
+
+void* xpediteIdentityTrampolinePtr {reinterpret_cast<void*>(xpediteIdentityTrampoline)};
 
 namespace xpedite { namespace probes {
 
@@ -66,6 +71,11 @@ namespace xpedite { namespace probes {
     if(canActivateRecorder(index_)) {
       activeXpediteRecorder = _recorders[index_];
       activeXpediteDataProbeRecorder = _dataRecorders[index_];
+
+      xpediteTrampolinePtr = reinterpret_cast<void*>(trampoline(false, false));
+      xpediteDataProbeTrampolinePtr = reinterpret_cast<void*>(trampoline(true, false));
+      xpediteIdentityTrampolinePtr = reinterpret_cast<void*>(trampoline(false, true));
+
       XpediteLogInfo << "Activated recorder at index " << index_ << XpediteLogEnd;
       return true;
     }
@@ -102,6 +112,16 @@ namespace xpedite { namespace probes {
         activateRecorder(0);
       }
     }
+  }
+
+  Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept {
+    if(canStoreData_) {
+      return pmcCount() ? xpediteDataProbeRecorderTrampoline : xpediteDataProbeTrampoline;
+    }
+    else if(canSuspendTxn_) {
+      return pmcCount() ? xpediteIdentityRecorderTrampoline : xpediteIdentityTrampoline;
+    }
+    return pmcCount() ? xpediteRecorderTrampoline : xpediteTrampoline;
   }
 
 }}
