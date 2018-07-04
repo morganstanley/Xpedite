@@ -28,6 +28,26 @@ body {
 .tableSummary th, .tableReport th , .tableEnv th {
   color: #d78787;
   min-width: 3em;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+table > thead > tr > th {
+  border-top: 1px solid #161616;
+}
+
+table > tbody > tr:last-child > td {
+  border-bottom: 1px solid #161616;
+}
+
+table > tbody > tr > td:first-child,
+table > thead > tr > th:first-child {
+  border-left: 1px solid #161616;
+}
+
+table > tbody > tr > td:last-child,
+table > thead > tr > th:last-child {
+  border-right: 1px solid #161616;
 }
 
 .tableSummary, #tabs {
@@ -60,6 +80,7 @@ body {
 .flotChoiceContainer {
   width: 168px;
   float: right;
+  min-height: 475px;
 }
 
 .flotChoiceContainer label {

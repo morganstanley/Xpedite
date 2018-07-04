@@ -6,13 +6,10 @@
 **
 *******************************************************************************************/
 
-table {
+table, #notebook table {
   border-collapse:collapse;
   margin: 0px;
-}
-
-.tableReportContainer {
-  padding-right: 400px;
+  table-layout: auto;
 }
 
 th {
