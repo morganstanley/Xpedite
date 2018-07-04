@@ -9,7 +9,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import logging
-from xpedite.classifier       import DefaultClassifier
+from xpedite.txn.classifier       import DefaultClassifier
 from xpedite.types            import ResultOrder
 
 LOGGER = logging.getLogger(__name__)
@@ -254,7 +254,7 @@ class Runtime(AbstractRuntime):
 
     """
     from xpedite.reportgenerator import ReportGenerator
-    from xpedite.transactionrepo import TxnRepoFactory
+    from xpedite.txn.repo import TxnRepoFactory
     from xpedite.pmu.event       import Event
     try:
       if not self.app.dryRun:

@@ -44,7 +44,7 @@ class ReportGenerator(object):
     Generates latency distribuion histograms for each category/route combination
 
     :param repo: Repository of transaction collection
-    :type repo: xpedite.transaction.TxnRepo
+    :type repo: xpedite.txn.repo.TxnRepo
     :param classifier: Classifier to categorize transactions into various types
     :param runId: Epoch time stamp to uniquely identify a profiling session
 
@@ -230,9 +230,9 @@ class ReportGenerator(object):
 
     :param app: An instance of xpedite app, to interact with target application
     :param repo: Repository of transaction collection
-    :type repo: xpedite.transaction.TxnRepo
+    :type repo: xpedite.txn.repo.TxnRepo
     :param result: Handle to gather and store profiling results
-    :param classifier: Predicate to classify transactions into different categories (Default value = DefaultClassifier()
+    :param classifier: Predicate to classify transactions into different categories
     :param resultOrder: Sort order of transactions in latency constituent reports
     :param reportThreshold: Threshold for number of transactions rendered in html reports.
     :param txnFilter: Lambda to filter transactions prior to report generation

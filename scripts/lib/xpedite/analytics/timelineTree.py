@@ -97,11 +97,11 @@ def buildTimelineTree(timeline, threshold=None, begin=None, end=None, childCount
       if canGroup:
         child = Node('{} - {}'.format(
           timeline[groupBegin].name, timeline[i+1].name
-        )) # pylint: disable=redefined-variable-type
+        ))
         buildTimelineTree(timeline, duration/childCount, groupBegin, i+1, childCount, child)
       else:
         name = '{} - {}'.format(timepoint.name, timeline[i+1].name)
-        child = Leaf(name, timepoint.duration) # pylint: disable=redefined-variable-type
+        child = Leaf(name, timepoint.duration)
       node.addChild(child)
       groupBegin = i + 1
       duration = 0

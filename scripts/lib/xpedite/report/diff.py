@@ -9,7 +9,7 @@ from html import HTML
 
 class DiffBuilder(object):
   """
-  TransactionDiffBuilder construcs an HTML table to be displayed in a Jupyter
+  DiffBuilder construcs an HTML table to be displayed in a Jupyter
   notebook comparing transaction and performance counter information
   """
 

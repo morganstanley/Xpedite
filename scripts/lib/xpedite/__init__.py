@@ -18,7 +18,6 @@ The main features include
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 from xpedite.dependencies     import Package, DEPENDENCY_LOADER
-from xpedite.classifier       import DefaultClassifier
 from xpedite.probe            import Probe, TxnBeginProbe, TxnSuspendProbe, TxnResumeProbe, TxnEndProbe
 from xpedite.types            import ResultOrder
 from xpedite.pmu.event        import Event, TopdownNode, Metric

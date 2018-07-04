@@ -1,5 +1,5 @@
 """
-TransactionLoader
+Transaction Loader
 
 This module provides functionality to build transactions from a sequence of probes.
 Two types of grouping are supported
@@ -9,9 +9,10 @@ Two types of grouping are supported
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.transaction     import Transaction, TxnCollection
+from xpedite.txn             import Transaction
+from xpedite.txn.collection  import TxnCollection
 from xpedite.containers      import ProbeMap
-from xpedite.txnFragment     import TxnFragments
+from xpedite.txn.fragments   import TxnFragments
 from collections             import OrderedDict
 
 class AbstractTxnLoader(object):
@@ -47,7 +48,7 @@ class AbstractTxnLoader(object):
     self.ephemeralCounters = []
     self.currentTxn = None
 
-  def getTransactionCount(self):
+  def getTxnCount(self):
     """Returns the number of transactions loaded"""
     return len(self.txns)
 

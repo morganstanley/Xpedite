@@ -13,10 +13,10 @@ import os
 import shutil
 import logging
 import ConfigParser
-from datetime            import date
-from xpedite.collector   import Collector
-from xpedite.types       import DataSource, CpuInfo
-from xpedite.pmu.event   import Event
+from datetime               import date
+from xpedite.txn.collector  import Collector
+from xpedite.types          import DataSource, CpuInfo
+from xpedite.pmu.event      import Event
 
 LOGGER = logging.getLogger(__name__)
 
@@ -184,7 +184,7 @@ class BenchmarksCollector(object):
     return dataSources
 
   @staticmethod
-  def loadTransactions(repo, counterFilter, benchmarks, loaderFactory):
+  def loadTxns(repo, counterFilter, benchmarks, loaderFactory):
     """
     Loads transactions for a list of benchmarks
 

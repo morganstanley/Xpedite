@@ -107,7 +107,7 @@ def binPath(binaryName):
   :param binaryName: Name of the executable
 
   """
-  from distutils.spawn import find_executable
+  from distutils.spawn import find_executable # pylint: disable=no-name-in-module,import-error
   envVariable = 'XPEDITE_{}'.format(binaryName.upper())
   if envVariable in os.environ.keys():
     return os.environ[envVariable]

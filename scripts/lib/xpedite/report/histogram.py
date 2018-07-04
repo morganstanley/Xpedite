@@ -68,7 +68,7 @@ def buildFlotHistograms(ticks, series, stack=False):
   data = []
   width = totalWidth / (((len(series) + 1)/2)*2)
   index = None
-  for index in range(0, len(series)):
+  for index, _ in enumerate(series):
     name, serie = series[index]
     if len(serie) > len(ticks):
       raise ValueError('Series at index {} has more elements than there are ticks'.format(index))

@@ -6,7 +6,7 @@ Module to aggregate transactions, routes and counters
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.classifier     import DefaultClassifier
+from xpedite.txn.classifier     import DefaultClassifier
 
 def txnSubCollectionFactory(txnSubCollection, txn):
   """

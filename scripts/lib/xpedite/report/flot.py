@@ -89,7 +89,7 @@ class FlotBuilder(object):
 
     """
     seriesMap = {}
-    for index in range(0, len(series)):
+    for index, _ in enumerate(series):
       name, serie = series[index]
       seriesId = '{}_{}'.format(name, uid)
       seriesMap.update(
@@ -163,7 +163,7 @@ class FlotBuilder(object):
     uid = 'benchmark_{}'.format(makeUniqueId())
     flotData = []
     tscDeltaSeriesCollection = timelineStats.getTscDeltaSeriesCollection()
-    for i in range(0, len(tscDeltaSeriesCollection)):
+    for i, _ in enumerate(tscDeltaSeriesCollection):
       series = [(timelineStats.name, tscDeltaSeriesCollection[i])]
       for benchmarkName, benchmarkTls in benchmarkTlsMap.iteritems():
         series.append((benchmarkName, benchmarkTls.getTscDeltaSeriesCollection()[i]))
@@ -185,7 +185,7 @@ class FlotBuilder(object):
     uid = 'pmu_{}'.format(makeUniqueId())
     flotData = []
     tscDeltaSeriesCollection = timelineStats.getTscDeltaSeriesCollection()
-    for i in range(0, len(tscDeltaSeriesCollection)):
+    for i, _ in enumerate(tscDeltaSeriesCollection):
       series = [('wall time(us)', tscDeltaSeriesCollection[i])]
       deltaSeriesRepo = timelineStats.deltaSeriesRepo
       for eventName in deltaSeriesRepo.eventNames:

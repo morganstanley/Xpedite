@@ -128,7 +128,7 @@ class Analytics(object):
     Filters transactions using the given callable (txnFilter)
 
     :param repo: Repository of transactions from current profiling session and benchmarks
-    :type repo: xpedite.transaction.TxnRepo
+    :type repo: xpedite.txn.repo.TxnRepo
     :param txnFilter: filter to be excluded transaction from reporting
     :type txnFilter: callable
 

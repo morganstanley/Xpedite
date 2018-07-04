@@ -6,7 +6,7 @@
 #################################################################################
 
 from xpedite import Probe, TxnBeginProbe, TxnSuspendProbe, TxnResumeProbe, TxnEndProbe
-from xpedite.classifier import ProbeDataClassifier
+from xpedite.txn.classifier import ProbeDataClassifier
 from xpedite import TopdownNode, Metric, Event, ResultOrder
 
 # Name of the application

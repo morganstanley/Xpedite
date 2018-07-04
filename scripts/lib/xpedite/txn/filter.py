@@ -52,7 +52,7 @@ class AnonymousCounterFilter(object):
     if counter.txnId is None:
       self.nullIdCounters += 1
       return False
-    elif len(counter.txnId) == 0:
+    elif not counter.txnId:
       self.nullIdCounters += 1
       return False
 
@@ -94,7 +94,7 @@ class AnonymousCounterFilter(object):
       )
     return None
 
-class BoundedTransactionFilter(object):
+class BoundedTxnFilter(object):
   """Warmup filter for bounded transactions"""
 
   @staticmethod

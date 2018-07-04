@@ -6,7 +6,7 @@
 
 from xpedite import Probe, TxnBeginProbe, TxnEndProbe
 from xpedite.pmu.event import Event
-from xpedite.classifier import ProbeDataClassifier
+from xpedite.txn.classifier import ProbeDataClassifier
 from xpedite import TopdownNode, Metric, Event, ResultOrder
 
 # Name of the application

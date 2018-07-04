@@ -141,10 +141,10 @@ class TxnRepoFactory(object):
     :param benchmarkPaths: List of stored reports from previous runs, for benchmarking
 
     """
-    from xpedite.collector            import Collector
+    from xpedite.txn.collector        import Collector
     from xpedite.benchmark            import BenchmarksCollector
-    from xpedite.transactionLoader    import ChaoticTxnLoader, BoundedTxnLoader
-    from xpedite.filter               import TrivialCounterFilter
+    from xpedite.txn.loader           import ChaoticTxnLoader, BoundedTxnLoader
+    from xpedite.txn.filter           import TrivialCounterFilter
     from xpedite.analytics            import CURRENT_RUN
     from xpedite.util                 import timeAction
     counterFilter = TrivialCounterFilter()
@@ -159,9 +159,9 @@ class TxnRepoFactory(object):
     loader = loaderType(CURRENT_RUN, cpuInfo, probes, topdownMetrics, events)
 
     timeAction('gathering counters', lambda: collector.gatherCounters(app, loader))
-    currentTransactions = loader.getData()
+    currentTxns = loader.getData()
 
-    if not currentTransactions:
+    if not currentTxns:
       if loader.processedCounterCount:
         msg = 'failed to load transactions. recheck routes specified in your profile info'
         LOGGER.error(msg)
@@ -172,11 +172,11 @@ class TxnRepoFactory(object):
         raise Exception(msg)
 
     repo = TxnRepo()
-    repo.addCurrent(currentTransactions)
+    repo.addCurrent(currentTxns)
 
     if benchmarkPaths:
       benchmarksCollector = BenchmarksCollector(benchmarkPaths)
-      benchmarksCollector.loadTransactions(
+      benchmarksCollector.loadTxns(
         repo, counterFilter, benchmarksCollector.gatherBenchmarks(10), loaderFactory=lambda benchmark: loaderFactory(
           loaderType, benchmark, probes, benchmarkProbes, topdownCache, topdownMetrics
         )

@@ -185,7 +185,7 @@ class Conflator(object):
 
     """
     timePoints = []
-    for i in range(0, len(routeIndices)):
+    for i, _ in enumerate(routeIndices):
       begin = routeIndices[i]
       end = (begin + 1) if(i == len(routeIndices)-1) else routeIndices[i + 1]
       srcTp = srcTimePoints[begin]
