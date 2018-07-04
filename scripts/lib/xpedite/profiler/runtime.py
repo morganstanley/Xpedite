@@ -253,7 +253,7 @@ class Runtime(AbstractRuntime):
     :type buildPrefix: str
 
     """
-    from xpedite.reportgenerator import ReportGenerator
+    from xpedite.profiler.reportgenerator import ReportGenerator
     from xpedite.txn.repo import TxnRepoFactory
     from xpedite.pmu.event       import Event
     try:
