@@ -10,7 +10,7 @@ of probes, that got hit, during program execution to achieve the functionality.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.probeFactory import ProbeIndexFactory
+from xpedite.util.probeFactory import ProbeIndexFactory
 
 class Transaction(object):
   """

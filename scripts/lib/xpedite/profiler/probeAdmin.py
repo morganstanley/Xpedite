@@ -10,7 +10,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import os
-from xpedite.probeFactory import ProbeFactory
+from xpedite.util.probeFactory import ProbeFactory
 
 class ProbeAdmin(object):
   """Utility class to administer target process - query/enable/disable probes"""
