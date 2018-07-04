@@ -17,10 +17,6 @@
 #include <xpedite/util/AddressSpace.H>
 #include <set>
 
-void* xpediteTrampolinePtr {reinterpret_cast<void*>(xpediteTrampoline)};
-void* xpediteDataProbeTrampolinePtr {reinterpret_cast<void*>(xpediteDataProbeTrampoline)};
-void* xpediteIdentityTrampolinePtr {reinterpret_cast<void*>(xpediteIdentityTrampoline)};
-
 namespace xpedite { namespace probes {
 
   void activateProbe(Probe* probe_) {
