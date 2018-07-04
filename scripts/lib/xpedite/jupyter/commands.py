@@ -279,7 +279,10 @@ class FilteredProfiles(object):
     :param routePoints: Indices of the conflated route (Default value = None)
 
     """
-    return txns(routePoints, self.profiles)
+    if self.profiles:
+      return txns(routePoints, self.profiles)
+    display(HTML(ERROR_TEXT.format('No matching transactions found')))
+    return None
 
 def filter(predicate): #pylint: disable=redefined-builtin
   """
