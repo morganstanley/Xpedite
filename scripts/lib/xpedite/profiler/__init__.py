@@ -54,7 +54,7 @@ def profile(app, profileInfo, reportName, reportPath, dryRun, result, # pylint: 
   import time
   import select
   from xpedite.profiler.runtime import Runtime
-  from xpedite import DefaultClassifier
+  from xpedite.txn.classifier import DefaultClassifier
 
   runtime = Runtime(
     app=app, probes=profileInfo.probes, pmc=profileInfo.pmc, cpuSet=profileInfo.cpuSet, pollInterval=1,

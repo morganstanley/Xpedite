@@ -6,7 +6,7 @@ Module to aggregate transactions, routes and counters
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.classifier     import DefaultClassifier
+from xpedite.txn.classifier     import DefaultClassifier
 
 def txnSubCollectionFactory(txnSubCollection, txn):
   """
@@ -67,7 +67,7 @@ class RouteConflatingAggregator(object):
     :param ancestry: A node in the tree collection
 
     """
-    from xpedite.route import conflateRoutes
+    from xpedite.types.route import conflateRoutes
     srcRouteMap = self.srcTree.getChildren(ancestry)
     routes = srcRouteMap.keys() if srcRouteMap else []
     routeMap = {}

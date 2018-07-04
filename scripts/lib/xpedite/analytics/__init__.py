@@ -10,8 +10,10 @@ This package includes
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 import sys
+import time
 import logging
 from xpedite.util                        import timeAction
+from xpedite.types.containers            import ProbeMap
 
 from xpedite.dependencies                import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Numpy)
@@ -122,13 +124,61 @@ class Analytics(object):
       LOGGER.warn('[benchmarks missing category/route]')
     return timelineStats, benchmarkTimelineStats
 
+  def generateProfiles(self, name, txnRepo, classifier):
+    """
+    Generates profiles for the current profile session
+
+    :param txnRepo: Repository of loaded transactions
+    :param classifier: Predicate to classify transactions into different categories
+
+    """
+    from xpedite.report.profile import Profiles, Profile
+    txnTree, benchmarkCompositeTree = self.buildTxnTree(txnRepo, classifier)
+    profiles = Profiles(txnRepo)
+
+    for category, categoryNode in txnTree.getChildren().iteritems():
+      i = 1
+      for route, txnNode in categoryNode.children.iteritems():
+        routeName = ' [route - {}]'.format(i) if len(categoryNode.children) > 1 else ''
+        profileName = '{} - {}{}'.format(name, category, routeName)
+        begin = time.time()
+        LOGGER.info('generating profile %s (txns - %d) -> ', profileName, len(txnNode.collection))
+
+        benchmarkTxnsMap = benchmarkCompositeTree.getCollectionMap([category, route])
+        reportProbes = self.mapReportProbes(route, txnRepo.getCurrent().probes)
+        timelineStats, benchmarkTimelineStats = self.computeStats(
+          txnRepo, category, route, reportProbes, txnNode.collection, benchmarkTxnsMap
+        )
+        profiles.addProfile(Profile(profileName, timelineStats, benchmarkTimelineStats))
+        elapsed = time.time() - begin
+        LOGGER.completed('completed in %0.2f sec.', elapsed)
+        i += 1
+    return profiles
+
+  @staticmethod
+  def mapReportProbes(route, userProbes):
+    """
+    Creates probes with human friendly name for reporting
+
+    :param userProbes: List of probes enabled for a profiling session
+
+    """
+    reportProbes = []
+    userProbeMap = ProbeMap(userProbes)
+    for probe in route.probes:
+      if probe in userProbeMap:
+        reportProbes.append(userProbeMap[probe])
+      else:
+        reportProbes.append(probe)
+    return reportProbes
+
   @staticmethod
   def filterTxns(repo, txnFilter):
     """
     Filters transactions using the given callable (txnFilter)
 
     :param repo: Repository of transactions from current profiling session and benchmarks
-    :type repo: xpedite.transaction.TxnRepo
+    :type repo: xpedite.txn.repo.TxnRepo
     :param txnFilter: filter to be excluded transaction from reporting
     :type txnFilter: callable
 

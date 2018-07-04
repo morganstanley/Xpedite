@@ -40,8 +40,8 @@ def conflate(profiles, routePoints):
     LOGGER.error('Not enough route points.')
     return None
   else:
-    from xpedite.probe import Probe
-    from xpedite.route import Route
+    from xpedite.types.probe import Probe
+    from xpedite.types.route import Route
     probes = [Probe(probeName, probeName) for probeName in routePoints]
     route = Route(probes)
   profile = context.conflator.conflateProfiles(profiles, route, '')
@@ -113,7 +113,7 @@ def diffTxn(lhs, rhs, profiles):
   """
   from xpedite.analytics.timelineFilter   import locateTimeline
   from xpedite.report.diff                import DiffBuilder
-  from xpedite.route                      import conflateRoutes
+  from xpedite.types.route                import conflateRoutes
   from xpedite.analytics.conflator        import Conflator
 
   timeline1 = locateTimeline(profiles, lhs)

@@ -13,7 +13,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 import logging
-from xpedite.probeFactory import ProbeFactory
+from xpedite.util.probeFactory import ProbeFactory
 
 LOGGER = logging.getLogger(__name__)
 

@@ -37,7 +37,7 @@ class ProbeDataClassifier(object):
     Constructs an instance of ProbeDataClassifier
 
     :param probe: A probe that is expected to be in the transaction
-    :type probe: xpedite.probe.Probe
+    :type probe: xpedite.types.probe.Probe
     :param typeMapper: a callback to map probe data to a category
     :type typeMapper: bool
     """

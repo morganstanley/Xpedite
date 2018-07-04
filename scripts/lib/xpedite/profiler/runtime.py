@@ -9,7 +9,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import logging
-from xpedite.classifier       import DefaultClassifier
+from xpedite.txn.classifier       import DefaultClassifier
 from xpedite.types            import ResultOrder
 
 LOGGER = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ class AbstractRuntime(object):
 
     """
 
-    from xpedite.probe  import AnchoredProbe
+    from xpedite.types.probe  import AnchoredProbe
     anchoredProbes = []
     LOGGER.debug('Resolving probes %s', self.formatProbes(probes))
     for probe in probes:
@@ -242,7 +242,7 @@ class Runtime(AbstractRuntime):
     :type reportName: str
     :param benchmarkPaths: List of stored reports from previous runs, for benchmarking (Default value = None)
     :param classifier: Predicate to classify transactions into different categories (Default value = DefaultClassifier()
-    :type classifier: xpedite.classifier.ProbeDataClassifier
+    :type classifier: xpedite.txn.classifier.ProbeDataClassifier
     :param txnFilter: Lambda to filter transactions prior to report generation
     :type txnFilter: callable accepting a txn instance and returns a bool
     :param reportThreshold: Threshold for number of transactions rendered in html reports (Default value = 3000)
@@ -253,8 +253,8 @@ class Runtime(AbstractRuntime):
     :type buildPrefix: str
 
     """
-    from xpedite.reportgenerator import ReportGenerator
-    from xpedite.transactionrepo import TxnRepoFactory
+    from xpedite.profiler.reportgenerator import ReportGenerator
+    from xpedite.txn.repo import TxnRepoFactory
     from xpedite.pmu.event       import Event
     try:
       if not self.app.dryRun:

@@ -20,8 +20,6 @@ from xpedite.report.histogram        import (
                                        buildBuckets, buildDistribution, Flot
                                      )
 from xpedite.util                    import timeAction, formatHumanReadable
-from xpedite.containers              import ProbeMap
-from xpedite.report.profile          import Profiles, Profile
 from xpedite.analytics               import Analytics, CURRENT_RUN
 
 LOGGER = logging.getLogger(__name__)
@@ -44,7 +42,7 @@ class ReportGenerator(object):
     Generates latency distribuion histograms for each category/route combination
 
     :param repo: Repository of transaction collection
-    :type repo: xpedite.transaction.TxnRepo
+    :type repo: xpedite.txn.repo.TxnRepo
     :param classifier: Classifier to categorize transactions into various types
     :param runId: Epoch time stamp to uniquely identify a profiling session
 
@@ -100,24 +98,6 @@ class ReportGenerator(object):
       flots.update({category: Flot(title, description, data, options)})
     return flots
 
-
-  @staticmethod
-  def getReportProbes(route, userProbes):
-    """
-    Creates probes with human friendly name for reporting
-
-    :param userProbes: List of probes enabled for a profiling session
-
-    """
-    reportProbes = []
-    userProbeMap = ProbeMap(userProbes)
-    for probe in route.probes:
-      if probe in userProbeMap:
-        reportProbes.append(userProbeMap[probe])
-      else:
-        reportProbes.append(probe)
-    return reportProbes
-
   @staticmethod
   def generateEnvironmentReport(app, result, repo, resultOrder, classifier, txnFilter, benchmarkPaths):
     """
@@ -163,36 +143,6 @@ class ReportGenerator(object):
         )
       )
 
-  def generateProfiles(self, txnRepo, classifier):
-    """
-    Generates profiles for the current profile session
-
-    :param txnRepo: Repository of loaded transactions
-    :param classifier: Predicate to classify transactions into different categories
-
-    """
-    txnTree, benchmarkCompositeTree = self.analytics.buildTxnTree(txnRepo, classifier)
-    profiles = Profiles(txnRepo)
-
-    for category, categoryNode in txnTree.getChildren().iteritems():
-      i = 1
-      for route, txnNode in categoryNode.children.iteritems():
-        routeName = ' [route - {}]'.format(i) if len(categoryNode.children) > 1 else ''
-        profileName = '{} - {}{}'.format(self.reportName, category, routeName)
-        begin = time.time()
-        LOGGER.info('generating profile %s (txns - %d) -> ', profileName, len(txnNode.collection))
-
-        benchmarkTxnsMap = benchmarkCompositeTree.getCollectionMap([category, route])
-        reportProbes = self.getReportProbes(route, txnRepo.getCurrent().probes)
-        timelineStats, benchmarkTimelineStats = self.analytics.computeStats(
-          txnRepo, category, route, reportProbes, txnNode.collection, benchmarkTxnsMap
-        )
-        profiles.addProfile(Profile(profileName, timelineStats, benchmarkTimelineStats))
-        elapsed = time.time() - begin
-        LOGGER.completed('completed in %0.2f sec.', elapsed)
-        i += 1
-    return profiles
-
   def generateLatencyReports(self, profiles, flots, result, resultOrder, reportThreshold):
     """
     Generates latency breakup reports for a list of profiles
@@ -230,9 +180,9 @@ class ReportGenerator(object):
 
     :param app: An instance of xpedite app, to interact with target application
     :param repo: Repository of transaction collection
-    :type repo: xpedite.transaction.TxnRepo
+    :type repo: xpedite.txn.repo.TxnRepo
     :param result: Handle to gather and store profiling results
-    :param classifier: Predicate to classify transactions into different categories (Default value = DefaultClassifier()
+    :param classifier: Predicate to classify transactions into different categories
     :param resultOrder: Sort order of transactions in latency constituent reports
     :param reportThreshold: Threshold for number of transactions rendered in html reports.
     :param txnFilter: Lambda to filter transactions prior to report generation
@@ -243,7 +193,7 @@ class ReportGenerator(object):
       if txnFilter:
         self.analytics.filterTxns(repo, txnFilter)
       flots = self.generateFlots(repo, classifier, app.runId)
-      profiles = self.generateProfiles(repo, classifier)
+      profiles = self.analytics.generateProfiles(self.reportName, repo, classifier)
       self.generateLatencyReports(profiles, flots, result, resultOrder, reportThreshold)
       self.generateEnvironmentReport(app, result, repo, resultOrder, classifier, txnFilter, benchmarkPaths)
       LOGGER.info('\nTo recreate the report run - "xpedite report -p profileInfo.py -r %s"\n', app.runId)

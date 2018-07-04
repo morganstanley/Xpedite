@@ -10,7 +10,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import os
-from xpedite.probeFactory import ProbeFactory
+from xpedite.util.probeFactory import ProbeFactory
 
 class ProbeAdmin(object):
   """Utility class to administer target process - query/enable/disable probes"""
@@ -45,7 +45,7 @@ class ProbeAdmin(object):
     :param app: Handle to an instance of the xpedite app
     :type app: xpedite.profiler.app.XpediteApp
     :param anchoredProbe: The probe to activate/deactive
-    :type anchoredProbe: xpedite.probe.AnchoredProbe
+    :type anchoredProbe: xpedite.types.probe.AnchoredProbe
     :param targetState: Activation/deactivaatione flag for the given probe
     :type targetState: bool
 
@@ -119,6 +119,6 @@ class ProbeAdmin(object):
     :param app: an instance of xpedite app, to interact with target application
 
     """
-    from xpedite.containers import ProbeMap
+    from xpedite.types.containers import ProbeMap
     probes = ProbeAdmin.getProbes(app)
     return ProbeMap(probes, probes).namedProbeMap.values()

@@ -11,7 +11,7 @@ import time
 import fnmatch
 import logging
 from xpedite.profiler.appInfo   import AppInfo
-from xpedite.extractor          import Extractor
+from xpedite.txn.extractor          import Extractor
 
 LOGGER = logging.getLogger(__name__)
 

@@ -24,7 +24,7 @@ class Extractor(object):
   """Parses sample files to load counters for the current profile session"""
 
   moduleDirPath = os.path.dirname(os.path.abspath(__file__))
-  samplesLoader = '{}/../../bin/xpediteSamplesLoader'.format(moduleDirPath)
+  samplesLoader = '{}/../../../bin/xpediteSamplesLoader'.format(moduleDirPath)
 
   def __init__(self, counterFilter, buildPrefix=None):
     """
@@ -97,7 +97,7 @@ class Extractor(object):
       if self.orphanedRecords:
         LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', len(self.orphanedRecords))
       LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1, loader.getCount(), elapsed)
-    if loader.isCompromised() or loader.getTransactionCount() <= 0:
+    if loader.isCompromised() or loader.getTxnCount() <= 0:
       LOGGER.warn(loader.report())
     elif loader.isNotAccounted():
       LOGGER.debug(loader.report())
