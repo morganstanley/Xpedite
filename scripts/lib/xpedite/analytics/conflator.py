@@ -21,7 +21,7 @@ from xpedite.analytics.timeline    import (
 
 from xpedite.report.profile        import Profile
 from xpedite.pmu.event             import TopdownMetrics
-from xpedite.route                 import conflateRoutes
+from xpedite.types.route           import conflateRoutes
 
 class Conflator(object):
   """

@@ -20,7 +20,7 @@ from xpedite.report.histogram        import (
                                        buildBuckets, buildDistribution, Flot
                                      )
 from xpedite.util                    import timeAction, formatHumanReadable
-from xpedite.containers              import ProbeMap
+from xpedite.types.containers        import ProbeMap
 from xpedite.report.profile          import Profiles, Profile
 from xpedite.analytics               import Analytics, CURRENT_RUN
 

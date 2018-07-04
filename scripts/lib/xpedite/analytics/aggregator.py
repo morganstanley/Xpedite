@@ -67,7 +67,7 @@ class RouteConflatingAggregator(object):
     :param ancestry: A node in the tree collection
 
     """
-    from xpedite.route import conflateRoutes
+    from xpedite.types.route import conflateRoutes
     srcRouteMap = self.srcTree.getChildren(ancestry)
     routes = srcRouteMap.keys() if srcRouteMap else []
     routeMap = {}

@@ -22,7 +22,7 @@ class ProbeResolver(object):
     :param app: Handle to the instance of the xpedite app
     :type app: xpedite.profiler.app.XpediteApp
     :param probe: handle to a probe for resolution of file name and line number
-    :type probe: xpedite.probe.AnchoredProbe
+    :type probe: xpedite.types.probe.AnchoredProbe
 
     """
     if self.anchoredProbeMap is None:

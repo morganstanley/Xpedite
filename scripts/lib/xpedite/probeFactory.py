@@ -7,9 +7,9 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 from xpedite.types import InvariantViloation
-from xpedite.probe import AnchoredProbe
-from xpedite.containers import ProbeMap
-from xpedite.route import Route
+from xpedite.types.probe import AnchoredProbe
+from xpedite.types.containers import ProbeMap
+from xpedite.types.route import Route
 
 class ProbeFactory(object):
   """Utility class to intern probe generation"""

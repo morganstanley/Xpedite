@@ -10,9 +10,9 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import time
 import numpy
 import logging
-from collections     import OrderedDict
-from xpedite.probe   import compareProbes
-from xpedite.route   import conflateRoutes
+from collections           import OrderedDict
+from xpedite.types.probe   import compareProbes
+from xpedite.types.route   import conflateRoutes
 
 LOGGER = logging.getLogger(__name__)
 
@@ -338,7 +338,7 @@ class TimelineStats(object):
     :param category: Category of the transacations in this timeline stats
     :type category: str
     :param route: Route taken by the transactions in this timeline stats
-    :type route: xpedite.route.Route
+    :type route: xpedite.types.route.Route
     :param timelineCollection: A collection of timelines for current profile session or a benchmark
     :param deltaSeriesRepo: A repository of delta series collections
     :type deltaSeriesRepo: xpedite.analytics.timeline.DeltaSeriesRepo

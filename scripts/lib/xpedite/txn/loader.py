@@ -9,11 +9,11 @@ Two types of grouping are supported
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.txn             import Transaction
-from xpedite.txn.collection  import TxnCollection
-from xpedite.containers      import ProbeMap
-from xpedite.txn.fragments   import TxnFragments
-from collections             import OrderedDict
+from xpedite.txn                 import Transaction
+from xpedite.txn.collection      import TxnCollection
+from xpedite.types.containers    import ProbeMap
+from xpedite.txn.fragments       import TxnFragments
+from collections                 import OrderedDict
 
 class AbstractTxnLoader(object):
   """Base class for building transactions from counters"""

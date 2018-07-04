@@ -136,7 +136,7 @@ def test_probe_states(capsys):
   for the application
   """
   import cPickle as pickle
-  from xpedite.probe import compareProbes
+  from xpedite.types.probe import compareProbes
   profileInfo = loadProfileInfo(os.path.join(dataDir, 'profileInfo.py'), remote)
   probes = []
   with capsys.disabled():

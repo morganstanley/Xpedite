@@ -93,7 +93,7 @@ class AbstractRuntime(object):
 
     """
 
-    from xpedite.probe  import AnchoredProbe
+    from xpedite.types.probe  import AnchoredProbe
     anchoredProbes = []
     LOGGER.debug('Resolving probes %s', self.formatProbes(probes))
     for probe in probes:
@@ -242,7 +242,7 @@ class Runtime(AbstractRuntime):
     :type reportName: str
     :param benchmarkPaths: List of stored reports from previous runs, for benchmarking (Default value = None)
     :param classifier: Predicate to classify transactions into different categories (Default value = DefaultClassifier()
-    :type classifier: xpedite.classifier.ProbeDataClassifier
+    :type classifier: xpedite.txn.classifier.ProbeDataClassifier
     :param txnFilter: Lambda to filter transactions prior to report generation
     :type txnFilter: callable accepting a txn instance and returns a bool
     :param reportThreshold: Threshold for number of transactions rendered in html reports (Default value = 3000)
