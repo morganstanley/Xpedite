@@ -36,17 +36,21 @@ namespace xpedite { namespace util {
 
       Segment() = default;
 
-      Segment(Pointer begin_, Pointer end_, bool canRead_, bool canWrite_, bool canExec_)
+      Segment(Pointer begin_, Pointer end_, bool canRead_, bool canWrite_, bool canExec_,
+          bool isPositionIndependent_, std::string file_)
         : _begin {begin_}, _end {end_},
-          _protections {protections(canRead_, canWrite_, canExec_)} {
+          _protections {protections(canRead_, canWrite_, canExec_)}, _isPatchable {},
+          _isPositionIndependent {isPositionIndependent_}, _file {std::move(file_)} {
       }
 
-      Pointer begin() const noexcept { return _begin; }
-      Pointer end()   const noexcept { return _end;   }
-
-      bool canRead()  const noexcept { return _protections & PROT_READ;  }
-      bool canWrite() const noexcept { return _protections & PROT_WRITE; }
-      bool canExec()  const noexcept { return _protections & PROT_EXEC;  }
+      Pointer begin()              const noexcept { return _begin;                    }
+      Pointer end()                const noexcept { return _end;                      }
+      bool canRead()               const noexcept { return _protections & PROT_READ;  }
+      bool canWrite()              const noexcept { return _protections & PROT_WRITE; }
+      bool canExec()               const noexcept { return _protections & PROT_EXEC;  }
+      bool isPatchable()           const noexcept { return _isPatchable;              }
+      bool isPositionIndependent() const noexcept { return _isPositionIndependent;    }
+      const std::string& file()    const noexcept { return _file;                     }
 
       explicit operator bool() const noexcept {
         return _begin;
@@ -63,6 +67,7 @@ namespace xpedite { namespace util {
           logError();
           return {};
         }
+        _isPatchable = true;
         return true;
       }
 
@@ -71,6 +76,7 @@ namespace xpedite { namespace util {
           logError();
           return {};
         }
+        _isPatchable = {};
         return true;
       }
 
@@ -92,6 +98,9 @@ namespace xpedite { namespace util {
       Pointer _begin;
       Pointer _end;
       int _protections;
+      bool _isPatchable;
+      bool _isPositionIndependent;
+      std::string _file;
     };
 
     using Segments = std::vector<Segment>;
@@ -103,7 +112,7 @@ namespace xpedite { namespace util {
       return *_instance;
     }
 
-    static Segments load();
+    static Segments load(const std::string& executablePath_);
 
     AddressSpace();
 
@@ -114,8 +123,10 @@ namespace xpedite { namespace util {
 
     private:
 
-    mutable Segments _segments;
     static AddressSpace* _instance;
+
+    std::string _executablePath;
+    mutable Segments _segments;
   };
 
   inline bool operator<(AddressSpace::Segment& lhs_, AddressSpace::Segment& rhs_) {

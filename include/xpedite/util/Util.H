@@ -68,7 +68,7 @@ namespace xpedite { namespace util {
     return tname;
   }
 
-  inline std::string getBinaryPath() {
+  inline std::string getExecutablePath() {
     char buf[4096]; 
     ssize_t len = readlink("/proc/self/exe", buf, 4095);
     if(len == -1) {

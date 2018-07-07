@@ -124,7 +124,7 @@ def generateProfileInfo(binary, profileInfo, remote):
     profiler = os.path.join(os.path.dirname(testDir), 'scripts/bin/xpedite')
     profileInfo.appInfo = os.path.join(app.tempDir, 'xpedite-appinfo.txt')
     generator = ProfileInfoGenerator(
-      app.xpediteApp.getBinaryName(), profileInfo.appHost, os.path.basename(profileInfo.appInfo),
+      app.xpediteApp.executableName, profileInfo.appHost, os.path.basename(profileInfo.appInfo),
       probes, profiler
     )
     generator.generate()

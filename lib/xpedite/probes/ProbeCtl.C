@@ -19,37 +19,6 @@
 
 namespace xpedite { namespace probes {
 
-  void activateProbe(Probe* probe_) {
-    if(!probe_->canActivate()) {
-      return;
-    }
-    util::AddressSpace& asp (util::addressSpace());
-    auto codeSegment = asp.find(probe_->rawCallSite());
-    if(!codeSegment) {
-      XpediteLogCritical << "failed to activate probe - cannot locate segments - code(" << codeSegment << ")" << XpediteLogEnd;
-      return;
-    }
-
-    if(codeSegment->makeWritable()) {
-      probe_->activate();
-      codeSegment->restoreProtections();
-    }
-  }
-
-  void deactivateProbe(Probe* probe_) {
-    if(probe_->rawCallSite() == 0) {
-      return;
-    }
-
-    util::AddressSpace& asp (util::addressSpace());
-    if(auto codeSegment = asp.find(probe_->rawCallSite())) {
-      if(codeSegment->makeWritable()) {
-        probe_->deactivate();
-        codeSegment->restoreProtections();
-      }
-    }
-  }
-
   void probeCtl(Command cmd_, const char* file_, int line_, const char *name_) {
     util::AddressSpace& asp (util::addressSpace());
     std::set<util::AddressSpace::Segment*> segments;
@@ -97,5 +66,6 @@ namespace xpedite { namespace probes {
       break;
     }
   }
+
 }}
 

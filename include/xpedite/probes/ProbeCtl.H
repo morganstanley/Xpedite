@@ -23,8 +23,6 @@ namespace xpedite { namespace probes {
     REPORT  = 3
   };
 
-  void activateProbe(Probe* probe_);
-  void deactivateProbe(Probe* probe_);
   void probeCtl(Command cmd_, const char* file_, int line_, const char* name_);
 
 }}

@@ -79,8 +79,8 @@ namespace xpedite { namespace framework {
   };
 
   Framework::Framework(const char* appInfoPath_, const char* listenerIp_)
-    : _listener {"xpedite", isListenerBlocking, 0, listenerIp_}, _appInfoPath {appInfoPath_},  _appInfoStream {}
-    , _handler {}, _canRun {true} {
+    : _listener {"xpedite", isListenerBlocking, 0, listenerIp_}, _appInfoPath {appInfoPath_},
+      _appInfoStream {}, _handler {}, _canRun {true} {
     try {
       _appInfoStream.open(appInfoPath_, std::ios_base::out);
     }
@@ -95,7 +95,7 @@ namespace xpedite { namespace framework {
     static auto tscHz = util::estimateTscHz();
     _appInfoStream << "pid: " << getpid() << std::endl;
     _appInfoStream << "port: " << _listener.port() << std::endl;
-     _appInfoStream<< "binary: " << xpedite::util::getBinaryPath() << std::endl;
+     _appInfoStream<< "binary: " << xpedite::util::getExecutablePath() << std::endl;
      _appInfoStream<< "tscHz: " << tscHz << std::endl;
     log::logProbes(_appInfoStream, probes::probeList());
     _appInfoStream.close();

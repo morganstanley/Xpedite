@@ -28,7 +28,7 @@ class AppInfo(object):
 
   INDEX_PID = 0
   INDEX_PORT = 1
-  INDEX_BINARY_PATH = 2
+  INDEX_EXECUTABLE_PATH = 2
   INDEX_TSC_HZ = 3
   MIN_RECORD_COUNT = 4
 
@@ -37,8 +37,8 @@ class AppInfo(object):
     self.path = path
     self.pid = None
     self.port = None
-    self.binaryPath = None
-    self.binaryName = None
+    self.executablePath = None
+    self.executableName = None
     self.tscHz = None
     self.probes = None
 
@@ -75,14 +75,14 @@ class AppInfo(object):
           'failed to load port from appinfo from file {} | line {}'.format(self.path, records[self.INDEX_PORT])
         )
 
-      binaryPath = records[self.INDEX_BINARY_PATH].split()
-      if len(binaryPath) >= 2:
-        self.binaryPath = binaryPath[1]
-        self.binaryName = os.path.basename(self.binaryPath)
+      executablePath = records[self.INDEX_EXECUTABLE_PATH].split()
+      if len(executablePath) >= 2:
+        self.executablePath = executablePath[1]
+        self.executableName = os.path.basename(self.executablePath)
       else:
         self.raiseError(
           'failed to load binary path from appinfo from file {} | line {}'.format(
-           self.path, records[self.INDEX_BINARY_PATH]
+           self.path, records[self.INDEX_EXECUTABLE_PATH]
           )
         )
 
