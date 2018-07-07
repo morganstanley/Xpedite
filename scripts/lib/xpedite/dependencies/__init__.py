@@ -35,7 +35,7 @@ class Dependency(object):
     self.isAvailable = None
 
   def __repr__(self):
-    return '{} - required = {}'.format(self.name, self.required)
+    return '{} | minVersion - {} | required = {}'.format(self.name, self.minVersion, self.required)
 
   @staticmethod
   def get(name, required):

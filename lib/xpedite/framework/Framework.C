@@ -70,33 +70,36 @@ namespace xpedite { namespace framework {
       void log();
 
       xpedite::transport::tcp::Listener _listener;
-      std::ofstream _appInfoFile;
+      const char* _appInfoPath;
+      std::ofstream _appInfoStream;
       Handler _handler;
       volatile std::atomic<bool> _canRun;
 
       friend std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept;
   };
 
-  Framework::Framework(const char* appInfoFile_, const char* listenerIp_)
-    : _listener {"xpedite", isListenerBlocking, 0, listenerIp_}, _appInfoFile {}, _handler {}, _canRun {true} {
+  Framework::Framework(const char* appInfoPath_, const char* listenerIp_)
+    : _listener {"xpedite", isListenerBlocking, 0, listenerIp_}, _appInfoPath {appInfoPath_},  _appInfoStream {}
+    , _handler {}, _canRun {true} {
     try {
-      _appInfoFile.open(appInfoFile_ ,std::ios_base::out);
+      _appInfoStream.open(appInfoPath_, std::ios_base::out);
     }
     catch(std::ios_base::failure& e) {
       std::ostringstream stream;
-      stream << "xpedite framework init error - failed to open log " << appInfoFile_ << " for writing - " << e.what();
+      stream << "xpedite framework init error - failed to open log " << appInfoPath_ << " for writing - " << e.what();
       throw std::runtime_error {stream.str()};
     }
   }
 
   void Framework::log() {
     static auto tscHz = util::estimateTscHz();
-    _appInfoFile << "pid: " << getpid() << std::endl;
-    _appInfoFile << "port: " << _listener.port() << std::endl;
-    _appInfoFile << "binary: " << xpedite::util::getBinaryPath() << std::endl;
-    _appInfoFile << "tscHz: " << tscHz << std::endl;
-    log::logProbes(_appInfoFile, probes::probeList());
-    _appInfoFile.close();
+    _appInfoStream << "pid: " << getpid() << std::endl;
+    _appInfoStream << "port: " << _listener.port() << std::endl;
+     _appInfoStream<< "binary: " << xpedite::util::getBinaryPath() << std::endl;
+     _appInfoStream<< "tscHz: " << tscHz << std::endl;
+    log::logProbes(_appInfoStream, probes::probeList());
+    _appInfoStream.close();
+    XpediteLogInfo << "Xpedite app info stored at - " << _appInfoPath << XpediteLogEnd;
   }
 
   static std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept {
