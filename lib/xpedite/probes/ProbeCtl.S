@@ -70,7 +70,11 @@ xpediteRecorderTrampoline:
   mov    %rdx, %rsi
   movq   0x48(%rsp), %rdi
 
+#ifdef XPEDITE_PIE
+  callq *activeXpediteRecorder@plt
+#else 
   callq *activeXpediteRecorder
+#endif
   
   pop  %r11
   pop  %r10
