@@ -10,6 +10,7 @@
 
 #include <xpedite/framework/Framework.H>
 #include <xpedite/framework/Probes.H>
+#include "../util/Args.H"
 #include <stdexcept>
 #include <cstdlib>
 #include <sys/mman.h>
@@ -17,18 +18,21 @@
 
 int txnCount {100};
 
-int main() {
+int main(int argc_, char** argv_) {
+
   if(!xpedite::framework::initialize("xpedite-appinfo.txt", true)) { 
     throw std::runtime_error {"failed to init xpedite"}; 
   }
+
+  auto args = parseArgs(argc_, argv_);
 
   using Type = int;
   using Pointer = int*;
   constexpr int ALIGNMENT = 2048;
 
   Pointer ptr;
-  for(int i=0; i<txnCount; ++i) {
-    XPEDITE_PROBE_SCOPE(Allocation);
+  for(int i=0; i<args.txnCount; ++i) {
+    XPEDITE_TXN_SCOPE(Allocation);
 
     ptr = new Type {};
     delete ptr;

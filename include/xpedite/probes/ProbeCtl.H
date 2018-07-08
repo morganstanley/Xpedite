@@ -99,19 +99,18 @@ extern void* xpediteIdentityTrampolinePtr;
 
 #define XPEDITE_FLAGGED_PROBE(NAME, ATTRIBUTES) XPEDITE_DEFINE_PROBE(#NAME, __FILE__, __LINE__, __PRETTY_FUNCTION__, ATTRIBUTES)
 
-#define XPEDITE_DEFINE_DATA_PROBE(NAME, DATA, FILE, LINE, FUNC, ATTRIBUTES)                     \
-  ({ __uint128_t data = DATA;                                                                   \
-    asm __volatile__ (                                                                          \
-      XPEDITE_PROBE_ASM                                                                         \
-      ::                                                                                        \
-       XPEDITE_DATA_PROBE_TRAMPOLINE                                                            \
-       [Name] "i"(NAME),                                                                        \
-       [File] "i"(FILE),                                                                        \
-       [Func] "i"(FUNC),                                                                        \
-       [Line] "i"(LINE),                                                                        \
-       [Attributes] "i"(ATTR_PIC | ATTRIBUTES | xpedite::probes::CallSiteAttr::CAN_STORE_DATA), \
-       "A"(data)                                                                                \
-      : "flags"); })
+#define XPEDITE_DEFINE_DATA_PROBE(NAME, DATA, FILE, LINE, FUNC, ATTRIBUTES)                   \
+  asm __volatile__ (                                                                          \
+    XPEDITE_PROBE_ASM                                                                         \
+    ::                                                                                        \
+     XPEDITE_DATA_PROBE_TRAMPOLINE                                                            \
+     [Name] "i"(NAME),                                                                        \
+     [File] "i"(FILE),                                                                        \
+     [Func] "i"(FUNC),                                                                        \
+     [Line] "i"(LINE),                                                                        \
+     [Attributes] "i"(ATTR_PIC | ATTRIBUTES | xpedite::probes::CallSiteAttr::CAN_STORE_DATA), \
+     "A"(DATA)                                                                                \
+    : "flags");
 
 #define XPEDITE_FLAGGED_DATA_PROBE(NAME, DATA, ATTRIBUTES)   XPEDITE_DEFINE_DATA_PROBE(#NAME, DATA, __FILE__, __LINE__, __PRETTY_FUNCTION__, ATTRIBUTES)
 
