@@ -79,17 +79,21 @@ target_link_libraries(xpediteDemo xpedite)
 install(TARGETS xpediteDemo DESTINATION "bin")
 
 ######################### targets #############################
-add_executable(allocator test/targets/Allocator.C)
+add_executable(allocatorApp test/targets/AllocatorApp.C)
 SET(ALLOCATOR_LINK_FLAGS "-Wl,-wrap,_Znwm,-wrap,_Znam,-wrap,malloc,-wrap,calloc,-wrap,realloc,-wrap,posix_memalign,-wrap,valloc,-wrap,free,-wrap,mmap,-wrap,munmap")
-set_property(TARGET allocator APPEND_STRING PROPERTY LINK_FLAGS " ${ALLOCATOR_LINK_FLAGS}")
-target_link_libraries(allocator xpedite)
-install(TARGETS allocator DESTINATION "test")
+set_property(TARGET allocatorApp APPEND_STRING PROPERTY LINK_FLAGS " ${ALLOCATOR_LINK_FLAGS}")
+target_link_libraries(allocatorApp xpedite)
+install(TARGETS allocatorApp DESTINATION "test")
 
-add_executable(mtTxnGenerator test/targets/MtTxnGenerator.C)
-target_link_libraries(mtTxnGenerator xpedite)
-install(TARGETS mtTxnGenerator DESTINATION "test")
+add_executable(multiThreadedApp test/targets/MultiThreadedApp.C)
+target_link_libraries(multiThreadedApp xpedite)
+install(TARGETS multiThreadedApp DESTINATION "test")
 
-add_library(pic SHARED test/targets/Pic.C)
+add_executable(dataTxnApp test/targets/DataTxnApp.C)
+target_link_libraries(dataTxnApp xpedite)
+install(TARGETS dataTxnApp DESTINATION "test")
+
+add_library(pic SHARED test/targets/PicLib.C)
 target_compile_definitions(pic PRIVATE XPEDITE_PIC=1)
 install(TARGETS pic DESTINATION "test")
 

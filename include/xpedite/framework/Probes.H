@@ -49,7 +49,7 @@
     xpedite::framework::ProbeData& _data;                                                   \
                                                                                             \
     STURCT_NAME(xpedite::framework::ProbeData& data_)                                       \
-      : _cdata {}, _data (data_) {                                                          \
+      : _data (data_) {                                                                     \
       XPEDITE_DATA_PROBE(CONCAT2(PROBE_NAME, Begin), _data);                                \
     }                                                                                       \
     STURCT_NAME(xpedite::framework::ProbeData&& data_)                                      \
@@ -77,20 +77,24 @@
 
 // Create a probe passing probe name and data to be tied to a sample of the probe as arguments
 // The data can be built-in integral type or an instance of ProbeData
-#define XPEDITE_DATA_PROBE(NAME, DATA) XPEDITE_FLAGGED_DATA_PROBE(NAME, static_cast<__uint128_t>(DATA), 0)
+#define XPEDITE_DATA_PROBE(NAME, ...) XPEDITE_FLAGGED_DATA_PROBE(NAME, \
+    static_cast<__uint128_t>(xpedite::framework::ProbeData(__VA_ARGS__)), 0)
 
-#define XPEDITE_PROBE_SCOPE(NAME) XPEDITE_PROBE_GUARD(XPEDITE_PROBE, XPEDITE_PROBE, NAME, CONCAT3(XpediteGuard, NAME, __LINE__))
+#define XPEDITE_PROBE_SCOPE(NAME) XPEDITE_PROBE_GUARD(XPEDITE_PROBE, XPEDITE_PROBE, NAME, \
+    CONCAT3(XpediteGuard, NAME, __LINE__))
 
 // Creates a scope with two probes marking begin and end of the enclosing scope
 // The probe name and data are passed as arguments
 // The data can be built-in integral type or an instance of ProbeData
-#define XPEDITE_DATA_PROBE_SCOPE(NAME, DATA) XPEDITE_DATA_PROBE_GUARD(CONCAT3(XpediteGuard, NAME, __LINE__), NAME, DATA)
+#define XPEDITE_DATA_PROBE_SCOPE(NAME, ...) XPEDITE_DATA_PROBE_GUARD(CONCAT3(XpediteGuard, NAME, __LINE__), NAME, \
+    xpedite::framework::probeData(__VA_ARGS__))
 
 #define XPEDITE_TXN_BEGIN(NAME) XPEDITE_FLAGGED_PROBE(NAME, xpedite::probes::CallSiteAttr::CAN_BEGIN_TXN)
 
 #define XPEDITE_TXN_SUSPEND(NAME) XPEDITE_FLAGGED_IDENTITY_PROBE(NAME, xpedite::probes::CallSiteAttr::CAN_SUSPEND_TXN)
 
-#define XPEDITE_TXN_RESUME(NAME, TXN_ID) XPEDITE_FLAGGED_DATA_PROBE(NAME, static_cast<__uint128_t>(TXN_ID), xpedite::probes::CallSiteAttr::CAN_RESUME_TXN)
+#define XPEDITE_TXN_RESUME(NAME, TXN_ID) XPEDITE_FLAGGED_DATA_PROBE(NAME, static_cast<__uint128_t>(TXN_ID), \
+    xpedite::probes::CallSiteAttr::CAN_RESUME_TXN)
 
 #define XPEDITE_TXN_END(NAME) XPEDITE_FLAGGED_PROBE(NAME, xpedite::probes::CallSiteAttr::CAN_END_TXN)
 

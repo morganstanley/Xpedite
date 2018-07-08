@@ -32,8 +32,8 @@ extern "C" {
 
     auto isValid = probe_->isValid(callSite_, returnSite_);
     if(XPEDITE_UNLIKELY(config().verbose())) {
-      auto probeStr = probe_->toString();
-      fprintf(stderr, "adding probe %s | status - %s\n", probeStr.c_str(), callSite_ &&  isValid ? "Valid" : "InValid");
+      fprintf(stderr, "adding probe ['%s' at %s:%d] | status - %s\n",
+        probe_->name(), probe_->file(), probe_->line(), probe_->callSite() &&  isValid ? "Valid" : "InValid");
     }
 
     if(!isValid) {
@@ -41,8 +41,8 @@ extern "C" {
     }
 
     if(XPEDITE_UNLIKELY(probe_->_next)) {
-      auto probeStr = probe_->toString();
-      fprintf(stderr, "failed to add probe %s - detected double initialization for probe\n", probeStr.c_str());
+      fprintf(stderr, "failed to add probe ['%s' at %s:%d] - detected double initialization for probe\n",
+        probe_->name(), probe_->file(), probe_->line());
       return;
     }
 
@@ -52,8 +52,7 @@ extern "C" {
   void XPEDITE_CALLBACK xpediteRemoveProbe(xpedite::probes::Probe* probe_) {
     using namespace xpedite::probes;
     if(config().verbose()) {
-      auto probeStr = probe_->toString();
-      fprintf(stderr, "removing probe %s\n", probeStr.c_str());
+      fprintf(stderr, "removing probe ['%s' at %s:%d]\n", probe_->name(), probe_->file(), probe_->line());
     }
     ProbeList::get().remove(probe_);
   }
