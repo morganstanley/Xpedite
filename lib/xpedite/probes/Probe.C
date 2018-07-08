@@ -11,10 +11,51 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <xpedite/probes/Probe.H>
+#include <xpedite/util/AddressSpace.H>
 #include <cstdint>
 #include <sstream>
 
 namespace xpedite { namespace probes {
+
+  util::AddressSpace::Segment* locateSegment(Probe& probe_, const char* action_) noexcept {
+    auto codeSegment = util::addressSpace().find(probe_.rawCallSite());
+    if(!codeSegment) {
+      XpediteLogCritical << "failed to " << action_ << " probe \n\t" << probe_.toString() 
+        << "\n\tCannot locate segment for call site - " << reinterpret_cast<const void*>(probe_.rawCallSite())
+        << XpediteLogEnd;
+      return {};
+    }
+
+    if(!codeSegment->isPatchable()) {
+      XpediteLogCritical << "failed to " << action_ << " probe \n\t" << probe_.toString()
+        << "\n\tCode segment not patchable" << XpediteLogEnd;
+      return {};
+    }
+    return codeSegment; 
+  }
+
+  bool Probe::activate() noexcept {
+    if(auto codeSegment = locateSegment(*this, "activate")) {
+      if(!isPositionIndependent() && codeSegment->isPositionIndependent()) {
+        XpediteLogCritical << "failed to activate probe \n\t" << toString() << "\n\tDetected NON PIC probe in shared object '" 
+          << codeSegment->file() << "'. Rebuild shared object with -DXPEDITE_PIC" << XpediteLogEnd;
+        return {};
+      }
+      _attr.markActive();
+      activateCallSite();
+      return true;
+    }
+    return {};
+  }
+
+  bool Probe::deactivate() noexcept {
+    if(locateSegment(*this, "deactivate")) {
+      _attr.markInActive();
+      deactivateCallSite();
+      return true;
+    }
+    return {};
+  }
 
   void Probe::activateCallSite() noexcept {
     Instructions instructions {_callSite->_quadWord};
@@ -40,16 +81,21 @@ namespace xpedite { namespace probes {
   }
 
   bool Probe::isValid(CallSite callSite_, CallSite returnSite_) const noexcept {
-    auto callSiteLen = offset(returnSite_, callSite_);
-    if(callSiteLen != CAll_SITE_LEN) {
-      fprintf(stderr, "detected probe ['%s' at %s:%d] with invalid call site size (%ld bytes)"
-        " call site addesses (%p) | return addesses (%p)\n", _name, _file, _line, callSiteLen, callSite_, returnSite_);
+    if(!_callSite) {
+      fprintf(stderr, "detected probe ['%s' at %s:%d] with NULL call site address\n", _name, _file, _line);
       return {};
     }
 
     if(!callSite_ || callSite_ != _callSite) {
-      fprintf(stderr, "detected probe ['%s' at %s:%d] with mismatching call site addresses (%p) expected (%p)\n",
+      fprintf(stderr, "detected probe ['%s' at %s:%d] with mismatching call site address (%p) expected (%p)\n",
              _name, _file, _line, callSite_, returnSite_);
+      return {};
+    }
+
+    auto callSiteLen = offset(returnSite_, callSite_);
+    if(callSiteLen != CAll_SITE_LEN) {
+      fprintf(stderr, "detected probe ['%s' at %s:%d] with invalid call site size (%ld bytes)"
+        " call site address (%p) | return address (%p)\n", _name, _file, _line, callSiteLen, callSite_, returnSite_);
       return {};
     }
 

@@ -71,24 +71,9 @@ namespace xpedite { namespace probes {
     bool canEndTxn()             const noexcept { return _attr.canEndTxn();             }
     bool isPositionIndependent() const noexcept { return _attr.isPositionIndependent(); }
 
-    bool canActivate() noexcept {
-      if(!_callSite) {
-        XpediteLogCritical << "cannot activate probe " << this << " - invalid call site detected" << XpediteLogEnd;
-        return {};
-      }
-      return true;
-    }
+    bool activate() noexcept;
 
-    bool activate() noexcept {
-      _attr.markActive();
-      activateCallSite();
-      return true;
-    }
-
-    void deactivate() noexcept {
-      _attr.markInActive();
-      deactivateCallSite();
-    }
+    bool deactivate() noexcept;
 
     bool isValid(CallSite callSite_, CallSite returnSite_) const noexcept;
 

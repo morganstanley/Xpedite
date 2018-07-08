@@ -141,12 +141,11 @@ class AppController(ArgparseController):
     host = self.app.pargs.host if self.app.pargs.host else 'localhost'
     app = XpediteApp('app', host, self.app.pargs.appInfo)
     probes = _loadProbes(app)
-    binaryName = app.getBinaryName()
     absolutePath = os.path.abspath(self.app.pargs.appInfo)
     if(len(probes)):
       profilerPath = os.path.abspath(__file__)
       from xpedite.profiler.profileInfoGenerator import ProfileInfoGenerator
-      ProfileInfoGenerator(binaryName, host, absolutePath, probes, profilerPath).generate()
+      ProfileInfoGenerator(app.executableName, host, absolutePath, probes, profilerPath).generate()
     else:
       LOGGER.error('failed to generate profile_info.py. cannot locate probes in app. Have you instrumented any ?\n')
 

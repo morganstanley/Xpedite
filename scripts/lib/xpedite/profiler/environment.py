@@ -151,14 +151,14 @@ class Environment(object):
     return self.appInfo.port
 
   @property
-  def binaryPath(self):
+  def executablePath(self):
     """Path to the executable file of the target process"""
-    return self.appInfo.binaryPath
+    return self.appInfo.executablePath
 
   @property
-  def binaryName(self):
+  def executableName(self):
     """Name of the executable file of the target process"""
-    return self.appInfo.binaryName
+    return self.appInfo.executableName
 
   @property
   def tscHz(self):
@@ -231,14 +231,6 @@ class Environment(object):
     """
     return self.proxy.getVmStats(self.pid)
 
-  def getBinaryPath(self):
-    """Returns path to the executable file of the target process"""
-    return self.binaryPath
-
-  def getBinaryName(self):
-    """Returns name of the executable file of the target process"""
-    return self.binaryName
-
   def keepAlive(self):
     """Initiates a method call to keep the rpyc connection alive for long profiling sessions"""
     return self.proxy.keepAlive()
@@ -275,7 +267,7 @@ class Environment(object):
     self.appInfo.load()
     LOGGER.debug('resolved target pid to %s', self.pid)
     LOGGER.debug('resolved target port to %s', self.port)
-    LOGGER.debug('resolved binary path to %s', self.binaryPath)
+    LOGGER.debug('resolved binary path to %s', self.executablePath)
 
   def __exit__(self, objType, value, traceback):
     """Disconnects tcp connection to the target app"""

@@ -55,11 +55,7 @@ namespace xpedite { namespace probes { namespace test {
 
   TEST_F(ProbeTest, ProbeActivation) {
     unsigned char buffer[getpagesize()] {};
-    Probe probe {ProbeTest::buildProbe(nullptr)};
-    ASSERT_FALSE(probe.canActivate()) << "falied to detect null call site";
-
-    probe = ProbeTest::buildProbe(buffer);
-    ASSERT_TRUE(probe.canActivate()) << "falied to detect activatable probe";
+    Probe probe {ProbeTest::buildProbe(buffer)};
 
     memcpy(buffer, &FIVE_BYTE_NOP, sizeof(FIVE_BYTE_NOP));
     for(unsigned i=5; i<sizeof(buffer); ++i) {

@@ -26,6 +26,7 @@ namespace xpedite { namespace util {
     os_ << "Segment [" << this << "] {" << 
         std::hex << static_cast<const void*>(_begin) << "-" << static_cast<const void*>(_end) << " | " << std::dec <<
         "can read - " << canRead() << ", can write - " << canWrite() << ", can exec - " << canExec() <<
+        ", is position independent - " << isPositionIndependent() << ", file - " << file() <<
       "}";
   }
 
@@ -35,26 +36,35 @@ namespace xpedite { namespace util {
     return os.str();
   }
 
-  AddressSpace::Segment readSegment(std::string record) {
-    std::string range, flags;
+  AddressSpace::Segment readSegment(std::string record, const std::string& executablePath_) {
+    std::string range, flags, file;
     {
       std::istringstream stream {record};
       if(!(stream >> range >> flags)) { 
         return {};
       }
+      while(stream) {
+        stream >> file;
+      }
+      if(file[0] != '/' && file[0] != '[') {
+        // Anonymous memory segment
+        file = "[anonymous]";
+      }
     }
+
+    bool isPositionIndependent {file  != executablePath_};
     std::istringstream stream {range};
     std::string begin, end;
     if(std::getline(stream, begin, '-') && std::getline(stream, end, ' ')) {
       auto b = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(begin, 0, 16));
       auto e = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(end, 0, 16));
-      return AddressSpace::Segment {b, e, flags[0] == 'r', flags[1] == 'w', flags[2] == 'x'};
+      return AddressSpace::Segment {b, e, flags[0] == 'r', flags[1] == 'w', flags[2] == 'x', isPositionIndependent, file};
     }
     return {};
   }
 
   AddressSpace::AddressSpace()
-    : _segments {load()} {
+    : _executablePath {util::getExecutablePath()}, _segments {load(_executablePath)} {
   }
 
   std::string AddressSpace::toString() const noexcept {
@@ -66,12 +76,12 @@ namespace xpedite { namespace util {
     return os.str();
   }
 
-  AddressSpace::Segments AddressSpace::load() {
+  AddressSpace::Segments AddressSpace::load(const std::string& executablePath_) {
     Segments segments;
     std::ifstream pmap {"/proc/self/maps"};
     std::string line;
     while (std::getline(pmap, line)) {
-      if(auto segment = readSegment(line)) {
+      if(auto segment = readSegment(line, executablePath_)) {
         segments.emplace_back(segment);
       }
     }
