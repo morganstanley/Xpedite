@@ -31,7 +31,13 @@ include_directories(include)
 
 add_library(xpedite STATIC ${lib_files})
 target_link_libraries(xpedite pthread rt dl)
+install(TARGETS xpedite DESTINATION "lib")
 install(DIRECTORY "include/xpedite" DESTINATION "include")
+
+add_library(xpedite-pie STATIC ${lib_files})
+target_link_libraries(xpedite-pie pthread rt dl)
+target_compile_definitions(xpedite-pie PRIVATE XPEDITE_PIE=1)
+install(TARGETS xpedite-pie DESTINATION "lib")
 
 file(GLOB_RECURSE bin_headers bin/*.H)
 file(GLOB_RECURSE bin_source bin/*.C)

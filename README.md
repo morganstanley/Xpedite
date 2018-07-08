@@ -49,7 +49,7 @@ $ install.sh    # creates a virtual environment and installs xpedite python depe
 ```
 
 The build process will produce a static library, `libxpedite.a`, which can be linked into a C++ executable 
-(if you want to use xpedite in a position independent code, the build produces a different static library to use, `libxpedite-pic.a`).
+(if you want to use xpedite in a position independent executable, the build produces a different static library to use, `libxpedite-pie.a`).
 
 In addition, the build process will produce a demo program, `xpediteDemo`. This program is a hello world example of - How to profile a c++ program with xpedite.
   

@@ -77,7 +77,11 @@ xpediteDataProbeRecorderTrampoline:
   movq   0x48(%rsp), %rdi
   movq   %r8, %rdx
 
+#ifdef XPEDITE_PIE
+  callq *activeXpediteDataProbeRecorder@plt
+#else 
   callq *activeXpediteDataProbeRecorder
+#endif
 
   pop  %r11
   pop  %r10

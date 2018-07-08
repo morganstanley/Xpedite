@@ -62,7 +62,11 @@ xpediteIdentityRecorderTrampoline:
   movq   0x38(%rsp), %rdi
 
   push  %rdx
+#ifdef XPEDITE_PIE
+  callq *activeXpediteRecorder@plt
+#else 
   callq *activeXpediteRecorder
+#endif
   pop  %rdx
 
   pop  %r11
