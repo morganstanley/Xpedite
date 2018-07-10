@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Morgan-Stanley/Xpedite.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/Xpedite)
+
 # Morgan Stanley Performance Toolkit
 
 Welcome to the Morgan Stanley Performance Toolkit (MSPerf).
@@ -506,4 +508,3 @@ Thanks to **Brooke Elizabeth Cantwell**, **Dhruv Shekhawat** for jupyter integra
   
 
 Special thanks to **Dileep Perchani** and **Kevin Elliott** for leading Xpedite open source initiative.
-  
