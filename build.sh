@@ -49,4 +49,6 @@ mkdir -p build
 pushd build
 cmake ${OPTIONS} .. "$@"
 make -j 20 install DESTDIR=../install
+RC=$?
 popd 
+exit $RC
