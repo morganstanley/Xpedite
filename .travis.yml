@@ -1,0 +1,14 @@
+language: cpp
+sudo: required
+dist: xenial
+compiler:
+- gcc
+
+branches:
+  only:
+  - master
+
+script:
+  - ./build.sh
+  - ./install.sh
+  - ./test/runTest.sh 

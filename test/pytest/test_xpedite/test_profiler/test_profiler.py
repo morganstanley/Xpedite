@@ -24,7 +24,7 @@ dataDir = os.path.join(testDir, '..', 'data')
 remote = None
 
 DEMO_BINARY = os.path.join(os.path.dirname(__file__), '../../../..', 'install/bin/xpediteDemo')
-ALLOCATOR_BINARY = os.path.join(os.path.dirname(__file__), '../../../..', 'install/test/allocator')
+ALLOCATOR_BINARY = os.path.join(os.path.dirname(__file__), '../../../..', 'install/test/allocatorApp')
 
 LOGGER = logging.getLogger()
 
