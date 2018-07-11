@@ -4,8 +4,7 @@ Module to render contents of profileInfo as a html report.
 Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 """
 
-from html               import HTML
-from xpedite.report     import TABLE_ENV, TD_KEY, formatList
+from xpedite.report.markup     import HTML, TABLE_ENV, TD_KEY, formatList
 
 class ProfileInfoReportBuilder(object):
   """Builds markup for rendering profile info"""

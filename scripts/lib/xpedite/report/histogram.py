@@ -10,25 +10,28 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import bisect
 
-class Flot(object):
+class Histogram(object):
   """Stores data and attributes needed for creating histograms"""
 
-  def __init__(self, title, description, data, options):
+  def __init__(self, title, description, data, options, statistics=None, width=1000, height=500, checked=None):
+    """
+    Constructs a latency distribution visaulization histogram
+
+    :param name: Category of the histogram
+    :param description: Description of the histogram
+    :param width: Width of the histogram (Default value = 1000)
+    :param height: Height of the histogram (Default value = 500)
+
+    """
+
     self.title = title
     self.description = description
     self.data = data
     self.options = options
-
-  def attach(self, result):
-    """
-    Injects the data and attributed for histogram generation to profile result
-
-    :param result: Object storing results for current profile session
-
-    """
-    result.flot(self.title, self.description, self.data, options=self.options)
-
-
+    self.statistics = statistics
+    self.width = width
+    self.height = height
+    self.checked = checked
 
 def formatLegend(prefix, minimum, maximum, mean, median, percentile95, percentile99):
   """
@@ -49,14 +52,14 @@ def formatLegend(prefix, minimum, maximum, mean, median, percentile95, percentil
   ).format(prefix, minimum, maximum, mean, median, percentile95, percentile99)
   return legend
 
-def buildFlotHistograms(ticks, series, stack=False):
+def buildHistograms(ticks, series, stack=False):
   """
   Builds options and data series for histograms
 
   :param ticks: The values to plot on the x axis
   :param series: The collection of data points to build distribution from
   :param stack: Controls whether to stack the bars or offset them (Default value = False)
-  :returns: the Flot options and the data series ready to be plotted
+  :returns: the histogram options and the data series ready to be plotted
 
   """
   totalWidth = 0.8

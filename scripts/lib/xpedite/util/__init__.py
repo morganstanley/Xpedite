@@ -63,6 +63,10 @@ def shell(cmd, cwd=None, closeFds=True):
   stdout, stderr = process.communicate()
   return (process.returncode, stdout, stderr)
 
+def makeUniqueId():
+  """Returns an unique identifier for css selector"""
+  return str(time.time()).replace('.', '_')
+
 def mkTempFilePath():
   """Creates a temporary directory in the file system"""
   fd, tempPath = tempfile.mkstemp()

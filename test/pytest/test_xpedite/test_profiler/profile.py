@@ -39,9 +39,9 @@ def generateProfiles(app, profileInfo):
   """
 
   from xpedite.jupyter.result    import Result
-  from xpedite.profiler import profile
+  from xpedite.profiler import Profiler
   result = Result()
-  profiler = profile(
+  profiler = Profiler.profile(
     app=app, profileInfo=profileInfo, reportName='XpediteTest', reportPath=None,
     dryRun=app.dryRun, result=result, interactive=False, heartbeatInterval=1
   )

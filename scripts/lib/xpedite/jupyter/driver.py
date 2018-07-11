@@ -130,7 +130,7 @@ def buildReportCells(nb, result, dataFilePath, profiles):
     # fill notebook cells with flot + report links code
     try:
       cellCode = flotCode.format(
-        name=cell.flot.name, description=cell.flot.description,
+        name=cell.flot.title, description=cell.flot.description,
         cellNum=cellNum, reportNum=reportNum + 1, linksCode=linksCode
       )
     except TypeError:
@@ -246,11 +246,11 @@ class Driver(object):
     dryRun=False, duration=None, heartbeatInterval=120, cprofile=None):
     """Runs a profile session and renders results in a jupyter shell"""
     from xpedite.jupyter.result import Result
-    from xpedite.profiler import profile
+    from xpedite.profiler import Profiler
     notebookPath, dataFilePath, profileInfo.homeDir = validatePath(profileInfo.homeDir, reportName)
     with app:
       result = Result()
-      profiler = profile(
+      profiler = Profiler.profile(
         app, profileInfo, reportName, reportPath, dryRun, result, heartbeatInterval=heartbeatInterval,
         duration=duration, cprofile=cprofile
       )

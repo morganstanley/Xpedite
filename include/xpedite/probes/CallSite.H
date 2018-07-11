@@ -15,6 +15,10 @@
 
 namespace xpedite { namespace probes {
 
+  namespace test {
+    class ProbeTest;
+  }
+
   class Probe;
 
   static constexpr unsigned CAll_SITE_LEN {5};
@@ -26,6 +30,8 @@ namespace xpedite { namespace probes {
 
   class CallSiteAttr
   {
+    friend class test::ProbeTest;
+
     uint32_t _attr;
 
     public:

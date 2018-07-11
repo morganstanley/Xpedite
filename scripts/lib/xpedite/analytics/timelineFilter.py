@@ -7,7 +7,7 @@ by filtering the timeline in source based on a predicate.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from xpedite.report.profile import Profiles, Profile
+from xpedite.profiler.profile import Profiles, Profile
 
 class TimelineFilter(object):
   """Implements logic to select a subset of timelines matching a filter criteria"""

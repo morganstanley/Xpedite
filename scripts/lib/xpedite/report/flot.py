@@ -13,8 +13,8 @@ with all the performance couters.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from html              import HTML
-from xpedite.report    import TIME_POINT_STATS_TITLE, SELECTOR, makeUniqueId
+from xpedite.report.markup    import HTML, TIME_POINT_STATS_TITLE, SELECTOR
+from xpedite.util             import makeUniqueId
 import json
 
 FLOT_JS_BEGIN_FMT = """

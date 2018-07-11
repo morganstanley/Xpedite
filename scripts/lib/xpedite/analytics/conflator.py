@@ -19,7 +19,7 @@ from xpedite.analytics.timeline    import (
                                      TimelineStats, CounterMap
                                    )
 
-from xpedite.report.profile        import Profile
+from xpedite.profiler.profile      import Profile
 from xpedite.pmu.event             import TopdownMetrics
 from xpedite.types.route           import conflateRoutes
 

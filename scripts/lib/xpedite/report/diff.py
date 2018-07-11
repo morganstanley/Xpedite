@@ -18,7 +18,7 @@ class DiffBuilder(object):
     """
     Builds a title for the transaction diff table
     """
-    from xpedite.report import TIME_POINT_STATS_TITLE
+    from xpedite.report.markup import TIME_POINT_STATS_TITLE
     title = 'Transaction diff\ntxn #{} vs txn #{}'.format(lhs, rhs)
     element = HTML().div(klass=TIME_POINT_STATS_TITLE)
     element.h3(title)
@@ -59,7 +59,7 @@ class DiffBuilder(object):
     :type profiles: xpedite.report.profile.Profiles
 
     """
-    from xpedite.report          import (
+    from xpedite.report.markup  import (
                                    DURATION_FORMAT, DURATION_FORMAT_2,
                                    DELTA_FORMAT_1, DELTA_FORMAT_2, TD_KEY,
                                    TABLE_SUMMARY, TRIVIAL_STATS_TABLE,

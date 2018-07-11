@@ -6,115 +6,57 @@ This package provides modules to build reports from timeline and delta series ob
 Author: Manikandan Dhamodharan, Morgan Stanley
 
 """
-import os
 import time
 import xpedite.util
-from xpedite.dependencies import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.HTML, Package.Pygments)
-from html import HTML # pylint: disable=wrong-import-position
+import logging
 
-TABLE_ENV = 'tableEnv tablesorter'
-TABLE_SUMMARY = 'tableSummary tablesorter'
-TABLE_REPORT_CONTAINER = 'tableReportContainer'
-TABLE_REPORT = 'tableReport tablesorter'
-TABLE_ROW_NO = 'tableRowNo'
-TABLE_ROW_DATA = 'tableRowData'
-TABLE_PMU = 'pmu'
-TD_PMU_NAME = 'pmn'
-TD_PMU_VALUE = 'pmv'
-TH_DEBUG = 'thDebug'
-TD_DEBUG = 'tdDebug'
-TD_KEY = 'tdKey'
-TD_END = 'tdEnd'
-TIME_POINT_STATS_TITLE = 'timePointStatsTitle'
-TRIVIAL_STATS_TABLE = 'trivialStatsTable'
-SELECTOR = 'selector'
-TIME_POINT_STATS = 'timePointStats-{}'
-POSITIVE_DELTA = 'positiveDelta'
-NEUTRAL_DELTA = 'neutralDelta'
-NEGATIVE_DELTA = 'negativeDelta'
+LOGGER = logging.getLogger(__name__)
 
-DURATION_FORMAT = '{0:4,.3f}'
-DURATION_FORMAT_1 = '{1:4,.3f}'
-DURATION_FORMAT_2 = '{2:4,.3f}'
-DELTA_FORMAT_1 = '{0:4,.0f}'
-DELTA_FORMAT_2 = '{2:4,.0f}'
+class Report(object):
+  """Class to store a histogram with associated constituent reports"""
 
-HTML_BEGIN_FMT = """
-<!doctype html>
-<html>
-<head>
-  <style> {style} </style>
-  <script> {jquery} </script>
-  <script> {bootstrap} </script>
-  <script> {tipsy} </script>
-  <script> {tablesorter} </script>
-  <script> {flot} </script>
-  <script> {xpedite} </script>
-  <script>
-  $(document).ready(function () {{
-    jQuery('table.tableReport').tablesorter();
-  }});
-  </script>
-</head>
-<body id="xpedite-report">
-"""
-HTML_END = '</body></html>'
+  class Constituent(object):
+    """Class to store detailed latency statistics for constituent reports"""
 
-def loadFile(path):
+    def __init__(self, name, title, description, report):
+      self.name = name
+      self.title = title
+      self.description = description
+      self.report = report
+
+  def __init__(self, category, histogram):
+    self.category = category
+    self.histogram = histogram
+    self.constituents = []
+
+  def addConstituent(self, name, title, description, report):
+    """Adds a constituent report with detailed latency statistics"""
+    self.constituents.append(Report.Constituent(name, title, description, report))
+
+def generate(profiles, histograms, resultOrder, reportThreshold):
   """
-  Loads contents of the given file
+  Generates latency breakup reports for a list of profiles
 
-  :param path: Path of the file to load
+  :param profiles: Profile data for the current profile session
+  :param histograms: Latency distribuion histograms for each category/route combination
+  :param resultOrder: Sort order of transactions in latency constituent reports
+  :param reportThreshold: Threshold for number of transactions rendered in html reports.
 
   """
-  with open(path) as fileHandle:
-    return fileHandle.read()
-
-def formatList(inputList):
-  """
-  Formats a list of items to html unordered list
-
-  :param inputList: list of items to be formatted
-
-  """
-  report = HTML()
-  htmlList = report.ul
-  for val in inputList:
-    val = str(val)
-    htmlList.li(val)
-  return report
-
-JS_PATH = os.path.join(os.path.dirname(__file__), '../../../jupyter/js')
-STYLE_PATH = os.path.join(os.path.dirname(__file__), '../../../jupyter/config/custom')
-STATIC_REPORT_STYLE = loadFile(os.path.join(STYLE_PATH, 'static.css'))
-XPEDITE_STYLE = loadFile(os.path.join(STYLE_PATH, 'xpedite.css'))
-CODE_STYLE = loadFile(os.path.join(STYLE_PATH, 'code.css'))
-XPEDITE = loadFile(os.path.join(JS_PATH, 'xpedite.js'))
-JQUERY = loadFile(os.path.join(JS_PATH, 'jquery-3.2.1.min.js'))
-BOOTSTRAP = loadFile(os.path.join(JS_PATH, 'bootstrap.min.js'))
-TIPSY = loadFile(os.path.join(JS_PATH, 'jquery.tipsy.js'))
-TABLE_SORTER = loadFile(os.path.join(JS_PATH, 'jquery.tablesorter.min.js'))
-FLOT = loadFile(os.path.join(JS_PATH, 'jquery.flot.min.js'))
-VIZ = loadFile(os.path.join(JS_PATH, 'viz.v1.js'))
-
-STYLE = STATIC_REPORT_STYLE + XPEDITE_STYLE + CODE_STYLE
-
-HTML_BEGIN = HTML_BEGIN_FMT.format(
-  style=STYLE, xpedite=XPEDITE, tipsy=TIPSY, tablesorter=TABLE_SORTER,
-  flot=FLOT, jquery=JQUERY, bootstrap=BOOTSTRAP
-)
-
-ERROR_TEXT = '<div class="errorText">{}</div>'
-
-def getDeltaMarkup(delta):
-  """Returns sign of delta for elapsed tsc or pmc value"""
-  return '+' if delta > 0 else ''
-
-def getDeltaType(delta):
-  """Returns type of delta for elapsed tsc or pmc value"""
-  return POSITIVE_DELTA if delta > .05 else (NEGATIVE_DELTA if delta < -.05 else NEUTRAL_DELTA)
-
-def makeUniqueId():
-  """Returns an unique identifier for css selector"""
-  return str(time.time()).replace('.', '_')
+  from xpedite.report.reportbuilder    import ReportBuilder
+  reports = {category : Report(category, histogram) for category, histogram in histograms.iteritems()}
+  for profile in profiles:
+    report = reports.get(profile.category, None)
+    if report:
+      begin = time.time()
+      reportTitle = '{} latency statistics [{} transactions]'.format(profile.name, len(profile.current))
+      LOGGER.info('generating report %s -> ', reportTitle)
+      constituentReport = ReportBuilder().buildReport(profile.current, profile.benchmarks, profile.reportProbes
+          , profile.name, resultOrder, reportThreshold)
+      reportSize = xpedite.util.formatHumanReadable(len(constituentReport))
+      reportTitle = '{} - ({})'.format(reportTitle, reportSize)
+      description = '\n\t{}\n\t'.format(reportTitle)
+      elapsed = time.time() - begin
+      LOGGER.completed('completed %s in %0.2f sec.', reportSize, elapsed)
+      report.addConstituent(profile.name, reportTitle, description, constituentReport)
+  return reports.values()

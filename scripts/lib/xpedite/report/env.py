@@ -8,11 +8,10 @@ This module creates a html report with the following details
 Author: Manikandan Dhamodharan, Morgan Stanley
 
 """
-from html           import HTML
 import getpass
-from time           import gmtime, strftime
-from xpedite.report import TABLE_ENV, TD_KEY
-from xpedite.report import HTML_BEGIN, HTML_END
+from time                  import gmtime, strftime
+from xpedite.report.markup import TABLE_ENV, TD_KEY
+from xpedite.report.markup import HTML, HTML_BEGIN, HTML_END
 
 class EnvReportBuilder(object):
   """Builds html report with details about profiling environment"""
