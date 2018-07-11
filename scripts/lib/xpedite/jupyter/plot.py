@@ -88,7 +88,8 @@ def buildPmcJson(timeline, pmcBarScale):
 def buildPmcPlot(timeline):
   """Builds a visaulizaton for correlating pmu metrics with sections of code"""
   from xpedite.jupyter.templates import loadTxnPmcMarkup
-  from xpedite.report import makeUniqueId, VIZ
+  from xpedite.util import makeUniqueId
+  from xpedite.report.markup import VIZ
   try:
     pmcCount = len(timeline[0].pmcNames) if timeline[0].pmcNames else 0
     if pmcCount <= 0:

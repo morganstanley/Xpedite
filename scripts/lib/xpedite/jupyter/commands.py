@@ -16,7 +16,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import logging
 from IPython.core.display      import display, HTML
 from xpedite.jupyter.context   import context
-from xpedite.report            import ERROR_TEXT
+from xpedite.report.markup     import ERROR_TEXT
 
 LOGGER = logging.getLogger(__name__)
 
@@ -219,7 +219,7 @@ class Txns(object):
     return self.profile.current.timelineCollection[i]
 
   def __repr__(self):
-    from xpedite.report import makeUniqueId
+    from xpedite.util import makeUniqueId
     from xpedite.report.reportbuilder   import ReportBuilder
     from xpedite.types                  import ResultOrder
     if self.profile:

@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <xpedite/probes/Probe.H>
+#include <xpedite/util/AddressSpace.H>
 #include <unistd.h>
 #include <gtest/gtest.h>
 
@@ -34,6 +35,10 @@ namespace xpedite { namespace probes { namespace test {
       probe._id = 0;
       probe._attr = {};
       return probe;
+    }
+
+    void markPositionIndependent(Probe& probe_) {
+      probe_._attr._attr = CallSiteAttr::IS_POSITION_INDEPENDENT;
     }
   };
 
@@ -70,14 +75,19 @@ namespace xpedite { namespace probes { namespace test {
     ASSERT_FALSE(recorderCtl().activateRecorder(1024)) << "falied to detect invalid recorder";
     recorderCtl().enableGenericPmc(4);
     ASSERT_TRUE(recorderCtl().activeRecorderIndex() == PMU_RECORDER_INDEX) << "detected failure to activate recorder";
-    ASSERT_TRUE(probe.activate()) << "falied to detect activatable probe";
-    ASSERT_TRUE(probe.isActive()) << "detected failure to activate probe";
-    ASSERT_EQ(buffer[0], OPCODE_CALL) << "detected invalid opcode at call site for active probe";
+    ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "falied to detect valid probe";
 
-    uint32_t offset {};
-    memcpy(&offset, buffer+1, sizeof(offset));
-    uint32_t expectedOffset = reinterpret_cast<unsigned char*>(xpediteRecorderTrampoline) - buffer - CAll_SITE_LEN;
-    ASSERT_EQ(offset, expectedOffset) << "detected invalid offset at call site for active probe";
+    ASSERT_FALSE(probe.activate()) << "detected failure to validate unpatchable segment";
+    auto codeSegment = util::addressSpace().find(probe.rawCallSite());
+    ASSERT_NE(codeSegment, nullptr) << "falied to locate segment for probe";
+    ASSERT_TRUE(codeSegment->makeWritable()) << "failed to make segment writable";
+
+    ASSERT_FALSE(probe.activate()) << "detected failure to validate probe in PIC segment";
+    markPositionIndependent(probe);
+    ASSERT_TRUE(probe.activate()) << "detected failure to activate valid probe";
+
+    ASSERT_TRUE(probe.isActive()) << "detected failure to activate probe";
+    ASSERT_EQ(memcmp(buffer, PIC_CALL, sizeof(PIC_CALL)), 0) << "detected invalid offset at call site for active probe";
     for(unsigned i=5; i<sizeof(buffer); ++i) {
       ASSERT_EQ(buffer[i], i % 256) << "detected corruption of memory";
     }

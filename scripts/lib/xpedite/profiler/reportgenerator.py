@@ -4,22 +4,20 @@ Report generator
 This module provides the following report generation features
   1. Load and categorize transactions
   2. Build latency distribution histograms for each category of transactions
-  3. Build html report with (stats, flots, transaction list) for each category, route combination
+  3. Build html report with (stats, histograms, transaction list) for each category, route combination
   4. Generate environment reports
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
-
-import time
 import numpy
 import logging
-from xpedite.report.reportbuilder    import ReportBuilder
+import xpedite.report
 from xpedite.report.env              import EnvReportBuilder
 from xpedite.report.histogram        import (
-                                       formatLegend, formatBuckets, buildFlotHistograms,
-                                       buildBuckets, buildDistribution, Flot
+                                       formatLegend, formatBuckets, buildHistograms,
+                                       buildBuckets, buildDistribution, Histogram
                                      )
-from xpedite.util                    import timeAction, formatHumanReadable
+from xpedite.util                    import timeAction
 from xpedite.analytics               import Analytics, CURRENT_RUN
 
 LOGGER = logging.getLogger(__name__)
@@ -37,7 +35,7 @@ class ReportGenerator(object):
     self.reportName = reportName
     self.analytics = Analytics()
 
-  def generateFlots(self, repo, classifier, runId):
+  def generateHistograms(self, repo, classifier, runId):
     """
     Generates latency distribuion histograms for each category/route combination
 
@@ -47,7 +45,7 @@ class ReportGenerator(object):
     :param runId: Epoch time stamp to uniquely identify a profiling session
 
     """
-    flots = {}
+    histograms = {}
     txnCollections = [repo.getCurrent()] + repo.getBenchmarks().values()
     if not txnCollections[0].isCurrent() or txnCollections[0].name != CURRENT_RUN:
       from xpedite.types import InvariantViloation
@@ -61,7 +59,7 @@ class ReportGenerator(object):
     for category, elaspsedTimeBundle in elapsedTimeBundles.iteritems():
       buckets = buildBuckets(elaspsedTimeBundle[0], 35)
       if not buckets:
-        LOGGER.debug('category %s has not enough data points to generate flot', category)
+        LOGGER.debug('category %s has not enough data points to generate histogram', category)
         continue
 
       LOGGER.debug('Buckets:\n%s', buckets)
@@ -92,11 +90,11 @@ class ReportGenerator(object):
           )
 
       buckets = formatBuckets(buckets)
-      options, data = buildFlotHistograms(buckets, yaxis, False)
+      options, data = buildHistograms(buckets, yaxis, False)
       title = '{} - latency distribution benchmark'.format(category)
       description = 'Latency distribution (current run ID #{} vs chosen benchmarks)'.format(runId)
-      flots.update({category: Flot(title, description, data, options)})
-    return flots
+      histograms.update({category: Histogram(title, description, data, options)})
+    return histograms
 
   @staticmethod
   def generateEnvironmentReport(app, result, repo, resultOrder, classifier, txnFilter, benchmarkPaths):
@@ -120,59 +118,7 @@ class ReportGenerator(object):
     """
     envReportTitle = 'Test Environment Report'
     if envReport:
-      result.attachXpediteReport(envReportTitle, envReportTitle, description, envReport)
-
-  @staticmethod
-  def addTestResult(reportName, result, timelineStats, benchmarkTlsMap):
-    """
-    Adds report on perfromance regressions to profile results
-
-    :param reportName: Name of the generated report
-    :param result: Handle to gather and store profiling results
-    :param timelineStats: Time line statistics for the current run
-    :param benchmarkTlsMap: Time line statistics collection for benchmarks
-
-    """
-    currentRunMedian = timelineStats.getTotalDurationSeries().getMedian()
-    for benchmarkName, benchmarkTls in benchmarkTlsMap.iteritems():
-      benchmarkMedian = benchmarkTls.getTotalDurationSeries().getMedian()
-      threshold = max(benchmarkMedian * .05, .9)
-      result.le(benchmarkMedian + threshold)(
-        currentRunMedian, '{} Median latency threshold for current run vs benchmark {}'.format(
-          reportName, benchmarkName
-        )
-      )
-
-  def generateLatencyReports(self, profiles, flots, result, resultOrder, reportThreshold):
-    """
-    Generates latency breakup reports for a list of profiles
-
-    :param profiles: Profile data for the current profile session
-    :param flots: Latency distribuion histograms for each category/route combination
-    :param result: Handle to gather and store profiling results
-    :param resultOrder: Sort order of transactions in latency constituent reports
-    :param reportThreshold: Threshold for number of transactions rendered in html reports.
-
-    """
-    flotTracker = set()
-    for profile in profiles:
-      begin = time.time()
-      reportTitle = '{} latency statistics [{} transactions]'.format(profile.name, len(profile.current))
-      LOGGER.info('generating report %s -> ', reportTitle)
-
-      category = profile.category
-      if category not in flotTracker and category in flots:
-        flots[category].attach(result)
-        flotTracker.add(category)
-      self.addTestResult(profile.name, result, profile.current, profile.benchmarks)
-      report = ReportBuilder().buildReport(profile.current, profile.benchmarks, profile.reportProbes, profile.name,
-        resultOrder, reportThreshold)
-      reportSize = formatHumanReadable(len(report))
-      reportTitle = '{} - ({})'.format(reportTitle, reportSize)
-      description = '\n\t{}\n\t'.format(reportTitle)
-      elapsed = time.time() - begin
-      LOGGER.completed('completed %s in %0.2f sec.', reportSize, elapsed)
-      result.attachXpediteReport(profile.name, reportTitle, description, report)
+      result.attachEnvReport(envReportTitle, description, envReport)
 
   def generateReport(self, app, repo, result, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths):
     """
@@ -192,12 +138,14 @@ class ReportGenerator(object):
     try:
       if txnFilter:
         self.analytics.filterTxns(repo, txnFilter)
-      flots = self.generateFlots(repo, classifier, app.runId)
+      histograms = self.generateHistograms(repo, classifier, app.runId)
       profiles = self.analytics.generateProfiles(self.reportName, repo, classifier)
-      self.generateLatencyReports(profiles, flots, result, resultOrder, reportThreshold)
+      reports = xpedite.report.generate(profiles, histograms, resultOrder, reportThreshold)
+      for report in reports:
+        result.attach(report)
       self.generateEnvironmentReport(app, result, repo, resultOrder, classifier, txnFilter, benchmarkPaths)
       LOGGER.info('\nTo recreate the report run - "xpedite report -p profileInfo.py -r %s"\n', app.runId)
-      result.commitXpediteReport(app, profiles, self.reportName)
+      result.commit(app, profiles, self.reportName)
       return profiles
     except Exception as ex:
       LOGGER.exception('failed to generate report')

@@ -14,13 +14,14 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import time
 import logging
-from xpedite.report         import (
+from xpedite.report.markup  import (
                               TABLE_REPORT_CONTAINER, TABLE_REPORT,
                               TABLE_ROW_NO, TABLE_ROW_DATA, TABLE_PMU,
                               TD_PMU_NAME, TD_PMU_VALUE, TH_DEBUG,
                               TD_DEBUG, TD_KEY, TD_END, DURATION_FORMAT,
-                              HTML, HTML_BEGIN, HTML_END, makeUniqueId
+                              HTML, HTML_BEGIN, HTML_END
                             )
+from xpedite.util           import makeUniqueId
 from xpedite.report.flot    import FlotBuilder
 from xpedite.report.stats   import StatsBuilder
 from xpedite.types          import ResultOrder

@@ -12,13 +12,12 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import os
-from xpedite.report                import loadFile
-from html                          import HTML
-from xpedite.report                import (
-                                     TIME_POINT_STATS_TITLE, TRIVIAL_STATS_TABLE,
+from xpedite.report.markup         import (
+                                     HTML, TIME_POINT_STATS_TITLE, TRIVIAL_STATS_TABLE,
                                      TABLE_SUMMARY, TIME_POINT_STATS, TD_KEY, SELECTOR,
-                                     DURATION_FORMAT, DURATION_FORMAT_2, makeUniqueId
+                                     DURATION_FORMAT, DURATION_FORMAT_2, loadFile
                                    )
+from xpedite.util                  import makeUniqueId
 from xpedite.analytics.timeline    import TSC_EVENT_NAME
 from xpedite.report.tabs           import (
                                      TAB_HEADER_FMT, TAB_BODY_FMT, TAB_BODY_PREFIX,
@@ -116,7 +115,7 @@ class StatsBuilder(object):
     :param style: Css inline style attributes for this table (Default value = '')
 
     """
-    from xpedite.report import getDeltaMarkup, getDeltaType
+    from xpedite.report.markup import getDeltaMarkup, getDeltaType
     klass = '{} {}'.format(TABLE_SUMMARY, klass)
     table = HTML().table(border='1', klass=klass, style=style)
     self.buildStatsTableHeader(table)

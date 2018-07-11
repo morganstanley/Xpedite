@@ -132,7 +132,7 @@ class Analytics(object):
     :param classifier: Predicate to classify transactions into different categories
 
     """
-    from xpedite.report.profile import Profiles, Profile
+    from xpedite.profiler.profile import Profiles, Profile
     txnTree, benchmarkCompositeTree = self.buildTxnTree(txnRepo, classifier)
     profiles = Profiles(txnRepo)
 

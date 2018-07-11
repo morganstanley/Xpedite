@@ -102,6 +102,24 @@ while true ; do
   esac
 done
 
+RC=0
+
+TEST_APP=${TEST_DIR}/../install/test/testXpedite
+if [ -x ${TEST_APP} ]; then
+  echo 'Failed to locate demo binary. Have you built xpedite gtests ?' > /dev/stderr
+
+  FILTER=''
+  if [ ! "${PMC}" ]; then
+    FILTER=--gtest_filter="-PMC*Test.*"
+  fi
+
+  ${TEST_APP} $FILTER
+  if [ $? -ne 0 ]; then
+    echo detected failure of one or more gtests
+    RC=`expr $RC + 1`
+  fi
+fi
+
 if [ -d ${TEST_DIR}/../install/runtime/bin ]; then
   echo detected virtual environment. resolving python dependencies from ${TEST_DIR}/../install/runtime/bin
   export PATH=${TEST_DIR}/../install/runtime/bin:${PATH}
@@ -109,6 +127,10 @@ if [ -d ${TEST_DIR}/../install/runtime/bin ]; then
 fi
 
 pylint --rcfile ${XPEDITE_DIR}/../.pylintrc ${XPEDITE_DIR}/xpedite
+if [ $? -ne 0 ]; then
+  echo detected pylint violations
+  RC=`expr $RC + 1`
+fi
 
 if [ "${PMC}" ]; then
   # run test with performance counters
@@ -118,4 +140,9 @@ else
   PYTHONPATH=${XPEDITE_DIR} pytest ${TEST_NAME} -v ${APP_HOST_FLAG} -m 'not pmc'
 fi
 
-exit $?
+if [ $? -ne 0 ]; then
+  echo detected one or more pytest failures
+  RC=`expr $RC + 1`
+fi
+
+exit $RC
