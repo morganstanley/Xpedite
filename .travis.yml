@@ -12,3 +12,7 @@ script:
   - ./build.sh
   - ./install.sh
   - ./test/runTest.sh 
+
+after_success:
+  - PATH=./install/runtime/bin:${PATH} python -m pip install codecov
+  - PATH=./install/runtime/bin:${PATH} codecov
