@@ -36,6 +36,8 @@ namespace xpedite { namespace util {
     return os.str();
   }
 
+  constexpr char* anonymousSegment {"[anonymous]"};
+
   AddressSpace::Segment readSegment(std::string record, const std::string& executablePath_) {
     std::string range, flags, file;
     {
@@ -48,11 +50,11 @@ namespace xpedite { namespace util {
       }
       if(file[0] != '/' && file[0] != '[') {
         // Anonymous memory segment
-        file = "[anonymous]";
+        file = anonymousSegment;
       }
     }
 
-    bool isPositionIndependent {file  != executablePath_};
+    bool isPositionIndependent {file != executablePath_ && file != anonymousSegment};
     std::istringstream stream {range};
     std::string begin, end;
     if(std::getline(stream, begin, '-') && std::getline(stream, end, ' ')) {
