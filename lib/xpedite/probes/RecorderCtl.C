@@ -67,14 +67,14 @@ namespace xpedite { namespace probes {
       && static_cast<unsigned>(index_) < _dataRecorders.size() && _dataRecorders[index_];
   }
 
-  bool RecorderCtl::activateRecorder(int index_) noexcept {
+  bool RecorderCtl::activateRecorder(int index_, bool nonTrivial_) noexcept {
     if(canActivateRecorder(index_)) {
       activeXpediteRecorder = _recorders[index_];
       activeXpediteDataProbeRecorder = _dataRecorders[index_];
 
-      xpediteTrampolinePtr = reinterpret_cast<void*>(trampoline(false, false));
-      xpediteDataProbeTrampolinePtr = reinterpret_cast<void*>(trampoline(true, false));
-      xpediteIdentityTrampolinePtr = reinterpret_cast<void*>(trampoline(false, true));
+      xpediteTrampolinePtr = reinterpret_cast<void*>(trampoline(false, false, nonTrivial_));
+      xpediteDataProbeTrampolinePtr = reinterpret_cast<void*>(trampoline(true, false, nonTrivial_));
+      xpediteIdentityTrampolinePtr = reinterpret_cast<void*>(trampoline(false, true, nonTrivial_));
 
       XpediteLogInfo << "Activated recorder at index " << index_ << XpediteLogEnd;
       return true;
@@ -84,7 +84,7 @@ namespace xpedite { namespace probes {
 
   void RecorderCtl::enableGenericPmc(uint8_t genericPmcCount_) noexcept {
     if(pmcCount() == 0) {
-      activateRecorder(2);
+      activateRecorder(2, true);
     }
     _genericPmcCount = genericPmcCount_;
   }
@@ -93,14 +93,14 @@ namespace xpedite { namespace probes {
     if(_genericPmcCount) {
       _genericPmcCount = 0;
       if(pmcCount() == 0) {
-        activateRecorder(0);
+        activateRecorder(0, false);
       }
     }
   }
 
   void RecorderCtl::enableFixedPmc(uint8_t index_) noexcept {
     if(pmcCount() == 0) {
-      activateRecorder(2);
+      activateRecorder(2, true);
     }
     _fixedPmcSet.enable(index_);
   }
@@ -109,19 +109,23 @@ namespace xpedite { namespace probes {
     if(_fixedPmcSet.size()) {
       _fixedPmcSet.reset();
       if(pmcCount() == 0) {
-        activateRecorder(0);
+        activateRecorder(0, false);
       }
     }
   }
 
-  Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept {
+  Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_, bool nonTrivial_) noexcept {
     if(canStoreData_) {
-      return pmcCount() ? xpediteDataProbeRecorderTrampoline : xpediteDataProbeTrampoline;
+      return nonTrivial_ ? xpediteDataProbeRecorderTrampoline : xpediteDataProbeTrampoline;
     }
     else if(canSuspendTxn_) {
-      return pmcCount() ? xpediteIdentityRecorderTrampoline : xpediteIdentityTrampoline;
+      return nonTrivial_ ? xpediteIdentityRecorderTrampoline : xpediteIdentityTrampoline;
     }
-    return pmcCount() ? xpediteRecorderTrampoline : xpediteTrampoline;
+    return nonTrivial_ ? xpediteRecorderTrampoline : xpediteTrampoline;
+  }
+
+  Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept {
+    return trampoline(canStoreData_, canSuspendTxn_, pmcCount()>0);
   }
 
 }}

@@ -54,9 +54,11 @@ namespace xpedite { namespace probes {
     int activeRecorderIndex() noexcept;
     int activeDataProbeRecorderIndex() noexcept;
     bool canActivateRecorder(int index_) noexcept;
-    bool activateRecorder(int index_) noexcept;
+    bool activateRecorder(int index_, bool nonTrivial_) noexcept;
 
     Trampoline trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept;
+
+    Trampoline trampoline(bool canStoreData_, bool canSuspendTxn_, bool nonTrivial_) noexcept;
 
     static RecorderCtl& get() {
       return _instance;
