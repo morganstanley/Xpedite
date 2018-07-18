@@ -72,7 +72,7 @@ namespace xpedite { namespace probes { namespace test {
     ASSERT_EQ(recorderCtl().activeRecorderIndex(), 0) << "detected invalid initial recorder index";
 
     ASSERT_FALSE(probe.isActive()) << "detected failure to activate probe";
-    ASSERT_FALSE(recorderCtl().activateRecorder(1024)) << "falied to detect invalid recorder";
+    ASSERT_FALSE(recorderCtl().activateRecorder(1024, true)) << "falied to detect invalid recorder";
     recorderCtl().enableGenericPmc(4);
     ASSERT_TRUE(recorderCtl().activeRecorderIndex() == PMU_RECORDER_INDEX) << "detected failure to activate recorder";
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "falied to detect valid probe";
