@@ -19,9 +19,11 @@
 #include <xpedite/common/WaitFreeBufferPool.H>
 #include <xpedite/probes/Config.H>
 #include <xpedite/probes/Sample.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/framework/Persister.H>
 #include <xpedite/log/Log.H>
 #include <atomic>
+#include <mutex>
 #include <stdlib.h>
 #include <stdexcept>
 #include <cstring>
@@ -80,6 +82,7 @@ namespace xpedite { namespace framework {
     }
 
     static bool isInitialized();
+    static SamplesBuffer* samplesBuffer();
     static void expand();
     
     bool isReaderAttached() const noexcept {
@@ -166,6 +169,10 @@ namespace xpedite { namespace framework {
       _lastSampledTsc = lastSampledTsc_;
     }
 
+    const pmu::EventSet& eventSet() const noexcept {
+      return _eventSet;
+    }
+
     private:
 
     static  uint64_t tlsAddr() noexcept {
@@ -182,11 +189,28 @@ namespace xpedite { namespace framework {
 
     SamplesBuffer() noexcept
       : _bufferPool {}, _fd {-1}, _tid {util::gettid()}, _tlsAddr {tlsAddr()}, _tidStr {buildTidStr()}, _curReadBuf {}
-      , _lastSampledTsc {} , _lastOverflowCount {} {
+      , _lastSampledTsc {} , _lastOverflowCount {}, _eventSet {}, _mutex {} {
       SamplesBuffer* next = _head.load(std::memory_order_relaxed);
       do {
         _next = next;
       } while(!_head.compare_exchange_weak(next, this, std::memory_order_release, std::memory_order_relaxed));
+
+      EventSelect eventSelect;
+      auto generation = pmu::pmuCtl().snapEventSelect(eventSelect);
+      if(generation >= 0) {
+        auto eventSet = pmu::pmuCtl().buildEventSet(eventSelect, generation);
+        updateEventSet(std::move(eventSet));
+      }
+    }
+
+    void updateEventSet(pmu::EventSet&& eventSet_) noexcept {
+      if(eventSet_.generation() > _eventSet.generation()) {
+        std::unique_lock<std::mutex> guard;
+        if(_eventSet.generation()) {
+          guard = std::unique_lock<std::mutex> {_mutex};
+        }
+        _eventSet = std::move(eventSet_);
+      }
     }
 
     std::string buildSampledFilePath(const std::string& fileNamePattern_) const {
@@ -197,6 +221,8 @@ namespace xpedite { namespace framework {
       }
       return std::move(fileName);
     }
+
+    friend class pmu::PmuCtl;
 
     static std::atomic<SamplesBuffer*> _head;
     static constexpr size_t bufferSize = 4 * 1024;
@@ -214,6 +240,10 @@ namespace xpedite { namespace framework {
     const probes::Sample* _curReadBuf;
     uint64_t _lastSampledTsc;
     uint64_t _lastOverflowCount;
+
+    alignas(common::ALIGNMENT) pmu::EventSet _eventSet;
+    std::mutex _mutex;
+
   };
 
 }}

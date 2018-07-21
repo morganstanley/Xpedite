@@ -8,6 +8,7 @@
 // recordAndLog    - record tsc and log probe details
 // record          - record tsc
 // recordPmc       - record tsc, fixed and general performance counters
+// recordEventSet  - record tsc, pmu events using linux perf events api
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
@@ -15,8 +16,8 @@
 
 #include <xpedite/probes/ProbeList.H>
 #include <xpedite/probes/Recorders.H>
-#include <xpedite/probes/RecorderCtl.H>
 #include <xpedite/framework/SamplesBuffer.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/log/Log.H>
 
 extern "C" {
@@ -87,22 +88,50 @@ extern "C" {
 
   void XPEDITE_CALLBACK xpediteRecordPmc(const void* returnSite_, uint64_t tsc_) {
     using namespace xpedite::probes;
+    using namespace xpedite::pmu;
     if(XPEDITE_UNLIKELY(samplesBufferPtr >= samplesBufferEnd)) {
       xpedite::framework::SamplesBuffer::expand();
     }
     if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
-      new (samplesBufferPtr) Sample {returnSite_, tsc_, recorderCtl().genericPmcCount(), recorderCtl().fixedPmcSet()};
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, true};
       samplesBufferPtr = samplesBufferPtr->next();
     }
   }
 
   void XPEDITE_CALLBACK xpediteRecordPmcWithData(const void* returnSite_, uint64_t tsc_, __uint128_t data_) {
     using namespace xpedite::probes;
+    using namespace xpedite::pmu;
     if(XPEDITE_UNLIKELY(samplesBufferPtr >= samplesBufferEnd)) {
       xpedite::framework::SamplesBuffer::expand();
     }
     if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
-      new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, recorderCtl().genericPmcCount(), recorderCtl().fixedPmcSet()};
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, true};
+      samplesBufferPtr = samplesBufferPtr->next();
+    }
+  }
+
+  void XPEDITE_CALLBACK xpediteRecordEventSet(const void* returnSite_, uint64_t tsc_) {
+    using namespace xpedite::probes;
+    using namespace xpedite::pmu;
+    using namespace xpedite::framework;
+    if(XPEDITE_UNLIKELY(samplesBufferPtr >= samplesBufferEnd)) {
+      xpedite::framework::SamplesBuffer::expand();
+    }
+    if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, SamplesBuffer::samplesBuffer()->eventSet()};
+      samplesBufferPtr = samplesBufferPtr->next();
+    }
+  }
+
+  void XPEDITE_CALLBACK xpediteRecordEventSetWithData(const void* returnSite_, uint64_t tsc_, __uint128_t data_) {
+    using namespace xpedite::probes;
+    using namespace xpedite::pmu;
+    using namespace xpedite::framework;
+    if(XPEDITE_UNLIKELY(samplesBufferPtr >= samplesBufferEnd)) {
+      xpedite::framework::SamplesBuffer::expand();
+    }
+    if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, SamplesBuffer::samplesBuffer()->eventSet()};
       samplesBufferPtr = samplesBufferPtr->next();
     }
   }

@@ -11,10 +11,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/util/Tsc.H>
 #include <xpedite/platform/Builtins.H>
 #include <xpedite/probes/Recorders.H>
-#include "FixedPmcSet.H"
+#include <xpedite/pmu/FixedPmcSet.H>
 #include <cstdint>
 #include <tuple>
 #include <sstream>
@@ -53,14 +54,28 @@ namespace xpedite { namespace probes {
       *reinterpret_cast<AliasingData*>(_data) = data_;
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, int pmcCount_, FixedPmcSet fixedPmcSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, bool /*collectPmc*/)
       : Sample {returnSite_, tsc_ | FLAG_PMC} {
-      readPmc(pmcCount_, fixedPmcSet_, _data);
+      _data[0] = pmu::pmuCtl().pmcCount();
+      pmu::pmuCtl().readPmc(_data + 1);
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, Data data_, int pmcCount_, FixedPmcSet fixedPmcSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, Data data_, bool /*collectPmc*/)
       : Sample {returnSite_, tsc_ | FLAG_PMC, data_} {
-      readPmc(pmcCount_, fixedPmcSet_, _data + 2);
+      _data[2] = pmu::pmuCtl().pmcCount();
+      pmu::pmuCtl().readPmc(_data + 3);
+    }
+
+    Sample(const void* returnSite_, uint64_t tsc_, const pmu::EventSet& eventSet_)
+      : Sample {returnSite_, tsc_ | FLAG_PMC} {
+      _data[0] = eventSet_.size();
+      eventSet_.read(_data + 1);
+    }
+
+    Sample(const void* returnSite_, uint64_t tsc_, Data data_, const pmu::EventSet& eventSet_)
+      : Sample {returnSite_, tsc_ | FLAG_PMC, data_} {
+      _data[2] = eventSet_.size();
+      eventSet_.read(_data + 3);
     }
 
     Sample(const Sample&)            = delete;
@@ -74,11 +89,13 @@ namespace xpedite { namespace probes {
     friend void XPEDITE_CALLBACK ::xpediteRecordAndLog(const void*, uint64_t);
     friend void XPEDITE_CALLBACK ::xpediteRecord(const void*, uint64_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordPmc(const void*, uint64_t);
+    friend void XPEDITE_CALLBACK ::xpediteRecordEventSet(const void*, uint64_t);
 
     friend void XPEDITE_CALLBACK ::xpediteExpandAndRecordWithData(const void*, uint64_t, __uint128_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordWithDataAndLog(const void*, uint64_t, __uint128_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordWithData(const void*, uint64_t, __uint128_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordPmcWithData(const void*, uint64_t, __uint128_t);
+    friend void XPEDITE_CALLBACK ::xpediteRecordEventSetWithData(const void*, uint64_t, __uint128_t);
 
     public:
 
@@ -133,26 +150,6 @@ namespace xpedite { namespace probes {
 
     inline const Sample* next() const noexcept {
       return const_cast<Sample*>(this)->next();
-    }
-
-    static void readPmc(int pmcCount_, FixedPmcSet fixedPmcSet_, uint64_t* data_) {
-      auto ptr = data_ + 1;
-      for (int i = 0; i < pmcCount_; i++) {
-        ptr[i] = RDPMC(i);
-      }
-
-      if(fixedPmcSet_.isEnabled<FixedPmcSet::INST_RETIRED_ANY>()) {
-        ptr[pmcCount_++] = RDPMC(0x40000000);  // 0x309
-      }
-
-      if(fixedPmcSet_.isEnabled<FixedPmcSet::CPU_CLK_UNHALTED_CORE>()) {
-        ptr[pmcCount_++] = RDPMC(0x40000001);  // 0x30A
-      }
-      
-      if(fixedPmcSet_.isEnabled<FixedPmcSet::CPU_CLK_UNHALTED_REF>()) {
-        ptr[pmcCount_++] = RDPMC(0x40000002);  // 0x30B
-      }
-      data_[0] = pmcCount_;
     }
 
     std::string toString() const {

@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <array>
 
-namespace xpedite { namespace probes {
+namespace xpedite { namespace pmu {
 
   class FixedPmcSet
   {

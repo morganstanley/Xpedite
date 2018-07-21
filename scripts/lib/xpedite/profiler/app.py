@@ -12,7 +12,8 @@ import re
 import time
 import logging
 from xpedite.profiler.environment import Environment, RemoteEnvironment
-from xpedite.transport.net        import isIpLocal
+from xpedite.transport.net import isIpLocal
+from xpedite.pmu.pmuctrl import PMUCtrl
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,8 +78,7 @@ class XpediteApp(object):
     """
     self.runId = int(time.time())
     self.sampleFilePath = '/dev/shm/xpedite-{}-{}-*.data'.format(self.name, self.runId)
-    self.env.client.send('beginProfile {} {}'.format(self.sampleFilePath, pollInterval))
-    rc = self.env.client.readFrame(timeout)
+    rc = self.env.admin('beginProfile {} {}'.format(self.sampleFilePath, pollInterval), timeout)
     if rc:
       errmsg = 'failed to begin profiling - {}'.format(rc)
       raise Exception(errmsg)
@@ -91,8 +91,7 @@ class XpediteApp(object):
     :param timeout: Maximum time to await a response from app (Default value = 10 seconds)
 
     """
-    self.env.client.send('endProfile')
-    return len(self.env.client.readFrame(timeout)) == 0
+    return len(self.env.admin('endProfile', timeout)) == 0
 
   def ping(self, keepAlive=False, timeout=10):
     """
@@ -104,8 +103,28 @@ class XpediteApp(object):
     """
     if keepAlive:
       self.keepAlive()
-    self.env.client.send('ping')
-    return self.env.client.readFrame(timeout) == 'hello'
+    return self.env.admin('ping', timeout) == 'hello'
+
+  def enablePMU(self, eventsDb, cpuSet, events):
+    """
+    Enables user space pmc collection for the given cpuSet
+
+    :param eventsDb: A database of programmable performance counters
+    :type eventsDb: xpedite.pmu.eventsDb.EventsDb
+    :param cpuSet: A list of cpu cores to enable pmc collection
+    :param events: A user supplied list of pmc events to be programmed
+
+    """
+    if self.isDriverLoaded():
+      return self.env.enablePMU(eventsDb, cpuSet, events)
+    else:
+      LOGGER.warn('xpedite device driver not loaded - falling back to perf events api')
+      eventSet = PMUCtrl.buildEventSet(eventsDb, cpuSet, events)
+      requestGroup = PMUCtrl.buildRequestGroup(0, eventSet)
+      pdu = ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
+      LOGGER.warn('sending request (%d bytes) to xpedite [%s]', len(requestGroup), pdu)
+      self.env.admin('probes pmu --request {}'.format(pdu))
+    return None
 
   def start(self):
     """

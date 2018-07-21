@@ -12,7 +12,7 @@
 ################################################################################################
 
 cmake_minimum_required(VERSION 3.4.1)
-project(xpedite CXX ASM)
+project(xpedite C CXX ASM)
 if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
   message(FATAL_ERROR "Xpedite requires GCC 4.8 or later to build.")
 endif()
@@ -23,8 +23,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")
 set(CMAKE_EXE_LINKER_FLAGS "-no-pie" CACHE INTERNAL "")
 
-file(GLOB_RECURSE lib_headers lib/*.H)
-file(GLOB_RECURSE lib_source lib/*.C)
+file(GLOB_RECURSE lib_headers lib/*.[hH])
+file(GLOB_RECURSE lib_source lib/*.[cC])
 file(GLOB_RECURSE asm_source lib/*.S)
 set(lib_files ${lib_headers} ${lib_source} ${asm_source})
 include_directories(include)

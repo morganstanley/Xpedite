@@ -12,7 +12,9 @@ obj-m += $(MODULENAME).o
 
 ccflags-y := -Wno-declaration-after-statement -Werror -O3
 
-$(MODULENAME)-objs := PMUCtrl.o PMUArch.o
+EXTRA_CFLAGS := -I$(src)/include
+
+$(MODULENAME)-objs := ./lib/xpedite/pmu/EventSelect.o ./lib/xpedite/pmu/Formatter.o ./lib/xpedite/pmu/PMUArch.o ./lib/xpedite/pmu/PCECtl.o ./lib/xpedite/pmu/PMUDevice.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
