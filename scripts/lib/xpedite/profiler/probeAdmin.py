@@ -96,18 +96,18 @@ class ProbeAdmin(object):
     return (errCount, errMsg)
 
   @staticmethod
-  def enablePMU(app, eventState):
+  def enablePMU(app, eventSet):
     """
     Enables PMU and updates the usage count of general and fixed purpose pmu registers
 
     :param app: an instance of xpedite app, to interact with target application
-    :param eventState: Handle to state of PMU events for the current profile session
+    :param eventSet: Handle to state of PMU events for the current profile session
 
     """
-    gpPmcOption = '--gpCtrCount {}'.format(eventState.genericRequestCount()) if eventState.genericRequestCount() else ''
+    gpPmcOption = '--gpCtrCount {}'.format(eventSet.genericRequestCount()) if eventSet.genericRequestCount() else ''
     fixedPmcOption = ''
-    if eventState.fixedRequestCount():
-      fixedPmcOption = '--fixedCtrList {}'.format(','.join([str(event.ctrIndex) for event in eventState.fixedRequests]))
+    if eventSet.fixedRequestCount():
+      fixedPmcOption = '--fixedCtrList {}'.format(','.join([str(event.ctrIndex) for event in eventSet.fixedRequests]))
     cmd = 'probes pmu  {} {}'.format(gpPmcOption, fixedPmcOption)
     return app.admin(cmd, timeout=10)
 

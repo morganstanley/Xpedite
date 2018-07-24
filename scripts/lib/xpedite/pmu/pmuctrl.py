@@ -16,15 +16,15 @@ from xpedite.pmu.request     import (
                                PmuRequestFactory, GenericPmuRequest, OffcorePmuRequest,
                                FixedPmuRequest, RequestSorter
                              )
-from xpedite.pmu.event       import EventState
+from xpedite.pmu.event       import EventSet
 
 LOGGER = logging.getLogger(__name__)
 
-PMU_CTRL_DEVICE = '/dev/xpedite'
+XPEDITE_DEVICE = '/dev/xpedite'
 
-def canUsePMC():
+def isDriverLoaded():
   """Checks status of Xpedite device driver"""
-  return os.path.exists(PMU_CTRL_DEVICE) and os.access(PMU_CTRL_DEVICE, os.W_OK)
+  return os.path.exists(XPEDITE_DEVICE) and os.access(XPEDITE_DEVICE, os.W_OK)
 
 class PMUCtrl(object):
   """Interface to program pmu events with Xpedite device driver"""
@@ -34,11 +34,12 @@ class PMUCtrl(object):
     self.eventsDb = eventsDb
 
   def __enter__(self):
-    if not canUsePMC():
+    if not isDriverLoaded():
       import socket
       hostname = socket.gethostname()
-      raise Exception('PMC not enabled - run "xpedite pmc --enable" to load kernel module at host {}'.format(hostname))
-    self.device = open(PMU_CTRL_DEVICE, 'w')
+      raise Exception('Xpedite device driver not loaded | run "xpedite pmc --enable" at '
+          'host {} to enable pmc'.format(hostname))
+    self.device = open(XPEDITE_DEVICE, 'w')
     return self
 
   def __exit__(self, *args):
@@ -46,80 +47,96 @@ class PMUCtrl(object):
       self.device.close()
 
   @staticmethod
-  def buildRequestGroup(cpu, eventState):
+  def buildRequestGroup(cpu, eventSet):
     """
     Builds a group of fixed, generic and offcore requests
 
     :param cpu: Id of the target cpu core
-    :param eventState: Collection of pmu request to be processed
+    :param eventSet: Collection of pmu request to be processed
 
     """
     request = struct.pack(
-      '=BBBB', cpu, len(eventState.fixedRequests), len(eventState.genericRequests), len(eventState.offcoreRequests)
+      '=BBBB', cpu, len(eventSet.fixedRequests), len(eventSet.genericRequests), len(eventSet.offcoreRequests)
     )
-    for event in eventState.fixedRequests:
+    for event in eventSet.fixedRequests:
       request += event.buildMask()
-    for _ in range(len(eventState.fixedRequests), 3):
+    for _ in range(len(eventSet.fixedRequests), 3):
       request += FixedPmuRequest.defaultMask()
 
-    for event in eventState.genericRequests:
+    for event in eventSet.genericRequests:
       request += event.buildMask()
-    for _ in range(len(eventState.genericRequests), 8):
+    for _ in range(len(eventSet.genericRequests), 8):
       request += GenericPmuRequest.defaultMask()
 
-    for event in eventState.offcoreRequests:
+    for event in eventSet.offcoreRequests:
       request += event.buildMask()
-    for _ in range(len(eventState.offcoreRequests), 2):
+    for _ in range(len(eventSet.offcoreRequests), 2):
       request += OffcorePmuRequest.defaultMask()
     return request
 
-  def resolveEvents(self, cpuSet, events):
+  @staticmethod
+  def resolveEvents(eventsDb, cpuSet, events):
     """
     Resolves and build pmu requests for a list of events
 
+    :param eventsDb: Handle to database of PMU events for the target cpu
     :param cpuSet: A set of cpu cores to enable pmu
     :param events: A list of pmu events to be resolved
 
     """
     if len(events) > 11:
-      raise Exception('PMUCtrl - cannot enable more than 11 events - requested {}'.format(len(events)))
+      raise Exception('cannot enable more than 11 events - requested {}'.format(len(events)))
 
-    requestFactory = PmuRequestFactory(self.eventsDb)
-    eventState = EventState(cpuSet)
+    requestFactory = PmuRequestFactory(eventsDb)
+    eventSet = EventSet(cpuSet)
     for event in events:
       requests = requestFactory.buildRequests(event)
       for request in requests:
         if isinstance(request, GenericPmuRequest):
-          eventState.addGenericPmuRequest(request)
+          eventSet.addGenericPmuRequest(request)
         elif isinstance(request, OffcorePmuRequest):
-          eventState.addOffcorePmuRequest(request)
+          eventSet.addOffcorePmuRequest(request)
         elif isinstance(request, FixedPmuRequest):
-          eventState.addFixedPmuRequest(request)
+          eventSet.addFixedPmuRequest(request)
         else:
-          raise Exception('PMUCtrl request - invalid event type {}'.format(type(event)))
-    return eventState
+          raise Exception('detected invalid event type {} in pmu request'.format(type(event)))
+    return eventSet
 
   @staticmethod
-  def allocateEvents(eventState):
+  def allocateEvents(eventSet):
     """
     Allocates registers for pmu events, while obeying constraints
 
-    :param eventState: A collection of resolved pmu events
+    :param eventSet: A collection of resolved pmu events
 
     """
-    if eventState.genericRequests:
-      sortedRequests = RequestSorter.sort(eventState.genericRequests)
-      if sortedRequests and len(sortedRequests) == len(eventState.genericRequests):
-        eventState.genericRequests = sortedRequests
+    if eventSet.genericRequests:
+      sortedRequests = RequestSorter.sort(eventSet.genericRequests)
+      if sortedRequests and len(sortedRequests) == len(eventSet.genericRequests):
+        eventSet.genericRequests = sortedRequests
       else:
-        pmcStr = '\n\t\t'.join((str(request) for request in eventState.genericRequests))
-        report = RequestSorter.reportConstraints(eventState.genericRequests)
+        pmcStr = '\n\t\t'.join((str(request) for request in eventSet.genericRequests))
+        report = RequestSorter.reportConstraints(eventSet.genericRequests)
         errMsg = """Failed to program selected counters
           --> chosen pmc - \n\t\t{}
           --> reordered pmc - {}
           The following constraints prevent all selected counter from being used simultaneously
           {}""".format(pmcStr, sortedRequests, report)
         raise Exception(errMsg)
+
+  @staticmethod
+  def buildEventSet(eventsDb, cpuSet, events):
+    """
+    Resolves a list of events to a set of programmable pmu event select values
+
+    :param eventsDb: Handle to database of PMU events for the target cpu
+    :param cpuSet: A set of cpu cores to enable pmu
+    :param events: A list of pmu events to be enabled
+
+    """
+    eventSet = PMUCtrl.resolveEvents(eventsDb, cpuSet, events)
+    PMUCtrl.allocateEvents(eventSet)
+    return eventSet
 
   def enable(self, cpuSet, events):
     """
@@ -130,16 +147,15 @@ class PMUCtrl(object):
 
     """
     if not self.device:
-      raise Exception('PMUCtrl - xpedite device not enabled - use "with PMUCtrl() as pmuCtrl:" to init device')
+      raise Exception('xpedite device not enabled - use "with PMUCtrl() as pmuCtrl:" to init device')
 
-    eventState = self.resolveEvents(cpuSet, events)
-    self.allocateEvents(eventState)
+    eventSet = self.buildEventSet(self.eventsDb, cpuSet, events)
     for cpu in cpuSet:
-      requestGroup = self.buildRequestGroup(cpu, eventState)
+      requestGroup = self.buildRequestGroup(cpu, eventSet)
       LOGGER.debug(
         'sending request (%d bytes) to xpedite ko [%s]',
         len(requestGroup), ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
       )
       self.device.write(requestGroup)
       self.device.flush()
-    return eventState
+    return eventSet

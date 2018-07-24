@@ -104,8 +104,8 @@ class EventsLoader(object):
     factory.add(u'Invert',             'invert',           lambda v : int(v) != 0)
     factory.add(u'BriefDescription',   'briefDescription', lambda v : v)
     factory.add(u'PublicDescription',  'description',      lambda v : v)
-    factory.add(u'Counter',            'validSmtPmc',      EventsLoader.decodePmcList)
-    factory.add(u'CounterHTOff',       'validPmc',         EventsLoader.decodePmcList)
+    factory.add(u'Counter',            '_validSmtPmc',     EventsLoader.decodePmcList)
+    factory.add(u'CounterHTOff',       '_validPmc',        EventsLoader.decodePmcList)
     factory.add(u'MSRIndex',           'msrIndex',         lambda v : v)
     factory.add(u'MSRValue',           'msrValue',         lambda v : int(v, 16))
     factory.add(u'AnyThread',          'anyThread',        int)
@@ -121,8 +121,8 @@ class EventsLoader(object):
   def jsonFixedCoreFactory(self):
     """Builds a factory for creating fixed uarch events"""
     factory = self.jsonGenericCoreFactory()
-    factory.add(u'Counter', 'validSmtPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
-    factory.add(u'CounterHTOff', 'validPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
+    factory.add(u'Counter', '_validSmtPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
+    factory.add(u'CounterHTOff', '_validPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
     return factory
 
   def jsonOffCoreFactory(self):

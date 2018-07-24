@@ -23,8 +23,8 @@ class GenericCoreEvent(object):
     self.invert = None
     self.briefDescription = None
     self.description = None
-    self.validSmtPmc = None
-    self.validPmc = None
+    self._validSmtPmc = None
+    self._validPmc = None
     self.msrIndex = None
     self.msrValue = None
     self.anyThread = None
@@ -36,6 +36,11 @@ class GenericCoreEvent(object):
     self.errata = None
     self.isOffCore = False
 
+  @property
+  def validPmc(self):
+    """returns a set of programmable pmc registers"""
+    return self._validPmc if self._validPmc else self._validSmtPmc
+
   def unInitialized(self):
     """Checks if all required attribues are initialized"""
     return (
@@ -46,7 +51,6 @@ class GenericCoreEvent(object):
       or self.invert is None
       or self.briefDescription is None
       or self.description is None
-      or self.validSmtPmc is None
       or self.validPmc is None
       or self.msrIndex is None
       or self.msrValue is None
@@ -92,7 +96,7 @@ class FixedCoreEvent(GenericCoreEvent):
     self.eventType = FixedCoreEvent.eventType
 
   def __repr__(self):
-    eventName = '{} (FixedCtr {})'.format(self.name, self.validSmtPmc)
+    eventName = '{} (FixedCtr {})'.format(self.name, self.validPmc)
     return '{:60s} [FixedCtr-{}]      - {}'.format(eventName, self.validPmc, self.briefDescription)
 
 class OffCoreEvent(GenericCoreEvent):

@@ -46,7 +46,7 @@ class AbstractRuntime(object):
     self.eventsDbCache = EventsDbCache()
     self.topdownCache = TopdownCache(self.eventsDbCache)
     self.topdownMetrics = None
-    self.eventState = None
+    self.eventSet = None
 
   @staticmethod
   def formatProbes(probes):
@@ -71,8 +71,8 @@ class AbstractRuntime(object):
     from xpedite.profiler.probeAdmin import ProbeAdmin
     LOGGER.debug('Enabling probes %s', self.formatProbes(probes))
     if probes:
-      if self.eventState:
-        errMsg = ProbeAdmin.enablePMU(self.app, self.eventState)
+      if self.eventSet:
+        errMsg = ProbeAdmin.enablePMU(self.app, self.eventSet)
         if errMsg:
           msg = 'failed to enable PMU ({})'.format(errMsg)
           LOGGER.error(msg)
@@ -126,7 +126,7 @@ class AbstractRuntime(object):
 
     """
     from xpedite.pmu.pmuctrl import PMUCtrl
-    return PMUCtrl(eventsDb).resolveEvents(cpuSet, events)
+    return PMUCtrl.resolveEvents(eventsDb, cpuSet, events)
 
   @staticmethod
   def aggregatePmc(pmc):
@@ -213,13 +213,13 @@ class Runtime(AbstractRuntime):
         pmc = self.aggregatePmc(pmc)
       if not self.app.dryRun:
         if pmc:
-          self.eventState = self.app.enablePMU(eventsDb, cpuSet, pmc)
+          self.eventSet = self.app.enablePMU(eventsDb, cpuSet, pmc)
         anchoredProbes = self.resolveProbes(probes)
         self.enableProbes(anchoredProbes)
         self.app.beginProfile(pollInterval)
       else:
         if pmc:
-          self.eventState = self.resolveEvents(eventsDb, cpuSet, pmc)
+          self.eventSet = self.resolveEvents(eventsDb, cpuSet, pmc)
         LOGGER.warn('DRY Run selected - xpedite won\'t enable probes')
     except Exception as ex:
       LOGGER.exception('failed to start profiling')
@@ -262,11 +262,11 @@ class Runtime(AbstractRuntime):
           self.app.endProfile()
         except Exception:
           pass
-        if self.eventState:
+        if self.eventSet:
           self.app.disablePMU()
 
       repoFactory = TxnRepoFactory(buildPrefix)
-      pmc = [Event(req.name, req.uarchName) for req in self.eventState.requests()] if self.eventState  else []
+      pmc = [Event(req.name, req.uarchName) for req in self.eventSet.requests()] if self.eventSet  else []
       repo = repoFactory.buildTxnRepo(
         self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
         pmc, self.benchmarkProbes, benchmarkPaths

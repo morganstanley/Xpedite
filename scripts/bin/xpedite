@@ -249,14 +249,14 @@ class FrameworkController(ArgparseController):
   def pmc(self):
     koLoader = os.path.join(installPath, 'ko.sh')
     import subprocess
-    from xpedite.pmu.pmuctrl import canUsePMC
+    from xpedite.pmu.pmuctrl import isDriverLoaded
     if self.app.pargs.enable or self.app.pargs.disable:
       action = '-l' if self.app.pargs.enable else '-u'
       cmdList = [koLoader, action]
       if self.app.pargs.verbose:
         cmdList.append('-v')
       extractor = subprocess.call(cmdList)
-    LOGGER.info('pmc status - %s\n', 'enabled' if canUsePMC() else 'disabled')
+    LOGGER.info('pmc status - %s\n', 'enabled' if isDriverLoaded() else 'disabled')
 
 class XpediteClient(CementApp):
   class Meta:

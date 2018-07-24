@@ -141,7 +141,7 @@ class PmuRequestFactory(object):
     """
     if self.offCoreEventCount >= len(OffCoreEvent.eventSelects):
       raise Exception(
-        'PMUCtrl - exceeded the max number of offCore events  supported {}'.format(len(OffCoreEvent.eventSelects))
+        'pmu request exceeds the max number of supported offCore events {}'.format(len(OffCoreEvent.eventSelects))
       )
     offcoreEvent = copy.deepcopy(event)
     offcoreEvent.eventSelect = OffCoreEvent.eventSelects[self.offCoreEventCount]
@@ -156,10 +156,10 @@ class PmuRequestFactory(object):
 
     """
     if event.uarchName not in self.eventsDb:
-      raise Exception('PMUCtrl - cannot locate uarch event name {}'.format(event.uarchName))
+      raise Exception('failed locate pmu uarch event name {}'.format(event.uarchName))
     uarchEvent = self.eventsDb[event.uarchName]
     if uarchEvent.eventType not in self.eventTypeMap:
-      raise Exception('PMUCtrl - event {} is not currently supported'.format(event.uarchName))
+      raise Exception('pmu event {} is not currently supported'.format(event.uarchName))
     return self.eventTypeMap[uarchEvent.eventType](event.name, uarchEvent, event.user, event.kernel)
 
 class RequestSorter(object):
