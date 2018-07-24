@@ -82,7 +82,7 @@ namespace xpedite { namespace common {
     return poolSize_ > 1 && (poolSize_ & (poolSize_ -1)) == 0;
   }
 
-  constexpr int ALIGNMENT {64}; // align to cache line
+  constexpr int ALIGNMENT {XPEDITE_CACHELINE_SIZE}; // align to cache line
 
   template <typename T, unsigned bufferSize, unsigned poolSize, typename = void>
   class WaitFreeBufferPool;
@@ -228,10 +228,6 @@ namespace xpedite { namespace common {
       }
 
     private:
-
-      inline __attribute__((always_inline)) void compilerBarrier() noexcept {
-        asm volatile("": : :"memory");
-      }
 
       const T* bufferAt(uint64_t index_) const noexcept {
         return const_cast<WaitFreeBufferPool*>(this)->bufferAt(index_);

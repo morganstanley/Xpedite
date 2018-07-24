@@ -6,4 +6,5 @@ build
 install
 __pycache__
 .pytest_cache
+.coverage
 darkTheme.css
