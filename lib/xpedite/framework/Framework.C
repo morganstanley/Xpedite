@@ -225,6 +225,18 @@ namespace xpedite { namespace framework {
     return isRunning;
   }
 
+  bool initializeThread() {
+    static __thread bool threadInitFlag {};
+    if(!threadInitFlag) {
+      auto tid = util::gettid();
+      XpediteLogInfo << "xpedite - initializing framework for thread - " << tid << XpediteLogEnd;
+      SamplesBuffer::expand();
+      threadInitFlag = true;
+      return true;
+    }
+    return false;
+  }
+
   static void initializeOnce(const char* appInfoFile_, const char* listenerIp_, bool awaitProfileBegin_, bool* rc_) noexcept {
     std::promise<bool> listenerInitPromise;
     std::future<bool> listenerInitFuture = listenerInitPromise.get_future();
@@ -255,6 +267,7 @@ namespace xpedite { namespace framework {
   }
 
   bool initialize(const char* appInfoFile_, const char* listenerIp_, bool awaitProfileBegin_) {
+    initializeThread();
     bool rc {};
     std::call_once(initFlag, initializeOnce, appInfoFile_, listenerIp_, awaitProfileBegin_, &rc);
     return rc;
@@ -262,18 +275,6 @@ namespace xpedite { namespace framework {
 
   bool initialize(const char* appInfoFile_, bool awaitProfileBegin_) {
     return initialize(appInfoFile_, "", awaitProfileBegin_);
-  }
-
-  bool initializeThread() {
-    static __thread bool threadInitFlag {};
-    if(!threadInitFlag) {
-      auto tid = util::gettid();
-      XpediteLogInfo << "xpedite - initializing framework for thread - " << tid << XpediteLogEnd;
-      SamplesBuffer::expand();
-      threadInitFlag = true;
-      return true;
-    }
-    return false;
   }
 
   bool isRunning() noexcept {
