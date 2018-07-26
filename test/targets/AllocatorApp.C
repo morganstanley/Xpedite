@@ -16,8 +16,6 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-int txnCount {100};
-
 int main(int argc_, char** argv_) {
 
   if(!xpedite::framework::initialize("xpedite-appinfo.txt", true)) { 

@@ -19,7 +19,7 @@ def init():
 
 def enableVerboseLogging():
   """Set console handler level to debug to display information in verbose mode"""
-  logger = logging.getLogger()
+  logger = logging.getLogger('xpedite')
   for handler in logger.handlers:
     if isinstance(handler, ConsoleHandler):
       handler.setLevel(logging.getLevelName(logging.DEBUG))
