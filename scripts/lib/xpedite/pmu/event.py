@@ -7,7 +7,7 @@ This module defines the following classes
   2. TopdownNode - a node in the topdown hierarchy
   3. Metric - commonly used cpu metrics like IPC, CPI etc...
   4. TopdownMetrics - container for topdown nodes and metrics
-  5. EventState - container for generic, fixed and offcore requests
+  5. EventSet - container for generic, fixed and offcore requests
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
@@ -138,7 +138,7 @@ class TopdownMetrics(object):
   def __repr__(self):
     return str(self.__dict__)
 
-class EventState(object):
+class EventSet(object):
   """Container for requests (generic, offcore and fixed) to program pmu events"""
 
   def __init__(self, cpuSet):
@@ -202,3 +202,21 @@ class EventState(object):
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
+
+  def __repr__(self):
+    reprStr = 'cpu set - {}'.format(self.cpuSet)
+    if self.genericRequests:
+      reprStr += '\n'
+      for event in self.genericRequests:
+        reprStr += '\t Core event {}'.format(event)
+
+    if self.fixedRequests:
+      reprStr += '\n'
+      for event in self.fixedRequests:
+        reprStr += '\t Core event {}'.format(event)
+
+    if self.offcoreRequests:
+      reprStr += '\n'
+      for event in self.offcoreRequests:
+        reprStr += '\t OffCore event {}'.format(event)
+    return reprStr

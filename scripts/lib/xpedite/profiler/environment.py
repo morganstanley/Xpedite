@@ -16,6 +16,7 @@ import logging
 import tempfile
 from xpedite.transport.remote import Remote
 from xpedite.types            import CpuInfo
+from xpedite.pmu              import pmuctrl
 from xpedite.pmu.pmuctrl      import PMUCtrl
 from xpedite.transport        import DatagramClient
 from xpedite.profiler.appInfo import AppInfo
@@ -77,6 +78,10 @@ class ProxyEnvironment(object):
       with open('/proc/cmdline', 'r') as fileHandle:
         self.bootParam = fileHandle.read()
     return self.bootParam
+
+  def isDriverLoaded(self): # pylint: disable=no-self-use
+    """Returns status of xpedite device driver"""
+    return pmuctrl.isDriverLoaded()
 
   def enablePMU(self, eventsDb, cpuSet, events):
     """
@@ -205,6 +210,10 @@ class Environment(object):
   def getBootParam(self):
     """Returns kernel boot paramters of localhost"""
     return self.proxy.getBootParam()
+
+  def isDriverLoaded(self):
+    """Returns status of xpedite device driver"""
+    return self.proxy.isDriverLoaded()
 
   def enablePMU(self, eventsDb, cpuSet, events):
     """
