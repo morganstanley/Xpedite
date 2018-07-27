@@ -13,6 +13,7 @@
 #include <cerrno>
 
 namespace xpedite { namespace util {
+
   struct Errno
   {
     int lastErrorCode() const {
@@ -28,4 +29,5 @@ namespace xpedite { namespace util {
     // The size of buffer is picked based on the size used by glibc strerror(...)
     mutable std::array<char, 1024> _buffer; 
   };
+
 }}

@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/platform/Builtins.H>
 #include <stdexcept>
 #include <sys/mman.h>
 #include <xpedite/util/Util.H>
@@ -90,7 +91,7 @@ namespace xpedite { namespace util {
 
   };
 
-  template<size_t ALIGNMENT = 64>
+  template<size_t ALIGNMENT = XPEDITE_CACHELINE_SIZE>
   struct alignas(ALIGNMENT) AlignAs
   {
     static void* operator new(size_t size_) {
@@ -122,7 +123,7 @@ namespace xpedite { namespace util {
     }
   };
 
-  template <std::size_t ALIGNMENT>
+  template <std::size_t ALIGNMENT = XPEDITE_CACHELINE_SIZE>
   class alignas(ALIGNMENT) AlignedObject : public AlignAs<ALIGNMENT>
   {
     public:

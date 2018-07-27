@@ -5,6 +5,7 @@
 //  1. capture and build stack trace of the calling thread
 //  2. Pin threads to a cpu
 //  3. Methods to build file system paths for different data files
+//  4. Method to convert hex ascii byte pairs to 8 bit numbers
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
@@ -27,6 +28,7 @@
 #include <pthread.h>
 #include <execinfo.h>
 #include <signal.h>
+#include <tuple>
 
 namespace xpedite { namespace util {
 
@@ -110,6 +112,16 @@ namespace xpedite { namespace util {
     if(sigaction(SIGSEGV, &action, nullptr)) {
       throw std::runtime_error {"failed to register fault handler"};
     }
+  }
+
+  inline std::tuple<uint8_t, bool> atoiHex(const char* buffer_) {
+    extern uint8_t atoiTable[1 << 8];
+    uint8_t msb {atoiTable[static_cast<uint8_t>(buffer_[0])]};
+    uint8_t lsb {atoiTable[static_cast<uint8_t>(buffer_[1])]};
+    if(msb > 0x0F || lsb > 0x0F) {
+      return {};
+    }
+    return std::make_tuple((msb << 4) + lsb, true);
   }
 
 }}

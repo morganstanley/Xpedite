@@ -36,7 +36,7 @@ namespace xpedite { namespace util {
     return os.str();
   }
 
-  constexpr char* anonymousSegment {"[anonymous]"};
+  const char* anonymousSegment {"[anonymous]"};
 
   AddressSpace::Segment readSegment(std::string record, const std::string& executablePath_) {
     std::string range, flags, file;
