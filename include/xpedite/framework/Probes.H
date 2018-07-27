@@ -36,6 +36,7 @@
  * This means, the reference to probe data must be valid till the end probe is hit
  */
 
+#ifndef XPEDITE_DISABLE
 #define CONCAT3_INDIRECT(A, B, C) A##B##C
 #define CONCAT3(A, B, C) CONCAT3_INDIRECT(A, B, C)
 
@@ -103,3 +104,16 @@
 namespace xpedite { namespace framework {
   using TxnId = __uint128_t;
 }}
+#else
+
+#define XPEDITE_PROBE(NAME)
+#define XPEDITE_DATA_PROBE(NAME, ...)
+#define XPEDITE_PROBE_SCOPE(NAME)
+#define XPEDITE_DATA_PROBE_SCOPE(NAME, ...)
+#define XPEDITE_TXN_BEGIN(NAME)
+#define XPEDITE_TXN_SUSPEND(NAME)
+#define XPEDITE_TXN_RESUME(NAME, TXN_ID)
+#define XPEDITE_TXN_END(NAME)
+#define XPEDITE_TXN_SCOPE(NAME)
+
+#endif
