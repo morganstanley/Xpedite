@@ -14,7 +14,7 @@
 #include <xpedite/util/Tsc.H>
 #include <xpedite/platform/Builtins.H>
 #include <xpedite/probes/Recorders.H>
-#include "FixedPmcSet.H"
+#include <xpedite/pmu/FixedPmcSet.H>
 #include <cstdint>
 #include <tuple>
 #include <sstream>
@@ -53,12 +53,12 @@ namespace xpedite { namespace probes {
       *reinterpret_cast<AliasingData*>(_data) = data_;
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, int pmcCount_, FixedPmcSet fixedPmcSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, int pmcCount_, pmu::FixedPmcSet fixedPmcSet_)
       : Sample {returnSite_, tsc_ | FLAG_PMC} {
       readPmc(pmcCount_, fixedPmcSet_, _data);
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, Data data_, int pmcCount_, FixedPmcSet fixedPmcSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, Data data_, int pmcCount_, pmu::FixedPmcSet fixedPmcSet_)
       : Sample {returnSite_, tsc_ | FLAG_PMC, data_} {
       readPmc(pmcCount_, fixedPmcSet_, _data + 2);
     }
@@ -135,21 +135,21 @@ namespace xpedite { namespace probes {
       return const_cast<Sample*>(this)->next();
     }
 
-    static void readPmc(int pmcCount_, FixedPmcSet fixedPmcSet_, uint64_t* data_) {
+    static void readPmc(int pmcCount_, pmu::FixedPmcSet fixedPmcSet_, uint64_t* data_) {
       auto ptr = data_ + 1;
       for (int i = 0; i < pmcCount_; i++) {
         ptr[i] = RDPMC(i);
       }
 
-      if(fixedPmcSet_.isEnabled<FixedPmcSet::INST_RETIRED_ANY>()) {
+      if(fixedPmcSet_.isEnabled<pmu::FixedPmcSet::INST_RETIRED_ANY>()) {
         ptr[pmcCount_++] = RDPMC(0x40000000);  // 0x309
       }
 
-      if(fixedPmcSet_.isEnabled<FixedPmcSet::CPU_CLK_UNHALTED_CORE>()) {
+      if(fixedPmcSet_.isEnabled<pmu::FixedPmcSet::CPU_CLK_UNHALTED_CORE>()) {
         ptr[pmcCount_++] = RDPMC(0x40000001);  // 0x30A
       }
       
-      if(fixedPmcSet_.isEnabled<FixedPmcSet::CPU_CLK_UNHALTED_REF>()) {
+      if(fixedPmcSet_.isEnabled<pmu::FixedPmcSet::CPU_CLK_UNHALTED_REF>()) {
         ptr[pmcCount_++] = RDPMC(0x40000002);  // 0x30B
       }
       data_[0] = pmcCount_;
