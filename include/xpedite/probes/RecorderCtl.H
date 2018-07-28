@@ -12,7 +12,7 @@
 
 #pragma once
 #include <xpedite/probes/CallSite.H>
-#include <xpedite/probes/FixedPmcSet.H>
+#include <xpedite/pmu/FixedPmcSet.H>
 #include <xpedite/probes/Recorders.H>
 
 using XpediteRecorder = void (*)(const void*, uint64_t);
@@ -31,7 +31,7 @@ namespace xpedite { namespace probes {
     Recorders _recorders;
     DataProbeRecorders _dataRecorders;
     uint8_t _genericPmcCount;
-    FixedPmcSet _fixedPmcSet;
+    pmu::FixedPmcSet _fixedPmcSet;
 
     static RecorderCtl _instance;
 
@@ -40,7 +40,7 @@ namespace xpedite { namespace probes {
     public:
 
     uint8_t genericPmcCount() const noexcept { return _genericPmcCount;                   }
-    FixedPmcSet fixedPmcSet() const noexcept { return _fixedPmcSet;                       }
+    pmu::FixedPmcSet fixedPmcSet() const noexcept { return _fixedPmcSet;                       }
     uint8_t fixedPmcCount()   const noexcept { return _fixedPmcSet.size();                }
     uint8_t pmcCount()        const noexcept { return _genericPmcCount + fixedPmcCount(); }
 

@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstdint>
-#include "../../ko/PMUCtrl.h"
+#include <xpedite/pmu/EventSelect.h>
 #include <xpedite/framework/Probes.H>
 #include <xpedite/util/Tsc.H>
 #include <xpedite/probes/Config.H>
@@ -21,8 +21,8 @@
 
 namespace xpedite { namespace test {
 
-  PMUCtrlRequest buildPMUCtrlRequest(std::initializer_list<uint8_t> indices_) {
-    PMUCtrlRequest request {};
+  PMUCtlRequest buildPMUCtlRequest(std::initializer_list<uint8_t> indices_) {
+    PMUCtlRequest request {};
     int i = 0;
     for(auto index : indices_) {
       PMUFixedEvent event = {
@@ -76,8 +76,8 @@ TEST_F(PMCDeathTest, EnablePmc) {
   {
     std::ofstream device (XPEDITE_DEVICE, std::ios::binary);
     ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
-    auto pmuCtrlRequest = buildPMUCtrlRequest({0});
-    device.write(reinterpret_cast<const char*>(&pmuCtrlRequest), sizeof(pmuCtrlRequest));
+    auto pmuCtlRequest = buildPMUCtlRequest({0});
+    device.write(reinterpret_cast<const char*>(&pmuCtlRequest), sizeof(pmuCtlRequest));
     device.flush();
     readPmc(0);
     ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
@@ -88,8 +88,8 @@ TEST_F(PMCDeathTest, EnablePmc) {
 TEST_F(PMCTest, ReadInstrCount) {
   std::ofstream device (XPEDITE_DEVICE, std::ios::binary);
   ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
-  auto pmuCtrlRequest = buildPMUCtrlRequest({0});
-  device.write(reinterpret_cast<const char*>(&pmuCtrlRequest), sizeof(pmuCtrlRequest));
+  auto pmuCtlRequest = buildPMUCtlRequest({0});
+  device.write(reinterpret_cast<const char*>(&pmuCtlRequest), sizeof(pmuCtlRequest));
   device.flush();
 
   ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
@@ -108,8 +108,8 @@ TEST_F(PMCTest, ReadInstrCount) {
 TEST_F(PMCTest, ReadCoreCycles) {
   std::ofstream device (XPEDITE_DEVICE, std::ios::binary);
   ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
-  auto pmuCtrlRequest = buildPMUCtrlRequest({1});
-  device.write(reinterpret_cast<const char*>(&pmuCtrlRequest), sizeof(pmuCtrlRequest));
+  auto pmuCtlRequest = buildPMUCtlRequest({1});
+  device.write(reinterpret_cast<const char*>(&pmuCtlRequest), sizeof(pmuCtlRequest));
   device.flush();
 
   ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
@@ -128,8 +128,8 @@ TEST_F(PMCTest, ReadCoreCycles) {
 TEST_F(PMCTest, ReadAllFixedPmc) {
   std::ofstream device (XPEDITE_DEVICE, std::ios::binary);
   ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
-  auto pmuCtrlRequest = buildPMUCtrlRequest({0, 1, 2});
-  device.write(reinterpret_cast<const char*>(&pmuCtrlRequest), sizeof(pmuCtrlRequest));
+  auto pmuCtlRequest = buildPMUCtlRequest({0, 1, 2});
+  device.write(reinterpret_cast<const char*>(&pmuCtlRequest), sizeof(pmuCtlRequest));
   device.flush();
 
   ASSERT_TRUE(device.is_open()) << "failed to open xpedite device";
