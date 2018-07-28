@@ -62,15 +62,18 @@ namespace xpedite { namespace pmu {
 
     uint64_t read() const noexcept {
       uint32_t seq;
+      uint64_t pmc {};
       do {
           seq = _handle->lock;
           common::compilerBarrier();
+          pmc = _handle->offset;
           if (auto idx = _handle->index) {
-            return _handle->offset + RDPMC(idx - 1);
+            XpediteLogInfo << "rdpmc done " << XpediteLogEnd;
+            pmc += RDPMC(idx - 1);
           }
           common::compilerBarrier();
       } while (_handle->lock != seq);
-      return {};
+      return pmc;
     }
   };
 
@@ -92,6 +95,7 @@ namespace xpedite { namespace pmu {
 
     void read(uint64_t* buffer_) const noexcept {
       for(int i=0; i<_size; ++i) {
+        XpediteLogInfo << "reading pmu event - " << i << XpediteLogEnd;
         buffer_[i] = _events[i].read();
       }
     }

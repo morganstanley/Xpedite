@@ -198,7 +198,8 @@ namespace xpedite { namespace framework {
       EventSelect eventSelect;
       auto generation = pmu::pmuCtl().snapEventSelect(eventSelect);
       if(generation >= 0) {
-        auto eventSet = pmu::pmuCtl().buildEventSet(eventSelect, generation);
+        pmu::EventSet eventSet; bool rc;
+        std::tie(eventSet, rc) = pmu::pmuCtl().buildEventSet(eventSelect, generation);
         updateEventSet(std::move(eventSet));
       }
     }

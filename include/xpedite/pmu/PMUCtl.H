@@ -60,7 +60,7 @@ namespace xpedite { namespace pmu {
 
     int snapEventSelect(EventSelect& eventSelect_) const noexcept;
 
-    static EventSet buildEventSet(const EventSelect& eventSelect_, int generation_) noexcept;
+    static std::tuple<EventSet, bool> buildEventSet(const EventSelect& eventSelect_, int generation_) noexcept;
 
     void readPmc(uint64_t* buffer_) noexcept {
       int i {};

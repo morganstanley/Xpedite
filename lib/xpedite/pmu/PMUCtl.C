@@ -73,8 +73,8 @@ namespace xpedite { namespace pmu {
   perf_event_attr buildPerfEventAttr(uint32_t eventSelect_) {
     perf_event_attr attr {};
     attr.type = PERF_TYPE_RAW;
-    attr.size = sizeof(perf_event_attr);
-    attr.config = eventSelect_;
+    attr.size = sizeof(attr);
+    attr.config = static_cast<uint16_t>(eventSelect_);
     attr.disabled = 1;
     return attr;
   }
@@ -101,7 +101,7 @@ namespace xpedite { namespace pmu {
 
     EventSelect eventSelect {};
 
-    if(!::buildEventSet(&request_, &eventSelect)) {
+    if(!::buildEventSelect(&request_, &eventSelect)) {
       publishEventSelect(eventSelect);
     }
     else {
@@ -114,17 +114,30 @@ namespace xpedite { namespace pmu {
       _fixedPmcSet.enable(request_._fixedEvents[i]._ctrIndex);
     }
 
-    auto buffer = framework::SamplesBuffer::head();
+    auto samplesBuffer = framework::SamplesBuffer::head();
+    std::vector<EventSet> eventSets;
+    auto buffer = samplesBuffer;
     while(buffer) {
-      auto eventSet = buildEventSet(eventSelect, _generation.load(std::memory_order_relaxed));
-      buffer->updateEventSet(std::move(eventSet));
+      EventSet eventSet; bool rc;
+      std::tie(eventSet, rc) = buildEventSet(eventSelect, _generation.load(std::memory_order_relaxed));
+      if(!rc) {
+        return {};
+      }
+      eventSets.emplace_back(std::move(eventSet));
+      buffer = buffer->next();
+    }
+
+    int i {};
+    buffer = samplesBuffer;
+    while(buffer) {
+      buffer->updateEventSet(std::move(eventSets.at(i++)));
       buffer = buffer->next();
     }
     probes::recorderCtl().activateRecorder(probes::RecorderType::EVENT_SET_RECORDER);
     return true;
   }
 
-  EventSet PmuCtl::buildEventSet(const EventSelect& eventSelect_, int generation_) noexcept {
+  std::tuple<EventSet, bool> PmuCtl::buildEventSet(const EventSelect& eventSelect_, int generation_) noexcept {
     EventSet eventSet {generation_};
     for(int i=0; i < eventSelect_._gpEvtCount; ++i) {
       auto attr = buildPerfEventAttr(eventSelect_._gpEvtSel[i]);
@@ -150,7 +163,7 @@ namespace xpedite { namespace pmu {
         return {};
       }
     }
-    return eventSet;
+    return std::make_tuple(std::move(eventSet), true);
   }
 
   void PmuCtl::disable() noexcept {

@@ -123,7 +123,10 @@ class XpediteApp(object):
       requestGroup = PMUCtrl.buildRequestGroup(0, eventSet)
       pdu = ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
       LOGGER.warn('sending request (%d bytes) to xpedite [%s]', len(requestGroup), pdu)
-      self.env.admin('probes pmu --request {}'.format(pdu))
+      rc = self.env.admin('probes pmu --request {}'.format(pdu))
+      if rc:
+        raise Exception(rc)
+
     return None
 
   def start(self):

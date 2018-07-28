@@ -121,7 +121,9 @@ namespace xpedite { namespace framework {
           PMUCtlRequest request;
           retVal = parseRequest(value_, request);
           if(retVal.empty()) {
-            retVal = profile_.enablePMC(request);
+            if(!profile_.enablePMC(request)) {
+              retVal = "failed to enable pmu events in request";
+            }
           }
           else {
             std::cout << retVal << std::endl;

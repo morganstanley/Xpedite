@@ -142,7 +142,7 @@ static ssize_t processRequest(PMUCtlRequest* request_) {
     return -ENXIO;  /* No such CPU */
   }
 
-  if(buildEventSet(request_, &eventSelect)) {
+  if(buildEventSelect(request_, &eventSelect)) {
     return -EFAULT;
   }
 

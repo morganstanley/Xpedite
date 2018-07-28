@@ -132,7 +132,7 @@ static uint32_t buildFixedEvtGlobalCtlBitmask(const PMUFixedEvent* fixedEvents_,
 * Logic to process pmu requests form userspace
 **************************************************************************/
 
-int buildEventSet(const PMUCtlRequest* request_, EventSelect* eventSelect_) {
+int buildEventSelect(const PMUCtlRequest* request_, EventSelect* eventSelect_) {
 
   unsigned i;
   memset(eventSelect_, 0, sizeof(*eventSelect_));

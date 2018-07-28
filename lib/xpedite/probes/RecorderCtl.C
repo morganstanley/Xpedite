@@ -27,9 +27,22 @@ namespace xpedite { namespace probes {
 
   RecorderType activeRecorderType {};
 
+  const std::array<std::string, 5> recorderNames { "Trivial", "Expandable", "PMC", "Perf Events", "Logging" };
+
+  const std::string unknown {"Unknown"};
+
   inline int recorderIndex(RecorderType type_) {
     return static_cast<int>(type_);
   }
+
+  inline const std::string& recorderName(RecorderType type_) {
+    unsigned index = recorderIndex(type_);
+    if(index < recorderNames.size()) {
+      return recorderNames[index];
+    }
+    return unknown;
+  }
+
 
   RecorderCtl::RecorderCtl()
     : _recorders {}, _dataRecorders {} {
@@ -68,7 +81,7 @@ namespace xpedite { namespace probes {
       xpediteDataProbeTrampolinePtr = reinterpret_cast<void*>(trampoline(true, false, nonTrivial));
       xpediteIdentityTrampolinePtr = reinterpret_cast<void*>(trampoline(false, true, nonTrivial));
 
-      XpediteLogInfo << "Activated recorder at index " << index << XpediteLogEnd;
+      XpediteLogInfo << "Activated " << recorderName(type_) << " recorder" << XpediteLogEnd;
       return true;
     }
     return {};
