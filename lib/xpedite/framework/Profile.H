@@ -14,7 +14,10 @@
 #pragma once
 #include <xpedite/probes/RecorderCtl.H>
 #include <xpedite/probes/ProbeCtl.H>
+#include <xpedite/pmu/EventSelect.h>
+#include <xpedite/pmu/Formatter.h>
 #include <xpedite/log/Log.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <set>
 #include <string>
 
@@ -69,27 +72,35 @@ namespace xpedite { namespace framework {
 
     void enableGpPMC(int pmcCount_) {
       XpediteLogInfo << "xpedite enabling collection for " << pmcCount_ << " general purpose PMU counters" << XpediteLogEnd;
-      probes::recorderCtl().enableGenericPmc(pmcCount_);
+      pmu::pmuCtl().enableGenericPmc(pmcCount_);
     }
 
     void disableGpPMC() {
-      if(probes::recorderCtl().genericPmcCount()) {
+      if(pmu::pmuCtl().genericPmcCount()) {
         XpediteLogInfo << "xpedite disabling collection for general purpose PMU counters" << XpediteLogEnd;
-        probes::recorderCtl().resetGenericPmc();
+        pmu::pmuCtl().disableGenericPmc();
       }
     }
 
     void enableFixedPMC(uint8_t index_) {
-      probes::recorderCtl().enableFixedPmc(index_);
+      pmu::pmuCtl().enableFixedPmc(index_);
       XpediteLogInfo << "xpedite enabled fixed PMU counter (" << static_cast<int>(index_) << ") -> " 
-        << probes::recorderCtl().fixedPmcSet().toString() << XpediteLogEnd;
+        << pmu::pmuCtl().fixedPmcSet().toString() << XpediteLogEnd;
     }
 
-    void resetFixedPMC() {
-      if(probes::recorderCtl().fixedPmcCount()) {
-        XpediteLogInfo << "xpedite disabling collection of 3 fixed architectural PMU counters" << XpediteLogEnd;
-        probes::recorderCtl().resetFixedPmc();
+    void disableFixedPMC() {
+      if(pmu::pmuCtl().fixedPmcCount()) {
+        XpediteLogInfo << "xpedite disabling collection of " << pmu::pmuCtl().fixedPmcCount() << " fixed architectural PMU counters" 
+          << XpediteLogEnd;
+        pmu::pmuCtl().disableFixedPmc();
       }
+    }
+
+    bool enablePMC(const PMUCtlRequest& request_) {
+      char buffer[4096];
+      pmcrqToString(&request_, buffer, sizeof(buffer));
+      XpediteLogInfo << "xpedite enabling PMU for request - " << buffer << XpediteLogEnd;
+      return pmu::pmuCtl().enable(request_);
     }
 
     void start() noexcept {
@@ -103,7 +114,7 @@ namespace xpedite { namespace framework {
         probes::probeCtl(probes::Command::DISABLE, probe.file().c_str(), probe.line(), probe.name() != "" ? probe.name().c_str() : nullptr);
       }
       disableGpPMC();
-      resetFixedPMC();
+      disableFixedPMC();
     }
   };
 

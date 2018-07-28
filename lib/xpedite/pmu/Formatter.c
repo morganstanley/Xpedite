@@ -31,15 +31,23 @@ static unsigned char toBoolenChar(int v_) {
 }
 
 int gpEventToString(const PMUGpEvent* event_, char* buffer_, int size_) {
-  return snprintf(buffer_, size_, "\nGpEvent {eventSelect - %2x, unitMask - %2x, user - %c, kernel - %c"
-      ", invertCMask - %2x, counterMask - %2x, edgeDetect - %2x, anyThread - %c}",
-      event_->_eventSelect, event_->_unitMask, toBoolenChar(event_->_user), toBoolenChar(event_->_kernel),
-      event_->_invertCMask, event_->_counterMask, event_->_edgeDetect, toBoolenChar(event_->_anyThread));
+  return snprintf(buffer_, size_,
+    "\nGpEvent {eventSelect - %2x, unitMask - %2x, user - %c, kernel - %c"
+    ", invertCMask - %2x, counterMask - %2x, edgeDetect - %2x, anyThread - %c}",
+    0xff & event_->_eventSelect,
+    0xff & event_->_unitMask,
+    toBoolenChar(event_->_user),
+    toBoolenChar(event_->_kernel),
+    0xff & event_->_invertCMask,
+    0xff & event_->_counterMask,
+    0xff & event_->_edgeDetect,
+    toBoolenChar(event_->_anyThread)
+  );
 }
 
 int fixedEventToString(const PMUFixedEvent* event_, char* buffer_, int size_) {
   return snprintf(buffer_, size_, "FixedEvent {index - %2d, user - %c, kernel - %c"
-      , event_->_ctrIndex, toBoolenChar(event_->_user), toBoolenChar(event_->_kernel));
+      , (int) event_->_ctrIndex, toBoolenChar(event_->_user), toBoolenChar(event_->_kernel));
 }
 
 int offcoreEventToString(const PMUOffcoreEvent* event_, char* buffer_, int size_) {

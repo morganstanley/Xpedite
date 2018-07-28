@@ -72,7 +72,7 @@ typedef struct
 #ifdef __cplusplus
 extern "C" {
 #endif
-  int buildEventSet(const PMUCtlRequest* r_, EventSelect* eventSet_);
+  int buildEventSelect(const PMUCtlRequest* r_, EventSelect* eventSet_);
 #ifdef __cplusplus
 }
 #endif
