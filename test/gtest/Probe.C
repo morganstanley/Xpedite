@@ -12,6 +12,7 @@
 
 #include <xpedite/probes/Probe.H>
 #include <xpedite/util/AddressSpace.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <unistd.h>
 #include <gtest/gtest.h>
 
@@ -39,6 +40,16 @@ namespace xpedite { namespace probes { namespace test {
 
     void markPositionIndependent(Probe& probe_) {
       probe_._attr._attr = CallSiteAttr::IS_POSITION_INDEPENDENT;
+    }
+
+    int lookupRecorderIndex() noexcept {
+      auto& recorders = recorderCtl()._recorders;
+      for(int i=0; i<static_cast<int>(recorders.size()) && recorders[i]; ++i) {
+        if(recorders[i] == activeXpediteRecorder) {
+          return i;
+        }
+      }
+      return -1;
     }
   };
 
@@ -69,12 +80,12 @@ namespace xpedite { namespace probes { namespace test {
 
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of opcode at call site";
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of offset at call site";
-    ASSERT_EQ(recorderCtl().activeRecorderIndex(), 0) << "detected invalid initial recorder index";
+    ASSERT_EQ(lookupRecorderIndex(), static_cast<int>(RecorderType::EXPANDABLE_RECORDER)) << "detected invalid initial recorder index";
 
     ASSERT_FALSE(probe.isActive()) << "detected failure to activate probe";
-    ASSERT_FALSE(recorderCtl().activateRecorder(1024, true)) << "falied to detect invalid recorder";
-    recorderCtl().enableGenericPmc(4);
-    ASSERT_TRUE(recorderCtl().activeRecorderIndex() == PMU_RECORDER_INDEX) << "detected failure to activate recorder";
+    ASSERT_FALSE(recorderCtl().activateRecorder(static_cast<RecorderType>(1024))) << "falied to detect invalid recorder";
+    pmu::pmuCtl().enableGenericPmc(4);
+    ASSERT_TRUE(lookupRecorderIndex() == PMU_RECORDER_INDEX) << "detected failure to activate recorder";
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "falied to detect valid probe";
 
     ASSERT_FALSE(probe.activate()) << "detected failure to validate unpatchable segment";

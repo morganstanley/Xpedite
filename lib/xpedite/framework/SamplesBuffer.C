@@ -23,15 +23,19 @@ namespace xpedite { namespace framework {
     return _tlSamplesBuffer != nullptr;
   }
 
+  SamplesBuffer* SamplesBuffer::samplesBuffer() {
+    if(XPEDITE_UNLIKELY(!_tlSamplesBuffer)) {
+      _tlSamplesBuffer = SamplesBuffer::allocate();
+    }
+    return _tlSamplesBuffer;
+  }
+
   void SamplesBuffer::expand() {
     if(probes::config().verbose()) {
       XpediteLogInfo << "Xpedite SamplesBuffer expand: tid - " << util::gettid() << " | begin - " << samplesBufferPtr
         << " | end - " << samplesBufferEnd << XpediteLogEnd;
     }
-    if(XPEDITE_UNLIKELY(!_tlSamplesBuffer)) {
-      _tlSamplesBuffer = SamplesBuffer::allocate();
-    }
-    std::tie(samplesBufferPtr, samplesBufferEnd) = _tlSamplesBuffer->nextWritableRange();
+    std::tie(samplesBufferPtr, samplesBufferEnd) = samplesBuffer()->nextWritableRange();
   }
 
 }}

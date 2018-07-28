@@ -10,10 +10,10 @@
 #include <xpedite/framework/Persister.H>
 #include <xpedite/probes/Config.H>
 #include <xpedite/probes/ProbeList.H>
-#include <xpedite/probes/RecorderCtl.H>
 #include <xpedite/probes/Sample.H>
 #include <xpedite/util/Util.H>
 #include <xpedite/util/Tsc.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <sys/time.h>
 #include <cstdint>
 #include <cstdio>
@@ -38,7 +38,7 @@ namespace xpedite { namespace framework {
     gettimeofday(&time, nullptr);
     auto capacity = FileHeader::capacity(callSites.size());
     std::unique_ptr<char []> buffer {new char[capacity]};
-    new (buffer.get()) FileHeader {callSites, time, tscHz, probes::recorderCtl().pmcCount()};
+    new (buffer.get()) FileHeader {callSites, time, tscHz, pmu::pmuCtl().pmcCount()};
     write(fd_, buffer.get(), capacity);
     XpediteLogInfo << "persisted file header with " << callSites.size() << " call sites  | capacity "
       << sizeof(FileHeader) << " + " << FileHeader::callSiteSize(callSites.size()) << " = "
