@@ -32,7 +32,7 @@ class AppInfo(object):
   INDEX_TSC_HZ = 3
   MIN_RECORD_COUNT = 4
 
-  def __init__(self, path):
+  def __init__(self, path, workspace=None):
     """Loads AppInfo from file in the given path"""
     self.path = path
     self.pid = None
@@ -41,6 +41,7 @@ class AppInfo(object):
     self.executableName = None
     self.tscHz = None
     self.probes = None
+    self.workspace = workspace
 
   def load(self):
     """
@@ -94,7 +95,7 @@ class AppInfo(object):
           'failed to load tscHz from appinfo from file {} | line {}'.format(self.path, records[self.INDEX_TSC_HZ])
         )
 
-      self.probes = ProbeFactory().buildFromRecords(records[self.MIN_RECORD_COUNT:])
+      self.probes = ProbeFactory(self.workspace).buildFromRecords(records[self.MIN_RECORD_COUNT:])
     else:
       self.raiseError('failed to load appinfo from file {} | missing mandatory records'.format(self.path))
 

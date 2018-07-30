@@ -26,7 +26,7 @@ class Extractor(object):
   moduleDirPath = os.path.dirname(os.path.abspath(__file__))
   samplesLoader = '{}/../../../bin/xpediteSamplesLoader'.format(moduleDirPath)
 
-  def __init__(self, counterFilter, buildPrefix=None):
+  def __init__(self, counterFilter):
     """
     Constructs a new instance of extractor
 
@@ -36,7 +36,6 @@ class Extractor(object):
     """
     self.binaryReportFilePattern = re.compile(r'[^\d]*(\d+)-(\d+)-([0-9a-fA-F]+)\.data')
     self.counterFilter = counterFilter
-    self.buildPrefix = buildPrefix
     self.orphanedRecords = []
 
   def gatherCounters(self, app, loader, inflate=True):

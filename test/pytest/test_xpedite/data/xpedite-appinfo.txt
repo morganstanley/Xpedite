@@ -1,6 +1,23 @@
-pid: 22417
-port: 41565
-binary: xpediteDemo
-tscHz: 2666671948
-Id=0001 | Probe=0x6295a0 | CallSite=0x407b90 | Status=disabled | Name=WorkEnd | File=demo/Demo.H | Line=54 | Function=xpedite::demo::doWork(xpedite::demo::Indices&, int64_t)::XpediteGuardWork54::~XpediteGuardWork54() | Attributes=canEndTxn
-Id=0000 | Probe=0x629560 | CallSite=0x407b60 | Status=disabled | Name=WorkBegin | File=demo/Demo.H | Line=54 | Function=xpedite::demo::doWork(xpedite::demo::Indices&, int64_t)::XpediteGuardWork54::XpediteGuardWork54() | Attributes=canBeginTxn
+pid: 28810
+port: 37368
+binary: install/test/slowFixDecoder
+tscHz: 2800303760
+Id=0018 | Probe=0x637ae0 | CallSite=0x407758 | Status=disabled | Name=ParseFixEnd | File=test/targets/SlowFixDecoder.C | Line=134 | Function=xpedite::targets::parseFix(uint32_t)::XpediteGuardParseFix134::~XpediteGuardParseFix134() | Attributes=canEndTxn
+Id=0017 | Probe=0x637aa0 | CallSite=0x407728 | Status=disabled | Name=ParseFixBegin | File=test/targets/SlowFixDecoder.C | Line=134 | Function=xpedite::targets::parseFix(uint32_t)::XpediteGuardParseFix134::XpediteGuardParseFix134() | Attributes=canBeginTxn
+Id=0016 | Probe=0x637a60 | CallSite=0x4076e0 | Status=disabled | Name=ParseFixEnd | File=test/targets/SlowFixDecoder.C | Line=134 | Function=xpedite::targets::parseFix(uint32_t)::XpediteGuardParseFix134::~XpediteGuardParseFix134() | Attributes=canEndTxn
+Id=0015 | Probe=0x637a20 | CallSite=0x407300 | Status=disabled | Name=ParseHost | File=test/targets/SlowFixDecoder.C | Line=109 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0014 | Probe=0x6379e0 | CallSite=0x4072a0 | Status=disabled | Name=ParseSenderCompId | File=test/targets/SlowFixDecoder.C | Line=107 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0013 | Probe=0x6379a0 | CallSite=0x4071c8 | Status=disabled | Name=ParseQty | File=test/targets/SlowFixDecoder.C | Line=105 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0012 | Probe=0x637960 | CallSite=0x407170 | Status=disabled | Name=ParseSymbol | File=test/targets/SlowFixDecoder.C | Line=103 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0011 | Probe=0x637920 | CallSite=0x407098 | Status=disabled | Name=ParseTimeInForce | File=test/targets/SlowFixDecoder.C | Line=101 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0010 | Probe=0x6378e0 | CallSite=0x406fb8 | Status=disabled | Name=ParseOrderType | File=test/targets/SlowFixDecoder.C | Line=99 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0009 | Probe=0x6378a0 | CallSite=0x406ed8 | Status=disabled | Name=ParseSide | File=test/targets/SlowFixDecoder.C | Line=97 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0008 | Probe=0x637860 | CallSite=0x406df8 | Status=disabled | Name=ParseHandlerInst | File=test/targets/SlowFixDecoder.C | Line=95 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0007 | Probe=0x637820 | CallSite=0x406d38 | Status=disabled | Name=ParsePrice | File=test/targets/SlowFixDecoder.C | Line=93 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0006 | Probe=0x6377e0 | CallSite=0x406ce0 | Status=disabled | Name=ParseClOrderId | File=test/targets/SlowFixDecoder.C | Line=91 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0005 | Probe=0x6377a0 | CallSite=0x406c80 | Status=disabled | Name=ParseAccount | File=test/targets/SlowFixDecoder.C | Line=89 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0004 | Probe=0x637760 | CallSite=0x406c20 | Status=disabled | Name=ParseSendingTime | File=test/targets/SlowFixDecoder.C | Line=87 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0003 | Probe=0x637720 | CallSite=0x406b40 | Status=disabled | Name=ParseMessageSeqNum | File=test/targets/SlowFixDecoder.C | Line=85 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0002 | Probe=0x6376e0 | CallSite=0x406ae0 | Status=disabled | Name=ParseMessageType | File=test/targets/SlowFixDecoder.C | Line=83 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0001 | Probe=0x6376a0 | CallSite=0x406a00 | Status=disabled | Name=ParseBodyLength | File=test/targets/SlowFixDecoder.C | Line=81 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
+Id=0000 | Probe=0x637660 | CallSite=0x4069a8 | Status=disabled | Name=ParseBeginMsg | File=test/targets/SlowFixDecoder.C | Line=79 | Function=void SlowFixDecoder::parse(const string&) | Attributes=None
