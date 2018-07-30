@@ -16,5 +16,14 @@ if [ ! -d ${XPEDITE_DIR} ]; then
   exit 1
 fi
 
-export PYTHONPATH=${XPEDITE_DIR}
-python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py
+export PYTHONPATH=$PYTHONPATH:${PYTEST_DIR}
+export PYTHONPATH=$PYTHONPATH:${XPEDITE_DIR}
+
+TEMP_DIR=`mktemp -d`
+APP_NAME="slowFixDecoder"
+
+${TEST_DIR}/tarFiles.sh -d ${TEMP_DIR} -a ${APP_NAME} -x
+
+python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py ${TEMP_DIR} ${APP_NAME}
+
+${TEST_DIR}/tarFiles.sh -d ${TEMP_DIR} -a ${APP_NAME} -z

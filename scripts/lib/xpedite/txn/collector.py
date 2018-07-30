@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 class Collector(Extractor):
   """Parses sample files to gather time and pmu counters"""
 
-  def __init__(self, counterFilter, buildPrefix=None):
+  def __init__(self, counterFilter):
     """
     Constructs an instance of collector
 
@@ -26,7 +26,7 @@ class Collector(Extractor):
     :type counterFilter: xpedite.filter.TrivialCounterFilter
 
     """
-    Extractor.__init__(self, counterFilter, buildPrefix)
+    Extractor.__init__(self, counterFilter)
     self.samplesFileWildcard = 'samples-[0-9]*.csv'
     self.samplesFilePattern = re.compile(r'samples-(\d+)\.csv')
 
@@ -105,17 +105,6 @@ class Collector(Extractor):
         loader.endLoad()
     self.logCounterFilterReport()
     return recordCount
-
-  def trimBuildPrefix(self, path):
-    """
-    Trims the build prefix from source code path
-
-    :param path: path to the source file
-
-    """
-    path = path[len(self.buildPrefix):] if self.buildPrefix and path.startswith(self.buildPrefix) else path
-    path = path[1:] if path.startswith('/') else path
-    return path
 
   def loadCounters(self, threadId, loader, probes, path):
     """

@@ -107,6 +107,10 @@ add_executable(picApp test/targets/PicApp.C)
 target_link_libraries(picApp xpedite pic)
 install(TARGETS picApp DESTINATION "test")
 
+add_executable(slowFixDecoder test/targets/SlowFixDecoder.C)
+target_link_libraries(slowFixDecoder xpedite)
+install(TARGETS slowFixDecoder DESTINATION "test")
+
 ######################### test #############################
 
 enable_testing()

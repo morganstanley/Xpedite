@@ -12,17 +12,17 @@
 
 struct Args
 {
-  int threadCount {4};
-  int txnCount {100};
+  int threadCount {1};
+  int txnCount {10000};
   int cpu {0};
 };
 
 inline Args parseArgs(int argc_, char** argv_) {
   int opt;
   Args args;
-  while ((opt = getopt (argc_, argv_, "T:t:c:")) != -1) {
+  while ((opt = getopt (argc_, argv_, "m:t:c:")) != -1) {
     switch (opt) {
-    case 'T':
+    case 'm':
       args.threadCount = std::stoi(optarg);
       break;
     case 't':
@@ -33,7 +33,7 @@ inline Args parseArgs(int argc_, char** argv_) {
       break;
     case '?':
     default:
-      std::cerr << argv_[0] << " [-T <thread count>] [-t <txn count>]" << std::endl;
+      std::cerr << argv_[0] << " [-m <thread count>] [-t <txn count>]" << std::endl;
       exit(1);
     }
   }
