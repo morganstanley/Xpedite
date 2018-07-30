@@ -11,7 +11,7 @@ branches:
 script:
   - ./build.sh
   - ./install.sh
-  - ./test/runTest.sh -p -l 
+  - ./test/runTest.sh -p -l -c
 
 after_success:
   - PATH=./install/runtime/bin:${PATH} python -m pip install codecov
