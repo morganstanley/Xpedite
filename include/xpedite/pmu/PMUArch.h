@@ -9,7 +9,7 @@
 #pragma once
 
 #include "fwd.h"
-#include "EventSelect.h"
+#include "EventSet.h"
 
 typedef enum 
 {
@@ -44,6 +44,6 @@ typedef enum
 
 } PMUMsr;
 
-extern ssize_t pmuEnableEventSet(EventSelect* eventSetlect_);
+extern ssize_t pmuEnableEventSet(EventSet* eventSet);
 
 extern ssize_t pmuClearEventSet(unsigned char gpEvtCount_);

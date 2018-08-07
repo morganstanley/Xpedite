@@ -4,7 +4,7 @@
 //
 // The list of programmable pmu events can be represented using two types
 // 1. PMUCtlRequest - Programmer friendly model for pmu events
-// 2. EventSelect - Machine friendly model for pmu events
+// 2. EventSet - Machine friendly model for pmu events
 //
 // This file provide logic to transform request objects to event select objects
 //
@@ -12,7 +12,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/pmu/EventSelect.h>
+#include <xpedite/pmu/EventSet.h>
 #include <xpedite/pmu/Formatter.h>
 
 /*************************************************************************
@@ -132,10 +132,10 @@ static uint32_t buildFixedEvtGlobalCtlBitmask(const PMUFixedEvent* fixedEvents_,
 * Logic to process pmu requests form userspace
 **************************************************************************/
 
-int buildEventSet(const PMUCtlRequest* request_, EventSelect* eventSelect_) {
+int buildEventSet(const PMUCtlRequest* request_, EventSet* eventSet_) {
 
   unsigned i;
-  memset(eventSelect_, 0, sizeof(*eventSelect_));
+  memset(eventSet_, 0, sizeof(*eventSet_));
 
   if(request_->_fixedEvtCount > XPEDITE_PMC_CTRL_FIXED_EVENT_MAX) {
     XPEDITE_LOG("invalid request - max available fixed event counters %d, recieved (%u)\n",
@@ -156,23 +156,23 @@ int buildEventSet(const PMUCtlRequest* request_, EventSelect* eventSelect_) {
   }
 
   for(i=0; i< request_->_gpEvtCount; ++i) {
-    eventSelect_->_gpEvtSel[i] = buildPerfEvtSelBitmask(&request_->_gpEvents[i]);
-    logRequest(i, &request_->_gpEvents[i], eventSelect_->_gpEvtSel[i]);
+    eventSet_->_gpEvtSel[i] = buildPerfEvtSelBitmask(&request_->_gpEvents[i]);
+    logRequest(i, &request_->_gpEvents[i], eventSet_->_gpEvtSel[i]);
   }
-  eventSelect_->_gpEvtCount = request_->_gpEvtCount;
+  eventSet_->_gpEvtCount = request_->_gpEvtCount;
 
   for(i=0; i< request_->_offcoreEvtCount; ++i) {
-    eventSelect_->_offcoreEvtSel[i] = request_->_offcoreEvents[i];
+    eventSet_->_offcoreEvtSel[i] = request_->_offcoreEvents[i];
     logOffcoreRequest(i, request_->_offcoreEvents[i]);
   }
-  eventSelect_->_offcoreEvtCount = request_->_offcoreEvtCount;
+  eventSet_->_offcoreEvtCount = request_->_offcoreEvtCount;
 
   if(request_->_fixedEvtCount) {
-    eventSelect_->_fixedEvtGlobalCtl = buildFixedEvtGlobalCtlBitmask(request_->_fixedEvents, request_->_fixedEvtCount);
-    if(!eventSelect_->_fixedEvtGlobalCtl) {
+    eventSet_->_fixedEvtGlobalCtl = buildFixedEvtGlobalCtlBitmask(request_->_fixedEvents, request_->_fixedEvtCount);
+    if(!eventSet_->_fixedEvtGlobalCtl) {
       return -1;
     }
-    eventSelect_->_fixedEvtSel = buildFixedEvtSelBitmask(request_->_fixedEvents, request_->_fixedEvtCount);
+    eventSet_->_fixedEvtSel = buildFixedEvtSelBitmask(request_->_fixedEvents, request_->_fixedEvtCount);
   }
   return 0;
 }
