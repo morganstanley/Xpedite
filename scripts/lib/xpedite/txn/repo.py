@@ -117,16 +117,8 @@ def loaderFactory(loaderType, benchmark, probes, benchmarkProbes, topdownCache, 
 class TxnRepoFactory(object):
   """Factory to build a repository of transactions"""
 
-  def __init__(self, buildPrefix):
-    """
-    Constructs a factory object to build transaction repository
-
-    :param buildPrefix: Prefix to be trimmed from probe source file paths
-
-    """
-    self.buildPrefix = buildPrefix
-
-  def buildTxnRepo(self, app, cpuInfo, probes, topdownCache, topdownMetrics,
+  @staticmethod
+  def buildTxnRepo(app, cpuInfo, probes, topdownCache, topdownMetrics,
     events, benchmarkProbes, benchmarkPaths):
     """
     Builds a repository of transactions for current profile session and benchmarks
@@ -148,7 +140,7 @@ class TxnRepoFactory(object):
     from xpedite.analytics            import CURRENT_RUN
     from xpedite.util                 import timeAction
     counterFilter = TrivialCounterFilter()
-    collector = Collector(counterFilter, buildPrefix=self.buildPrefix)
+    collector = Collector(counterFilter)
 
 
     if any(probe.canBeginTxn or probe.canEndTxn for probe in probes):

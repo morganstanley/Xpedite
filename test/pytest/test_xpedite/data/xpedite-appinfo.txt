@@ -1,6 +1,0 @@
-pid: 22417
-port: 41565
-binary: xpediteDemo
-tscHz: 2666671948
-Id=0001 | Probe=0x6295a0 | CallSite=0x407b90 | Status=disabled | Name=WorkEnd | File=demo/Demo.H | Line=54 | Function=xpedite::demo::doWork(xpedite::demo::Indices&, int64_t)::XpediteGuardWork54::~XpediteGuardWork54() | Attributes=canEndTxn
-Id=0000 | Probe=0x629560 | CallSite=0x407b60 | Status=disabled | Name=WorkBegin | File=demo/Demo.H | Line=54 | Function=xpedite::demo::doWork(xpedite::demo::Indices&, int64_t)::XpediteGuardWork54::XpediteGuardWork54() | Attributes=canBeginTxn

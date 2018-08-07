@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 class ProfileInfoGenerator(object):
   """Generator to build profile info module for a target application"""
 
-  probeNameFormatter = re.compile('[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|)')
+  probeNameFormatter = re.compile('[A-Z0-9]?[a-z]+|[A-Z0-9]+(?=[A-Z]|)')
   replaceAppName = re.compile('(appName = )(.*)(\')')
   replaceAppHost = re.compile('(appHost = )(.*)(\')')
   replaceAppInfo = re.compile('(appInfo = )(.*)(\')')

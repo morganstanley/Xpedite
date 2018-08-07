@@ -226,7 +226,7 @@ class Runtime(AbstractRuntime):
       raise ex
 
   def report(self, result, reportName=None, benchmarkPaths=None, classifier=DefaultClassifier(), txnFilter=None,
-      reportThreshold=3000, resultOrder=ResultOrder.WorstToBest, buildPrefix=None):
+      reportThreshold=3000, resultOrder=ResultOrder.WorstToBest):
     """
     Ends active profile session and generates reports.
 
@@ -249,8 +249,6 @@ class Runtime(AbstractRuntime):
     :type reportThreshold: int
     :param resultOrder: Default sort order of transactions in latency constituent reports
     :type resultOrder: xpedite.pmu.ResultOrder
-    :param buildPrefix: Build prefix to be trimmed source file paths of probes
-    :type buildPrefix: str
 
     """
     from xpedite.profiler.reportgenerator import ReportGenerator
@@ -265,7 +263,7 @@ class Runtime(AbstractRuntime):
         if self.eventSet:
           self.app.disablePMU()
 
-      repoFactory = TxnRepoFactory(buildPrefix)
+      repoFactory = TxnRepoFactory()
       pmc = [Event(req.name, req.uarchName) for req in self.eventSet.requests()] if self.eventSet  else []
       repo = repoFactory.buildTxnRepo(
         self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,

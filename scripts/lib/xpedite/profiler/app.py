@@ -33,7 +33,7 @@ class XpediteApp(object):
 
   """
 
-  def __init__(self, name, ip, appInfoPath, dryRun=False):
+  def __init__(self, name, ip, appInfoPath, dryRun=False, workspace=None):
     """
     Constructs an instance of Xpediate App
 
@@ -54,6 +54,7 @@ class XpediteApp(object):
     self.env = None
     self.runId = None
     self.sampleFilePath = None
+    self.workspace = workspace
 
   def __getattr__(self, name):
     if self.env:
@@ -119,8 +120,8 @@ class XpediteApp(object):
     LOGGER.debug('Starting xpedite client | %s ip - %s', 'LOCAL' if isLocal else 'REMOTE', self.ip)
     LOGGER.debug('app info file - %s', self._appInfoPath)
     self.env = (
-      Environment(self.ip, self._appInfoPath, self.dryRun) if isLocal
-      else RemoteEnvironment(self.ip, self._appInfoPath, self.dryRun)
+      Environment(self.ip, self._appInfoPath, self.dryRun, self.workspace) if isLocal
+      else RemoteEnvironment(self.ip, self._appInfoPath, self.dryRun, self.workspace)
     )
     self.env.__enter__()
 
@@ -184,9 +185,9 @@ class XpediteDormantApp(XpediteApp):
 
   """
 
-  def __init__(self, name, ip, appInfoPath, runId):
+  def __init__(self, name, ip, appInfoPath, runId, workspace=None):
     """Constructs an instance of XpediteDormantApp"""
-    XpediteApp.__init__(self, name, ip, appInfoPath, dryRun=True)
+    XpediteApp.__init__(self, name, ip, appInfoPath, dryRun=True, workspace=workspace)
     self.runId = runId
 
   def beginProfile(self, pollInterval, timeout=10):

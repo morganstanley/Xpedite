@@ -1,6 +1,6 @@
 """
 Pytest module to test xpedite features report and record with:
-Application running in a remote box, benchmarks and performance counters
+Application running in a REMOTE box, benchmarks and performance counters
 This module also provides test for generating profile information and
 a Jupyter notebook
 
@@ -8,60 +8,76 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 """
 
 import os
+import glob
+import shutil
 import pytest
+import tempfile
+import tarfile
 import logging
 import logging.config
-from logger import LOG_CONFIG_PATH
+from logger                                import LOG_CONFIG_PATH
 logging.config.fileConfig(LOG_CONFIG_PATH)
-from test_xpedite.test_profiler.profile  import (
-                                           loadProfileInfo, runXpediteReport, runXpediteRecord,
-                                           loadBaseline, collectDataFiles, generateProfileInfo,
-                                           loadProbes, buildNotebook
-                                         )
+from test_xpedite.test_profiler.profile    import (
+                                             loadProfileInfo, runXpediteReport, runXpediteRecord,
+                                             generateProfileInfo, loadProbes, buildNotebook,
+                                             compareAgainstBaseline
+                                           )
+from test_xpedite.test_profiler.comparator import findDiff
 
-testDir = os.path.abspath(os.path.dirname(__file__))
-dataDir = os.path.join(testDir, '..', 'data')
-remote = None
+TEST_DIR = os.path.abspath(os.path.dirname(__file__))
+DATA_DIR = None
+REMOTE = None
+TXN_COUNT = None
+THREAD_COUNT = None
+WORKSPACE = ''
 
-DEMO_BINARY = os.path.join(os.path.dirname(__file__), '../../../..', 'install/bin/xpediteDemo')
+FIX_DECODER_BINARY = os.path.join(os.path.dirname(__file__), '../../../..', 'install/test/slowFixDecoder')
 ALLOCATOR_BINARY = os.path.join(os.path.dirname(__file__), '../../../..', 'install/test/allocatorApp')
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('xpedite')
 
 @pytest.fixture(autouse=True)
-def set_hostname(hostname):
+def setTestParameters(hostname, transactions, multithreaded, workspace, tempdir):
   """
-  A method run at the beginning of tests to create and enter a remote environment
-  and at the end of tests to exit the remote environment
+  A method run at the beginning of tests to create and enter a REMOTE environment
+  and at the end of tests to exit the REMOTE environment
 
-  @param hostname: An option added to the pytest parser to accept a remote host
+ @param hostname: An option added to the pytest parser to accept a REMOTE host
                    Defaults to 127.0.0.1
   @type hostname: C{str}
   """
   from xpedite.util              import makeLogPath
   from xpedite.transport.net     import isIpLocal
   from xpedite.transport.remote  import Remote
-  global remote
+  global DATA_DIR, REMOTE, TXN_COUNT, THREAD_COUNT, WORKSPACE # pylint: disable=global-statement
   if not isIpLocal(hostname):
-    remote = Remote(hostname, makeLogPath('remote'))
-    remote.__enter__()
+    REMOTE = Remote(hostname, makeLogPath('remote'))
+    REMOTE.__enter__()
+  TXN_COUNT = transactions
+  THREAD_COUNT = multithreaded
+  WORKSPACE = workspace
+  DATA_DIR = os.path.join(tempdir, 'slowFixDecoder')
   yield
-  if remote:
-    remote.__exit__(None, None, None)
+  if REMOTE:
+    REMOTE.__exit__(None, None, None)  
 
 def test_report_against_baseline():
   """
   Run xpedite report on a data file in the test directory, return profiles and compare
   the previously generated profiles from the same xpedite run
   """
-  from test_xpedite.test_profiler.comparator import findDiff
-  profileInfo = loadProfileInfo('profileInfo.py')
-  for runId, dataFilePath in collectDataFiles().iteritems():
-    reportProfiles, _ = runXpediteReport(runId, profileInfo, dataFilePath)
-    reportProfiles.transactionRepo = None # transactionRepo not stored in .xpd files
-    baselineProfiles = loadBaseline()
-    findDiff(reportProfiles.__dict__, baselineProfiles.__dict__)
-    assert reportProfiles == baselineProfiles
+  profileInfoPath = os.path.join(DATA_DIR, 'profileInfo.py')
+  baselinePath = os.path.join(DATA_DIR, 'reportCmdBaseline.xpd')
+  compareAgainstBaseline(profileInfoPath, baselinePath, DATA_DIR, workspace=WORKSPACE)
+
+def test_benchmark_report_against_baseline():
+  """
+  Run xpedite report on a data file in the test directory, return profiles and compare
+  the previously generated profiles from the same xpedite run
+  """
+  profileInfoPath = os.path.join(DATA_DIR, 'profileInfoWithBenchmark.py')
+  baselinePath = os.path.join(DATA_DIR, 'reportCmdBaselineWithBenchmark.xpd')
+  compareAgainstBaseline(profileInfoPath, baselinePath, DATA_DIR, workspace=WORKSPACE)
 
 def test_record_against_report(capsys, profileInfoPath=None):
   """
@@ -70,22 +86,15 @@ def test_record_against_report(capsys, profileInfoPath=None):
   @param capsys: A pytest fixture allowing disabling of I/O capturing
   @param profileInfoPath: Override default profileInfo.py file from the test data directory
   """
-  from test_xpedite.test_profiler.comparator import findDiff
   profileInfoPath = profileInfoPath if profileInfoPath else 'profileInfo.py'
-  profileInfo = loadProfileInfo(profileInfoPath, remote)
+  profileInfo = loadProfileInfo(DATA_DIR, profileInfoPath, REMOTE)
   with capsys.disabled():
-    app, recordProfiles, _ = runXpediteRecord(DEMO_BINARY, profileInfo, remote)
-  profileInfo = loadProfileInfo(profileInfoPath, remote)
+    app, recordProfiles, _ = runXpediteRecord(FIX_DECODER_BINARY, profileInfo, TXN_COUNT, THREAD_COUNT, REMOTE, WORKSPACE)
+  profileInfo = loadProfileInfo(DATA_DIR, profileInfoPath, REMOTE)
   profileInfo.appInfo = os.path.join(app.tempDir, 'xpedite-appinfo.txt')
-  reportProfiles, _ = runXpediteReport(app.xpediteApp.runId, profileInfo)
+  reportProfiles, _ = runXpediteReport(app.xpediteApp.runId, profileInfo, workspace=WORKSPACE)
   findDiff(reportProfiles.__dict__, recordProfiles.__dict__)
-  assert recordProfiles == reportProfiles
-
-def test_benchmarks(capsys):
-  """
-  Run xpedite record and xpedite report with benchmark profile information
-  """
-  test_record_against_report(capsys, profileInfoPath='benchmarkProfileInfo.py')
+  assert reportProfiles == recordProfiles
 
 @pytest.mark.pmc
 def test_pmc_record_against_report(capsys):
@@ -101,12 +110,13 @@ def test_intercept(capsys):
   @param capsys: A pytest fixture allowing disabling of I/O capturing
   """
   from xpedite import Probe
-  profileInfo = loadProfileInfo('allocatorProfileInfo.py', remote)
+  dataDir = os.path.join(os.path.dirname(__file__), '..', 'data')
+  profileInfo = loadProfileInfo(dataDir, 'allocatorProfileInfo.py', REMOTE)
   with capsys.disabled():
-    app, profiles, _ = runXpediteRecord(ALLOCATOR_BINARY, profileInfo, remote)
+    _, profiles, _ = runXpediteRecord(ALLOCATOR_BINARY, profileInfo, TXN_COUNT, THREAD_COUNT, REMOTE)
   assert len(profiles) == 1
   timelines = profiles[0].current.timelineCollection
-  assert len(timelines) == 100
+  assert len(timelines) == int(TXN_COUNT)
   for tl in timelines:
     assert tl.txn is not None
     for probe in profileInfo.probes:
@@ -117,17 +127,16 @@ def test_generate_against_baseline():
   Test xpedite generate by generating a new profileInfo.py file and comparing to baseline
   profileInfo.py in the test data directory
   """
-  import tempfile
-  profileInfoBaseline = os.path.join(dataDir, 'baselineProfileInfo.py')
-  baselineProfileInfo = loadProfileInfo(profileInfoBaseline, remote)
+  profileInfoBaseline = os.path.join(DATA_DIR, 'generateCmdBaseline.py')
+  baselineProfileInfo = loadProfileInfo(DATA_DIR, profileInfoBaseline, REMOTE)
   tempDir = tempfile.mkdtemp()
   os.chdir(tempDir)
-  profileInfo = loadProfileInfo('profileInfo.py', remote)
-  tempProfilePath = generateProfileInfo(DEMO_BINARY, profileInfo, remote)
-  tempProfileInfo = loadProfileInfo(tempProfilePath, remote)
-  tempProfileInfo.appHost = 'localhost'
-  baselineProfileInfo.appHost = 'localhost'
-  tempProfileInfo.cpuSet = [0]
+  profileInfo = loadProfileInfo(DATA_DIR, 'profileInfo.py', REMOTE)
+  tempProfilePath = generateProfileInfo(FIX_DECODER_BINARY, profileInfo, TXN_COUNT, THREAD_COUNT, REMOTE, WORKSPACE)
+  tempProfileInfo = loadProfileInfo(DATA_DIR, tempProfilePath, REMOTE)
+  tempProfileInfo.appInfo = os.path.basename(tempProfileInfo.appInfo)
+  (tempProfileInfo.appHost, baselineProfileInfo.appHost) = ('localhost', 'localhost')
+  findDiff(tempProfileInfo.__dict__, baselineProfileInfo.__dict__)
   assert tempProfileInfo == baselineProfileInfo
 
 def test_probe_states(capsys):
@@ -137,17 +146,24 @@ def test_probe_states(capsys):
   """
   import cPickle as pickle
   from xpedite.types.probe import compareProbes
-  profileInfo = loadProfileInfo(os.path.join(dataDir, 'profileInfo.py'), remote)
+  profileInfo = loadProfileInfo(DATA_DIR, os.path.join(DATA_DIR, 'profileInfo.py'), REMOTE)
   probes = []
+  probeMap = {}
+  baselineProbeMap = {}
   with capsys.disabled():
-    probes = loadProbes(DEMO_BINARY, profileInfo, remote)
+    probes = loadProbes(FIX_DECODER_BINARY, profileInfo, TXN_COUNT, THREAD_COUNT, REMOTE, WORKSPACE)
+    for probe in probes:
+      probeMap[probe.sysName] = probe
 
-  with open(os.path.join(dataDir, 'probeBaseline.pkl'), 'r') as probeFileHandle:
+  with open(os.path.join(DATA_DIR, 'probeCmdBaseline.pkl'), 'r') as probeFileHandle:
     baselineProbes = pickle.load(probeFileHandle)
+    for probe in baselineProbes:
+      baselineProbeMap[probe.sysName] = probe
 
   assert len(probes) == len(baselineProbes)
-  for i in range(len(probes)):
-    assert compareProbes(probes[i], baselineProbes[i]);
+  findDiff(probeMap, baselineProbeMap)
+  for probe in probeMap.keys():
+    assert compareProbes(probeMap[probe], baselineProbeMap[probe])
 
 def test_notebook_build(capsys):
   """
@@ -155,6 +171,6 @@ def test_notebook_build(capsys):
   generated by xpedite record
   """
   with capsys.disabled():
-    notebook, _, _, result = buildNotebook(DEMO_BINARY, remote)
+    notebook, _, _, result, _ = buildNotebook(DATA_DIR, FIX_DECODER_BINARY, TXN_COUNT, THREAD_COUNT, REMOTE)
     assert len(result.reportCells) > 0
     assert notebook

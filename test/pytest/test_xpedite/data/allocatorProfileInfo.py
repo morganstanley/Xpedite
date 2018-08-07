@@ -8,7 +8,7 @@
 from xpedite import Probe, TxnBeginProbe, TxnEndProbe
 
 # Name of the application
-appName = 'allocator'
+appName = 'allocatorApp'
 
 # Host, where the applciation is running
 appHost = '127.0.0.1'

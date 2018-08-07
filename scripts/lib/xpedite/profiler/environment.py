@@ -133,9 +133,9 @@ class ProxyEnvironment(object):
 class Environment(object):
   """Provides logic to interact with target process running in the same host"""
 
-  def __init__(self, ip, appInfoPath, dryRun):
+  def __init__(self, ip, appInfoPath, dryRun, workspace=None):
     self.ip = ip
-    self.appInfo = AppInfo(appInfoPath)
+    self.appInfo = AppInfo(appInfoPath, workspace)
     self.proxy = ProxyEnvironment()
     self.dryRun = dryRun
     self.client = None
@@ -294,7 +294,7 @@ class RemoteEnvironment(Environment):
     2. Copies appInfo and sample files from remote host to local host
   """
 
-  def __init__(self, ip, appInfoPath, dryRun):
+  def __init__(self, ip, appInfoPath, dryRun, workspace=None):
     """
     Constructs an instance of Remote environment
 
@@ -306,7 +306,7 @@ class RemoteEnvironment(Environment):
     :type dryRun: bool
 
     """
-    Environment.__init__(self, ip, appInfoPath, dryRun)
+    Environment.__init__(self, ip, appInfoPath, dryRun, workspace)
     LOGGER.debug('Registered rpyc channel to %s ', ip)
     from xpedite.util import makeLogPath
     self.remote = Remote(ip, makeLogPath('remote'), chdir=False)
@@ -332,7 +332,7 @@ class RemoteEnvironment(Environment):
       )
       LOGGER.error(errmsg)
       raise Exception(errmsg)
-    self.appInfo = AppInfo(result[0])
+    self.appInfo = AppInfo(result[0], self.appInfo.workspace)
     LOGGER.debug('Copied appinfo files from remote host to %s', self.appInfo.path)
     Environment.__enter__(self)
     LOGGER.debug('initializing remote environment - delivered proxy to %s ', self.ip)

@@ -24,9 +24,11 @@ class ProbeFactory(object):
   FIELD_STATUS = 'Status'
   PROBE_STATUS_ENABLED = 'enabled'
 
+  def __init__(self, workspace=None):
+    self.workspace = workspace
+
   cache = {}
-  @staticmethod
-  def buildProbe(name, filePath, lineNo, sysName):
+  def buildProbe(self, name, filePath, lineNo, sysName):
     """
     Builds an instance of probe using fly weight pattern
 
@@ -39,9 +41,22 @@ class ProbeFactory(object):
     key = (sysName, filePath, lineNo)
     if key in ProbeFactory.cache:
       return ProbeFactory.cache[key]
+    filePath = self.trimWorkspace(filePath, self.workspace)
     probe = AnchoredProbe(name, filePath, lineNo, '0', sysName)
     ProbeFactory.cache.update({key:probe})
     return probe
+
+  @staticmethod
+  def trimWorkspace(filePath, workspace):
+    """
+    Trims the build prefix from source code path
+
+    :param path: path to the source file
+
+    """
+    filePath = filePath[len(workspace):] if workspace and filePath.startswith(workspace) else filePath
+    filePath = filePath[1:] if filePath.startswith('/') else filePath
+    return filePath
 
   def buildFromRecords(self, records):
     """
@@ -60,6 +75,7 @@ class ProbeFactory(object):
         fields.update({field[:index]:field[index+1:]})
       if fields:
         try:
+          fields[self.FIELD_FILE] = self.trimWorkspace(fields[self.FIELD_FILE], self.workspace)
           probes.update({
             fields[self.FIELD_CALL_SITE] : AnchoredProbe(
               fields[self.FIELD_NAME], fields[self.FIELD_FILE], fields[self.FIELD_LINE],
