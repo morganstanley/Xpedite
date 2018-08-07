@@ -8,3 +8,14 @@ __pycache__
 .pytest_cache
 .coverage
 darkTheme.css
+
+*.cmd
+*.o
+.*.cmd
+.*.o
+*.ko
+ko/Module.symvers
+ko/modules.order
+ko/xpedite.mod.c
+ko/xpedite.ko.unsigned
+.tmp_versions
