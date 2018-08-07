@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <cstdint>
-#include <xpedite/pmu/EventSelect.h>
+#include <xpedite/pmu/EventSet.h>
 #include <xpedite/framework/Probes.H>
 #include <xpedite/util/Tsc.H>
 #include <xpedite/probes/Config.H>

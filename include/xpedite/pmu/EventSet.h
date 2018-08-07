@@ -67,12 +67,12 @@ typedef struct
   uint32_t _gpEvtSel[XPEDITE_PMC_CTRL_GP_EVENT_MAX];
   uint64_t _offcoreEvtSel[XPEDITE_PMC_CTRL_OFFCORE_EVENT_MAX];
   ssize_t _err;
-} EventSelect;
+} EventSet;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-  int buildEventSet(const PMUCtlRequest* r_, EventSelect* eventSet_);
+  int buildEventSet(const PMUCtlRequest* r_, EventSet* eventSet_);
 #ifdef __cplusplus
 }
 #endif
