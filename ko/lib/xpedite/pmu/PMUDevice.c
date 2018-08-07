@@ -20,7 +20,7 @@
 #include <linux/fs.h>
 #include <linux/mutex.h>
 #include <linux/cpumask.h>
-#include <xpedite/pmu/EventSelect.h>
+#include <xpedite/pmu/EventSet.h>
 #include <xpedite/pmu/PMUArch.h>
 #include <xpedite/pmu/PCECtl.h>
 
@@ -116,9 +116,9 @@ static ssize_t pmu_read(struct file *filep, char *buffer, size_t len, loff_t *of
 
 static void __pmuEnableEventSet(void *info) {
   ssize_t err = 0;
-  EventSelect *eventSelect = (EventSelect*) info;
+  EventSet *eventSet = (EventSet*) info;
   enablePCE();
-  err = pmuEnableEventSet(eventSelect);
+  err = pmuEnableEventSet(eventSet);
   if(err) {
     printk(KERN_ALERT "Xpedite: Failed to enable PMU counters on core %d", smp_processor_id());
   }
@@ -134,24 +134,24 @@ static void __pmuClearEventSet(void *info) {
 **************************************************************************/
 
 static ssize_t processRequest(PMUCtlRequest* request_) {
-  EventSelect eventSelect;
-  memset(&eventSelect, 0, sizeof(eventSelect));
+  EventSet eventSet;
+  memset(&eventSet, 0, sizeof(eventSet));
 
   if (request_->_cpu >= nr_cpu_ids || !cpu_online(request_->_cpu)) {
     printk(KERN_INFO "Xpedite: invalid request - cpu %d not active\n", (unsigned)request_->_cpu);
     return -ENXIO;  /* No such CPU */
   }
 
-  if(buildEventSet(request_, &eventSelect)) {
+  if(buildEventSet(request_, &eventSet)) {
     return -EFAULT;
   }
 
-  if(smp_call_function_single(request_->_cpu, __pmuEnableEventSet, &eventSelect, 1)) {
+  if(smp_call_function_single(request_->_cpu, __pmuEnableEventSet, &eventSet, 1)) {
     printk(KERN_INFO "Xpedite: failed to enable event counter in core %d", (unsigned)request_->_cpu);
     return -EFAULT;
   }
 
-  if(eventSelect._err) {
+  if(eventSet._err) {
     return -EFAULT;
   }
 
