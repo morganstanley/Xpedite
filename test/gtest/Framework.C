@@ -33,7 +33,7 @@ TEST_F(FrameworkTest, InitAndShutdown) {
 
   EXPECT_EQ(childrenPreInit.size() + 1, childrenPostInit.size()) << "xpedite initialize failed to spawn offload thread";
 
-  xpedite::framework::pinThread(4);
+  xpedite::framework::pinThread(0);
 
   EXPECT_TRUE(xpedite::framework::halt()) << "xpedite framework failed to halt offload thread";
 

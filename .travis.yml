@@ -8,10 +8,22 @@ branches:
   only:
   - master
 
+before_script:
+ - sudo apt-get -qq update
+ - sudo apt-get install -y libgtest-dev cmake
+ - sudo wget https://github.com/google/googletest/archive/release-1.7.0.tar.gz
+ - sudo tar xf release-1.7.0.tar.gz
+ - pushd googletest-release-1.7.0
+ - sudo cmake -DBUILD_SHARED_LIBS=ON .
+ - sudo make
+ - sudo cp -a include/gtest /usr/include
+ - sudo cp -a libgtest_main.so libgtest.so /usr/lib/
+ - popd
+
 script:
   - ./build.sh
   - ./install.sh
-  - ./test/runTest.sh -p -l -c
+  - ./test/runTest.sh
 
 after_success:
   - PATH=./install/runtime/bin:${PATH} python -m pip install codecov
