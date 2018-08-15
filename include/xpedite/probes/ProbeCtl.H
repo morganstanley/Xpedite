@@ -39,7 +39,6 @@ extern void* xpediteIdentityTrampolinePtr;
 #define XPEDITE_PROBE_ASM                                     \
     ".align 8                     \n"                         \
     "1:"                                                      \
-    ".byte 0x0F, 0x1F, 0x44, 0x00, 0x00 \n"                   \
     ".pushsection .xpeditedata.rel,\"wa?\",@progbits \n"      \
     ".align 32                    \n"                         \
     "2: .quad 1b                  \n"                         \
@@ -71,7 +70,6 @@ extern void* xpediteIdentityTrampolinePtr;
     ".align 8                     \n"                         \
     "  .quad 4b                   \n"                         \
     ".popsection                  \n"                         \
-    "5:\n"                                                    \
 
 #ifdef XPEDITE_PIC
 #define XPEDITE_TRAMPOLINE "c"(xpediteTrampolinePtr),
@@ -95,7 +93,9 @@ extern void* xpediteIdentityTrampolinePtr;
      [Func] "i"(FUNC),                                           \
      [Line] "i"(LINE),                                           \
      [Attributes] "i"(ATTR_PIC | ATTRIBUTES)                     \
-    : "flags")
+    : "flags");                                                  \
+  xpediteDefaultTrampoline();                                    \
+  asm __volatile__ ("5:\n")
 
 #define XPEDITE_FLAGGED_PROBE(NAME, ATTRIBUTES) XPEDITE_DEFINE_PROBE(#NAME, __FILE__, __LINE__, __PRETTY_FUNCTION__, ATTRIBUTES)
 
@@ -110,7 +110,9 @@ extern void* xpediteIdentityTrampolinePtr;
      [Line] "i"(LINE),                                                                        \
      [Attributes] "i"(ATTR_PIC | ATTRIBUTES | xpedite::probes::CallSiteAttr::CAN_STORE_DATA), \
      "A"(DATA)                                                                                \
-    : "flags");
+    : "flags");                                                                               \
+  xpediteDefaultTrampoline();                                                                 \
+  asm __volatile__ ("5:\n")
 
 #define XPEDITE_FLAGGED_DATA_PROBE(NAME, DATA, ATTRIBUTES)   XPEDITE_DEFINE_DATA_PROBE(#NAME, DATA, __FILE__, __LINE__, __PRETTY_FUNCTION__, ATTRIBUTES)
 
@@ -126,6 +128,8 @@ extern void* xpediteIdentityTrampolinePtr;
       [Line] "i"(LINE),                                                   \
       [Attributes] "i"(ATTR_PIC | ATTRIBUTES)                             \
       : "flags");                                                         \
-    id;})
+    id;});                                                                \
+  xpediteDefaultTrampoline();                                             \
+  asm __volatile__ ("5:\n")
 
 #define XPEDITE_FLAGGED_IDENTITY_PROBE(NAME, FLAGS) XPEDITE_DEFINE_IDENTITY_PROBE(#NAME, __FILE__, __LINE__, __PRETTY_FUNCTION__, FLAGS)

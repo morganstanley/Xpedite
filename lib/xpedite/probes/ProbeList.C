@@ -46,6 +46,11 @@ extern "C" {
       return;
     }
 
+    if(!probe_->deactivate()) {
+      fprintf(stderr, "failed to neutralize probe during initization ['%s' at %s:%d].\n",
+        probe_->name(), probe_->file(), probe_->line());
+      return;
+    }
     ProbeList::get().add(probe_);
   }
  

@@ -222,7 +222,7 @@ fi
 if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then
   runAllTests
 else
-  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TEST_NAME}" || "${PMC}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" ]]; then
+  if [ "${PYTEST}" = true ] && [[ "${APP_HOST}" || "${TEST_NAME}" || "${PMC}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" ]]; then
     pytestUsage
   fi
 
