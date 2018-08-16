@@ -118,6 +118,7 @@ namespace xpedite { namespace probes {
 extern "C" {
   void xpediteAddProbe(xpedite::probes::Probe*, xpedite::probes::CallSite, xpedite::probes::CallSite);
   void xpediteRemoveProbe(xpedite::probes::Probe*);
+  void xpediteDefaultTrampoline();
   void xpediteTrampoline();
   void xpediteRecorderTrampoline();
   void xpediteDataProbeTrampoline();
