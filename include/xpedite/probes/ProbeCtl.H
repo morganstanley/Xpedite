@@ -36,6 +36,14 @@ extern void* xpediteTrampolinePtr;
 extern void* xpediteDataProbeTrampolinePtr;
 extern void* xpediteIdentityTrampolinePtr;
 
+#define XPEDITE_ALIGN_STACK                                   \
+    "   mov   %%rsp, %%rdi        \n"                         \
+    "   sub   $16,   %%rsp        \n"                         \
+    "   and   $-16,  %%rsp        \n"                         \
+    "   mov   %%rdi, (%%rsp)      \n"
+
+#define XPEDITE_RESTORE_STACK "   mov   (%%rsp), %%rsp      \n"
+
 #define XPEDITE_PROBE_ASM                                     \
     ".align 8                     \n"                         \
     "1:"                                                      \
@@ -53,13 +61,18 @@ extern void* xpediteIdentityTrampolinePtr;
     ".popsection                  \n"                         \
     ".pushsection .xpeditecode.rel,\"xa?\",@progbits \n"      \
     "3:"                                                      \
+    XPEDITE_ALIGN_STACK                                       \
     "   leaq  2b(%%rip), %%rdi    \n"                         \
     "   leaq  1b(%%rip), %%rsi    \n"                         \
     "   leaq  5f(%%rip), %%rdx    \n"                         \
     "   call  xpediteAddProbe@plt \n"                         \
+    XPEDITE_RESTORE_STACK                                     \
     "   ret                       \n"                         \
-    "4:  leaq  2b(%%rip),%%rdi    \n"                         \
+    "4:"                                                      \
+    XPEDITE_ALIGN_STACK                                       \
+    "   leaq  2b(%%rip),%%rdi    \n"                          \
     "   call  xpediteRemoveProbe@plt \n"                      \
+    XPEDITE_RESTORE_STACK                                     \
     "   ret                       \n"                         \
     ".popsection                  \n"                         \
     ".pushsection .init_array, \"?\" \n"                      \
