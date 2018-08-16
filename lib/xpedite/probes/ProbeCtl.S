@@ -15,11 +15,18 @@
 #######################################################################################
 
 .section .text
+
+.global  xpediteDefaultTrampoline
+.type xpediteDefaultTrampoline, @function 
+
 .global  xpediteTrampoline
 .type xpediteTrampoline, @function 
 
 .global  xpediteRecorderTrampoline
 .type xpediteRecorderTrampoline, @function 
+
+xpediteDefaultTrampoline:
+  ret
 
 # The trampoline code is optimized for ICache footprint
 # The common fast path fits in one L2 cache line (< 64 bytes)

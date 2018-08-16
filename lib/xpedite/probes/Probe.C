@@ -20,16 +20,19 @@ namespace xpedite { namespace probes {
   util::AddressSpace::Segment* locateSegment(Probe& probe_, const char* action_) noexcept {
     auto codeSegment = util::addressSpace().find(probe_.rawCallSite());
     if(!codeSegment) {
-      XpediteLogCritical << "failed to " << action_ << " probe \n\t" << probe_.toString() 
-        << "\n\tCannot locate segment for call site - " << reinterpret_cast<const void*>(probe_.rawCallSite())
-        << XpediteLogEnd;
+      auto probeStr = probe_.toString();
+      fprintf(stderr, "failed to %s probe \n\t%s\n\tcannot locate segment for call site - %p\n",
+          action_,  probeStr.c_str(), reinterpret_cast<const void*>(probe_.rawCallSite()));
       return {};
     }
 
     if(!codeSegment->isPatchable()) {
-      XpediteLogCritical << "failed to " << action_ << " probe \n\t" << probe_.toString()
-        << "\n\tCode segment not patchable" << XpediteLogEnd;
-      return {};
+      if(!codeSegment->makeWritable()) {
+        auto probeStr = probe_.toString();
+        fprintf(stderr, "failed to %s probe \n\t%s\n\tcode segment not patchable\n",
+            action_, probeStr.c_str());
+        return {};
+      }
     }
     return codeSegment; 
   }
@@ -105,10 +108,17 @@ namespace xpedite { namespace probes {
       return {};
     }
 
-    if(memcmp(&FIVE_BYTE_NOP, rawCallSite(), sizeof(FIVE_BYTE_NOP))) {
-      fprintf(stderr, "detected probe ['%s' at %s:%d] with invalid opcode at call site - expected 5 byte NOP"
-          " found %2X %2X %2X %2X %2X\n", _name, _file, _line, rawCallSite()[0], rawCallSite()[1], rawCallSite()[2]
-          , rawCallSite()[3], rawCallSite()[4]);
+    if(_callSite->_bytes[0] != OPCODE_CALL) {
+      fprintf(stderr, "detected probe probe ['%s' at %s:%d] with invalid opcode expected CALL %hhX found %hhX\n",
+             _name, _file, _line, OPCODE_CALL, _callSite->_bytes[0]);
+      return {};
+    }
+
+    uint32_t trampolineOffset {offset(_callSite, xpediteDefaultTrampoline)};
+    if(memcmp(&trampolineOffset, const_cast<const unsigned char*>(_callSite->_bytes +1), sizeof(trampolineOffset))) {
+      fprintf(stderr, "detected probe ['%s' at %s:%d] with invalid trampoline offset at call site - expected %8X"
+          " found %2X %2X %2X %2X\n", _name, _file, _line, trampolineOffset,
+          rawCallSite()[1], rawCallSite()[2] , rawCallSite()[3], rawCallSite()[4]);
       return {};
     }
     return true;
