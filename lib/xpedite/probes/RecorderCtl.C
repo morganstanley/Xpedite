@@ -17,11 +17,11 @@ XpediteRecorder activeXpediteRecorder {xpediteExpandAndRecord};
 
 XpediteDataProbeRecorder activeXpediteDataProbeRecorder {xpediteExpandAndRecordWithData};
 
-void* xpediteTrampolinePtr {reinterpret_cast<void*>(xpediteTrampoline)};
+xpedite::probes::Trampoline xpediteTrampolinePtr {xpediteTrampoline};
 
-void* xpediteDataProbeTrampolinePtr {reinterpret_cast<void*>(xpediteDataProbeTrampoline)};
+xpedite::probes::Trampoline xpediteDataProbeTrampolinePtr {xpediteDataProbeTrampoline};
 
-void* xpediteIdentityTrampolinePtr {reinterpret_cast<void*>(xpediteIdentityTrampoline)};
+xpedite::probes::Trampoline xpediteIdentityTrampolinePtr {xpediteIdentityTrampoline};
 
 namespace xpedite { namespace probes {
 
@@ -72,9 +72,9 @@ namespace xpedite { namespace probes {
       activeXpediteRecorder = _recorders[index_];
       activeXpediteDataProbeRecorder = _dataRecorders[index_];
 
-      xpediteTrampolinePtr = reinterpret_cast<void*>(trampoline(false, false, nonTrivial_));
-      xpediteDataProbeTrampolinePtr = reinterpret_cast<void*>(trampoline(true, false, nonTrivial_));
-      xpediteIdentityTrampolinePtr = reinterpret_cast<void*>(trampoline(false, true, nonTrivial_));
+      xpediteTrampolinePtr = trampoline(false, false, nonTrivial_);
+      xpediteDataProbeTrampolinePtr = trampoline(true, false, nonTrivial_);
+      xpediteIdentityTrampolinePtr = trampoline(false, true, nonTrivial_);
 
       XpediteLogInfo << "Activated recorder at index " << index_ << XpediteLogEnd;
       return true;

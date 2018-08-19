@@ -78,9 +78,9 @@ namespace xpedite { namespace probes {
       return true;
     }
 
-    Probe* find(const void* callSite_) const noexcept {
+    Probe* find(const void* returnSite_) const noexcept {
       for(auto& probe : *this) {
-        if(probe.rawCallSite() == callSite_) {
+        if(probe.recorderReturnSite() == returnSite_) {
           return &probe;
         }
       }

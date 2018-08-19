@@ -22,6 +22,7 @@ namespace xpedite { namespace probes {
   class Probe;
 
   static constexpr unsigned CAll_SITE_LEN {5};
+  static constexpr uint8_t OPCODE_JMP {0xE9};
   static constexpr uint8_t OPCODE_CALL {0xE8};
   static constexpr uint8_t OPCODE_CALL_INDIRECT {0xFF};
   static constexpr uint8_t OPCODE_NOP {0x90};
@@ -107,6 +108,10 @@ namespace xpedite { namespace probes {
 
   inline constexpr long offset(CallSite lhs_, CallSite rhs_) noexcept {
     return reinterpret_cast<volatile unsigned char*>(lhs_) - reinterpret_cast<volatile unsigned char*>(rhs_);
+  }
+
+  inline constexpr uint32_t offset(CallSite callSite_, void* trampoline_) noexcept {
+    return reinterpret_cast<unsigned char*>(trampoline_) - reinterpret_cast<volatile unsigned char*>(callSite_) - CAll_SITE_LEN;
   }
 
   inline const void* getcallSite(const void* returnSite_) {

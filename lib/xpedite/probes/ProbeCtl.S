@@ -16,24 +16,17 @@
 
 .section .text
 
-.global  xpediteDefaultTrampoline
-.type xpediteDefaultTrampoline, @function 
-
 .global  xpediteTrampoline
 .type xpediteTrampoline, @function 
 
 .global  xpediteRecorderTrampoline
 .type xpediteRecorderTrampoline, @function 
 
-xpediteDefaultTrampoline:
-  ret
-
 # The trampoline code is optimized for ICache footprint
 # The common fast path fits in one L2 cache line (< 64 bytes)
 
 xpediteTrampoline:
   push  %rax
-  push  %rcx
   push  %rdx
   push  %rsi
 
@@ -46,7 +39,7 @@ xpediteTrampoline:
   rdtsc
   shl   $0x20, %rdx
   or    %rax, %rdx
-  movq  0x20(%rsp), %rax
+  movq  0x18(%rsp), %rax
 
   movq  %rdx, (%rcx)
   movq  %rax, 0x8(%rcx)
@@ -55,13 +48,11 @@ xpediteTrampoline:
 
   pop   %rsi
   pop   %rdx
-  pop   %rcx
   pop   %rax
   ret
 
 xpediteRecorderTrampoline:
   push  %rax
-  push  %rcx
   push  %rdx
   push  %rsi
 1:
@@ -74,11 +65,12 @@ xpediteRecorderTrampoline:
   rdtsc
   shl    $0x20, %rdx
   or     %rax, %rdx
-  mov    %rdx, %rsi
-  movq   0x48(%rsp), %rdi
+  movq   %rdx, %rsi
+  movq   0x40(%rsp), %rdi
 
 #ifdef XPEDITE_PIE
-  callq *activeXpediteRecorder@plt
+  movq activeXpediteRecorder@GOTPCREL(%rip), %rcx
+  callq *(%rcx)
 #else 
   callq *activeXpediteRecorder
 #endif
@@ -90,6 +82,5 @@ xpediteRecorderTrampoline:
   pop  %rdi
   pop  %rsi
   pop  %rdx
-  pop  %rcx
   pop  %rax
   ret
