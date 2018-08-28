@@ -32,6 +32,9 @@ namespace xpedite { namespace probes {
     friend class test::ProbeTest;
 
     CallSite _callSite;
+    void* _trampoline;
+    CallSite _recorderCallSite;
+    void* _recorderReturnSite;
     Probe* _next;
     Probe* _prev;
     const char* _name;
@@ -55,6 +58,11 @@ namespace xpedite { namespace probes {
       return const_cast<const unsigned char*>(_callSite->_bytes);
     }
 
+    const unsigned char* rawRecorderCallSite() const noexcept { 
+      return const_cast<const unsigned char*>(_recorderCallSite->_bytes);
+    }
+
+    void* recorderReturnSite()   const noexcept { return _recorderReturnSite;           }
     const char* name()           const noexcept { return _name;                         }
     const char* file()           const noexcept { return _file;                         }
     const char* func()           const noexcept { return _func;                         }

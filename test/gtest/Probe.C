@@ -53,9 +53,7 @@ namespace xpedite { namespace probes { namespace test {
     ASSERT_FALSE(probe.isValid(callSite(buffer), callSite(buffer))) << "falied to detect invalid call site size";
     ASSERT_FALSE(probe.isValid(callSite(buffer+1), callSite(buffer+6))) << "falied to detect probe with mismatching call site";
     ASSERT_FALSE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "falied to detect non NOP Instructions at call site";
-    buffer[0] = OPCODE_CALL;
-    uint32_t trampolineOffset {offset(callSite(buffer), xpediteDefaultTrampoline)};
-    memcpy(buffer+1, &trampolineOffset, sizeof(trampolineOffset));
+    memcpy(buffer, &FIVE_BYTE_NOP, sizeof(FIVE_BYTE_NOP));
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of valid probe";
   }
 
@@ -64,9 +62,7 @@ namespace xpedite { namespace probes { namespace test {
     unsigned char buffer[getpagesize()] {};
     Probe probe {ProbeTest::buildProbe(buffer)};
 
-    uint32_t trampolineOffset {offset(callSite(buffer), xpediteDefaultTrampoline)};
-    buffer[0] = OPCODE_CALL;
-    memcpy(buffer+1, &trampolineOffset, sizeof(trampolineOffset));
+    memcpy(buffer, &FIVE_BYTE_NOP, sizeof(FIVE_BYTE_NOP));
     for(unsigned i=5; i<sizeof(buffer); ++i) {
       buffer[i] = i % 256;
     }

@@ -25,8 +25,6 @@
 # The common fast path fits in one L2 cache line (< 64 bytes)
 
 xpediteIdentityTrampoline:
-  push  %rcx
-
   movq  samplesBufferPtr@gottpoff(%rip), %rax
   movq  samplesBufferEnd@gottpoff(%rip), %rdx
   movq  %fs:(%rax), %rcx
@@ -38,15 +36,12 @@ xpediteIdentityTrampoline:
   shl   $0x20, %rdx
   or    %rax, %rdx
   movq  %rdx, (%rcx)
-  movq  0x08(%rsp), %rax
+  movq  0x00(%rsp), %rax
   movq  %rax, 0x8(%rcx)
   movq  %fs:0, %rax
-
-  pop   %rcx
   ret
 
 xpediteIdentityRecorderTrampoline:
-  push  %rcx
 1:
   push  %rsi
   push  %rdi
@@ -59,11 +54,12 @@ xpediteIdentityRecorderTrampoline:
   shl    $0x20, %rdx
   or     %rax, %rdx
   mov    %rdx, %rsi
-  movq   0x38(%rsp), %rdi
+  movq   0x30(%rsp), %rdi
 
   push  %rdx
 #ifdef XPEDITE_PIE
-  callq *activeXpediteRecorder@plt
+  movq activeXpediteRecorder@GOTPCREL(%rip), %rcx
+  callq *(%rcx)
 #else 
   callq *activeXpediteRecorder
 #endif
@@ -75,6 +71,5 @@ xpediteIdentityRecorderTrampoline:
   pop  %r8
   pop  %rdi
   pop  %rsi
-  pop  %rcx
   movq  %fs:0, %rax
   ret
