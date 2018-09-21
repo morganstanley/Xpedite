@@ -36,10 +36,6 @@ namespace xpedite { namespace probes { namespace test {
       probe._attr = {};
       return probe;
     }
-
-    void markPositionIndependent(Probe& probe_) {
-      probe_._attr._attr = CallSiteAttr::IS_POSITION_INDEPENDENT;
-    }
   };
 
   constexpr int PMU_RECORDER_INDEX {2};
@@ -53,9 +49,7 @@ namespace xpedite { namespace probes { namespace test {
     ASSERT_FALSE(probe.isValid(callSite(buffer), callSite(buffer))) << "falied to detect invalid call site size";
     ASSERT_FALSE(probe.isValid(callSite(buffer+1), callSite(buffer+6))) << "falied to detect probe with mismatching call site";
     ASSERT_FALSE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "falied to detect non NOP Instructions at call site";
-    buffer[0] = OPCODE_CALL;
-    uint32_t trampolineOffset {offset(callSite(buffer), xpediteDefaultTrampoline)};
-    memcpy(buffer+1, &trampolineOffset, sizeof(trampolineOffset));
+    memcpy(buffer, &FIVE_BYTE_NOP, sizeof(FIVE_BYTE_NOP));
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of valid probe";
   }
 
@@ -64,15 +58,12 @@ namespace xpedite { namespace probes { namespace test {
     unsigned char buffer[getpagesize()] {};
     Probe probe {ProbeTest::buildProbe(buffer)};
 
-    uint32_t trampolineOffset {offset(callSite(buffer), xpediteDefaultTrampoline)};
-    buffer[0] = OPCODE_CALL;
-    memcpy(buffer+1, &trampolineOffset, sizeof(trampolineOffset));
+    memcpy(buffer, &FIVE_BYTE_NOP, sizeof(FIVE_BYTE_NOP));
     for(unsigned i=5; i<sizeof(buffer); ++i) {
       buffer[i] = i % 256;
     }
 
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of opcode at call site";
-    ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of offset at call site";
     ASSERT_EQ(recorderCtl().activeRecorderIndex(), 0) << "detected invalid initial recorder index";
 
     ASSERT_FALSE(probe.isActive()) << "detected failure to activate probe";
@@ -81,17 +72,14 @@ namespace xpedite { namespace probes { namespace test {
     ASSERT_TRUE(recorderCtl().activeRecorderIndex() == PMU_RECORDER_INDEX) << "detected failure to activate recorder";
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "falied to detect valid probe";
 
-    ASSERT_FALSE(probe.activate()) << "detected failure to validate unpatchable segment";
     auto codeSegment = util::addressSpace().find(probe.rawCallSite());
     ASSERT_NE(codeSegment, nullptr) << "falied to locate segment for probe";
     ASSERT_TRUE(codeSegment->makeWritable()) << "failed to make segment writable";
 
-    ASSERT_FALSE(probe.activate()) << "detected failure to validate probe in PIC segment";
-    markPositionIndependent(probe);
     ASSERT_TRUE(probe.activate()) << "detected failure to activate valid probe";
-
     ASSERT_TRUE(probe.isActive()) << "detected failure to activate probe";
-    ASSERT_EQ(memcmp(buffer, PIC_CALL, sizeof(PIC_CALL)), 0) << "detected invalid offset at call site for active probe";
+    ASSERT_EQ(buffer[0], OPCODE_JMP) << "detected invalid opcode at call site for active probe";
+
     for(unsigned i=5; i<sizeof(buffer); ++i) {
       ASSERT_EQ(buffer[i], i % 256) << "detected corruption of memory";
     }

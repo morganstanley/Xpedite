@@ -16,7 +16,7 @@ class ProbeFactory(object):
 
   FIELD_DELIMITER = ' | '
   KEY_VALUE_DELIMITER = '='
-  FIELD_CALL_SITE = 'CallSite'
+  FIELD_RECORDER_RETURN_SITE = 'RecorderReturnSite'
   FIELD_NAME = 'Name'
   FIELD_FILE = 'File'
   FIELD_LINE = 'Line'
@@ -77,7 +77,7 @@ class ProbeFactory(object):
         try:
           fields[self.FIELD_FILE] = self.trimWorkspace(fields[self.FIELD_FILE], self.workspace)
           probes.update({
-            fields[self.FIELD_CALL_SITE] : AnchoredProbe(
+            fields[self.FIELD_RECORDER_RETURN_SITE] : AnchoredProbe(
               fields[self.FIELD_NAME], fields[self.FIELD_FILE], fields[self.FIELD_LINE],
               fields[self.FIELD_ATTRIBUTES], fields[self.FIELD_STATUS] == self.PROBE_STATUS_ENABLED,
               fields[self.FIELD_NAME]

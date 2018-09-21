@@ -26,6 +26,7 @@ namespace xpedite { namespace log {
       << std::setfill('0') << std::setw(4) << probe_.id() << std::setfill(' ') 
       << " | Probe=" << &probe_ 
       << " | CallSite=" << std::hex << reinterpret_cast<const void*>(probe_.rawCallSite()) << std::dec 
+      << " | RecorderReturnSite=" << std::hex << reinterpret_cast<const void*>(probe_.recorderReturnSite()) << std::dec 
       << " | Status=" << (probe_.isActive() ? "enabled" : "disabled")
       << " | Name=" << probe_.name() 
       << " | File=" << probe_.file() 

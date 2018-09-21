@@ -75,7 +75,7 @@ namespace xpedite { namespace transport { namespace tcp {
         return false;
       }
     }
-    XpediteLogInfo << toString() << " listening for incoming connections " << _addr.sin_port << XpediteLogEnd;
+    XpediteLogInfo << toString() << " listening for incoming connections " << port() << XpediteLogEnd;
     return true;
   }
 
