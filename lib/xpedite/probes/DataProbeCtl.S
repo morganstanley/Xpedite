@@ -14,6 +14,8 @@
 #
 #######################################################################################
 
+#include <xpedite/probes/StackAlign.H>
+
 .section .text
 .global  xpediteDataProbeTrampoline
 .type xpediteDataProbeTrampoline, @function 
@@ -23,7 +25,6 @@
 
 xpediteDataProbeTrampoline:
   push  %rax
-  push  %rcx
   push  %rdx
   push  %rsi
   push  %rdi
@@ -41,7 +42,7 @@ xpediteDataProbeTrampoline:
   orq   $0x40000000, %rdx
   shl   $0x20, %rdx
   or    %rax, %rdx
-  movq  0x28(%rsp), %rax
+  movq  0x20(%rsp), %rax
 
   movq   %rdx, (%rcx)
   movq   %rax, 0x8(%rcx)
@@ -51,13 +52,11 @@ xpediteDataProbeTrampoline:
   pop   %rdi
   pop   %rsi
   pop   %rdx
-  pop   %rcx
   pop   %rax
   ret
 
 xpediteDataProbeRecorderTrampoline:
   push  %rax
-  push  %rcx
   push  %rdx
   push  %rsi
   push  %rdi
@@ -74,14 +73,17 @@ xpediteDataProbeRecorderTrampoline:
   shl    $0x20, %rdx
   or     %rax, %rdx
   mov    %rdx, %rsi
-  movq   0x48(%rsp), %rdi
+  movq   0x40(%rsp), %rdi
   movq   %r8, %rdx
 
+  XPEDITE_ALIGN_STACK(r11)
 #ifdef XPEDITE_PIE
-  callq *activeXpediteDataProbeRecorder@plt
+  movq activeXpediteDataProbeRecorder@GOTPCREL(%rip), %rcx
+  callq *(%rcx)
 #else 
   callq *activeXpediteDataProbeRecorder
 #endif
+  XPEDITE_RESTORE_STACK
 
   pop  %r11
   pop  %r10
@@ -90,6 +92,5 @@ xpediteDataProbeRecorderTrampoline:
   pop  %rdi
   pop  %rsi
   pop  %rdx
-  pop  %rcx
   pop  %rax
   ret

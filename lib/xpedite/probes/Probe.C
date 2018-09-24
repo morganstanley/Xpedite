@@ -38,12 +38,7 @@ namespace xpedite { namespace probes {
   }
 
   bool Probe::activate() noexcept {
-    if(auto codeSegment = locateSegment(*this, "activate")) {
-      if(!isPositionIndependent() && codeSegment->isPositionIndependent()) {
-        XpediteLogCritical << "failed to activate probe \n\t" << toString() << "\n\tDetected NON PIC probe in shared object '" 
-          << codeSegment->file() << "'. Rebuild shared object with -DXPEDITE_PIC" << XpediteLogEnd;
-        return {};
-      }
+    if(locateSegment(*this, "activate")) {
       _attr.markActive();
       activateCallSite();
       return true;
@@ -62,18 +57,11 @@ namespace xpedite { namespace probes {
 
   void Probe::activateCallSite() noexcept {
     Instructions instructions {_callSite->_quadWord};
-    if(isPositionIndependent()) {
-      memcpy(instructions._bytes, PIC_CALL, sizeof(PIC_CALL));
-      XpediteLogInfo << "Enable position independent probe " << toString() << " | with indirect jump" << XpediteLogEnd;
-    }
-    else {
-      instructions._bytes[0] = OPCODE_CALL;
-      Trampoline trampoline {recorderCtl().trampoline(canStoreData(), canSuspendTxn())};
-      uint32_t jmpOffset {offset(_callSite, trampoline)};
-      memcpy(instructions._bytes + 1, &jmpOffset, sizeof(jmpOffset));
-      XpediteLogInfo << "Enable probe " << toString() << " | trampoline - " << reinterpret_cast<void*>(trampoline)
-        << " offset - " << jmpOffset << XpediteLogEnd;
-    }
+    instructions._bytes[0] = OPCODE_JMP;
+    uint32_t jmpOffset {offset(_callSite, _trampoline)};
+    memcpy(instructions._bytes + 1, &jmpOffset, sizeof(jmpOffset));
+    XpediteLogInfo << "Enable probe " << toString() << " | trampoline - " << reinterpret_cast<void*>(_trampoline)
+      << " offset - " << jmpOffset << XpediteLogEnd;
     _callSite->_quadWord = instructions._quadWord;
   }
 
@@ -108,17 +96,10 @@ namespace xpedite { namespace probes {
       return {};
     }
 
-    if(_callSite->_bytes[0] != OPCODE_CALL) {
-      fprintf(stderr, "detected probe probe ['%s' at %s:%d] with invalid opcode expected CALL %hhX found %hhX\n",
-             _name, _file, _line, OPCODE_CALL, _callSite->_bytes[0]);
-      return {};
-    }
-
-    uint32_t trampolineOffset {offset(_callSite, xpediteDefaultTrampoline)};
-    if(memcmp(&trampolineOffset, const_cast<const unsigned char*>(_callSite->_bytes +1), sizeof(trampolineOffset))) {
-      fprintf(stderr, "detected probe ['%s' at %s:%d] with invalid trampoline offset at call site - expected %8X"
-          " found %2X %2X %2X %2X\n", _name, _file, _line, trampolineOffset,
-          rawCallSite()[1], rawCallSite()[2] , rawCallSite()[3], rawCallSite()[4]);
+    if(memcmp(&FIVE_BYTE_NOP, rawCallSite(), sizeof(FIVE_BYTE_NOP))) {
+      fprintf(stderr, "detected probe ['%s' at %s:%d] with invalid opcode at call site - expected 5 byte NOP"
+          " found %2X %2X %2X %2X %2X\n", _name, _file, _line, rawCallSite()[0], rawCallSite()[1], rawCallSite()[2]
+          , rawCallSite()[3], rawCallSite()[4]);
       return {};
     }
     return true;
@@ -139,6 +120,7 @@ namespace xpedite { namespace probes {
     std::ostringstream os;
     os << "Probe [" << _name << std::hex << " - " << this << "]"
       << " call site - " << reinterpret_cast<const void*>(rawCallSite())
+      << " recorder call site - " << reinterpret_cast<const void*>(rawRecorderCallSite())
       << std::dec << " at - " << _file << ":" << _line;
     return os.str();
   }

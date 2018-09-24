@@ -100,7 +100,7 @@ def main():
   import sys
   tempDir = sys.argv[1]
   appName = sys.argv[2]
-  workspace = os.path.join(os.path.abspath(__file__).split('/test/')[0], '')
+  workspace = sys.argv[3]
   testDir = os.path.abspath(os.path.dirname(__file__))
   dataDir = os.path.join(testDir, '..', 'data')
   binary = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..', 'install/test/slowFixDecoder'))

@@ -26,7 +26,7 @@ namespace xpedite { namespace framework {
   std::vector<CallSiteInfo> buildCallSiteList() {
     std::vector<CallSiteInfo> callSites;
     for(auto& probe : probes::probeList()) {
-      callSites.emplace_back(probe.rawCallSite(), probe.attr(), probe.id());
+      callSites.emplace_back(probe.rawRecorderCallSite(), probe.attr(), probe.id());
     }
     return callSites;
   }

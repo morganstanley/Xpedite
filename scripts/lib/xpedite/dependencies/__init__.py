@@ -9,6 +9,7 @@ dependencies and micro architectural specifications.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 import os
+import re
 
 def loadRequirements():
   """Loads a map of minimum version for all required dependencies"""
@@ -16,7 +17,7 @@ def loadRequirements():
   reqFile = os.path.join(os.path.dirname(__file__), '../requirements.txt')
   with open(reqFile) as reqFileHandle:
     for record in reqFileHandle:
-      fields = record.split('>=')
+      fields = re.split('>=|==', record)
       if fields and len(fields) >= 2:
         name = fields[0].strip()
         minVersion = fields[1].strip()
