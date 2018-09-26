@@ -1,10 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Xpedite Probes - Probes with near zero overhead, that can be activated at runtime
+// Utility asm snippet to align stack prior to calling a method.
 //
-// The probes by default start as 5 byte NOP instructions
-// When activated, the NOP's are replace by a JMP instruction, that branches
-// to probe specific code for collecting timing and pmc data.
+// Ensures 16 byte stack alignment after storing the current stack pointer 
+//
+// The counterpart restore stack, as the name implies restores the original
+// stack pointer.
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
