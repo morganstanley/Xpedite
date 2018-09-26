@@ -3,7 +3,7 @@
 #
 # Creates a virtual environment and installs xpedite python dependencies
 #
-# Download and install juypter theme, uarch spec and topdown metrics
+# Download and install uarch spec and topdown metrics
 #
 # Author: Manikandan Dhamodharan, Morgan Stanley
 #
@@ -68,15 +68,6 @@ if [ $? -ne 0 ]; then
 fi
 
 export PATH=${RUNTIME_DIR}/bin:${PATH}
-
-if [ ${VERBOSE} -eq 1 ]; then
-  echo 'downloading jupyter dark theme ...'
-fi
-wget https://raw.githubusercontent.com/powerpak/jupyter-dark-theme/master/custom.css -O ${XPEDITE_DIR}/scripts/jupyter/config/custom/darkTheme.css
-
-if [ $? -ne 0 ]; then
-  echo failed to download jupyter theme...
-fi
 
 if [ ${ENABLE_PMU} -eq 1 ]; then
   if [ ${VERBOSE} -eq 1 ]; then
