@@ -68,3 +68,9 @@ https://github.com/ipython-contrib/jupyter_contrib_nbextensions/blob/master/COPY
 
 Copyright (c) 2013-2015, IPython-contrib Developers
 
+Jupyter-dark-theme
+===============
+
+https://github.com/powerpak/jupyter-dark-theme/blob/master/LICENSE
+
+Copyright (c) 2018 Theodore Pak
