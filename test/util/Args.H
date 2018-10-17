@@ -9,6 +9,7 @@
 #pragma once
 #include <cstdlib>
 #include <unistd.h>
+#include <iostream>
 
 struct Args
 {
