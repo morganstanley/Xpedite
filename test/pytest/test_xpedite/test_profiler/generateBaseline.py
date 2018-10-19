@@ -63,7 +63,7 @@ def generateBaseline(binary, tempDir, workspace, appName):
 
   cleanUpDataDir(tempDir, appName)
 
-  _, dataFilePath, app, _, profiles = buildNotebook(tempDir, binary, txnCount, threadCount, workspace=workspace)
+  _, dataFilePath, app, result = buildNotebook(tempDir, binary, txnCount, threadCount, workspace=workspace)
   replaceWorkspace(app.xpediteApp.appInfoPath, workspace, os.path.join(tempDir, 'xpedite-appinfo.txt'))
   copy(dataFilePath, os.path.join(tempDir, 'reportCmdBaseline.xpd'))
   
@@ -75,13 +75,13 @@ def generateBaseline(binary, tempDir, workspace, appName):
   for dataFile in app.xpediteApp.gatherFiles(app.xpediteApp.sampleFilePattern()):
     copy(dataFile, os.path.join(tempDir, os.path.basename(dataFile)))
   
-  makeBenchmark(profiles, os.path.join(tempDir, 'benchmark'))
+  makeBenchmark(result.profiles, os.path.join(tempDir, 'benchmark'))
 
   benchmarkAppInfo = os.path.join(tempDir, 'benchmark/benchmark/appinfo.txt')
   replaceWorkspace(benchmarkAppInfo, workspace, benchmarkAppInfo)
 
   benchmarkProfilePath = os.path.join(tempDir, 'profileInfoWithBenchmark.py')
-  _, benchmarkDataFilePath, _, _, _ = buildNotebook(
+  _, benchmarkDataFilePath, _, _ = buildNotebook(
     tempDir, binary, txnCount, threadCount, profileInfoPath=benchmarkProfilePath,
     runId=app.xpediteApp.runId, workspace=workspace
   )

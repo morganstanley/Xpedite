@@ -216,7 +216,7 @@ RC=0
 if [ -d ${TEST_DIR}/../install/runtime/bin ]; then
   echo detected virtual environment. resolving python dependencies from ${TEST_DIR}/../install/runtime/bin
   export PATH=${TEST_DIR}/../install/runtime/bin:${PATH}
-  python -m pip install pytest pylint pytest-cov
+  python -m pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install pytest pylint pytest-cov
 fi
 
 if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then

@@ -31,6 +31,9 @@ class Result(object):
   def __init__(self):
     self.reportCells = []
     self.envReport = None
+    self.profiles = None
+    self.runId = None
+    self.reportName = None
 
   @staticmethod
   def _buildReport(title, description, content):
@@ -61,4 +64,6 @@ class Result(object):
 
   def commit(self, app, profiles, reportName):
     """Commits results"""
-    pass
+    self.profiles = profiles
+    self.runId = app.runId
+    self.reportName = reportName

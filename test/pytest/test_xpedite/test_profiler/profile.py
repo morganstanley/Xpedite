@@ -42,11 +42,11 @@ def generateProfiles(app, profileInfo):
   from xpedite.jupyter.result   import Result
   from xpedite.profiler         import Profiler
   result = Result()
-  profiler = Profiler.profile(
+  Profiler.profile(
     app=app, profileInfo=profileInfo, reportName='XpediteTest', reportPath=None,
     dryRun=app.dryRun, result=result, interactive=False, heartbeatInterval=1
   )
-  return profiler.profiles, result
+  return result
 
 def runXpediteReport(runId, profileInfo, sampleFilePath=None, cpuInfo=None, workspace=None):
   """
@@ -62,17 +62,17 @@ def runXpediteReport(runId, profileInfo, sampleFilePath=None, cpuInfo=None, work
   xpediteApp.start()
   if cpuInfo:
     xpediteApp.env.proxy.fullCpuInfo = cpuInfo
-  reportProfiles, result = generateProfiles(xpediteApp, profileInfo)
+  result = generateProfiles(xpediteApp, profileInfo)
   xpediteApp.stop()
-  return reportProfiles, result
+  return result
 
 def runXpediteRecord(binary, profileInfo, txnCount, threadCount, remote=None, workspace=None):
   """
   Run xpedite record against a live target application process
   """
   with TargetLauncher(binary, profileInfo, txnCount, threadCount, workspace, remote) as app:
-    recordProfiles, result = generateProfiles(app.xpediteApp, profileInfo)
-  return app, recordProfiles, result
+    result = generateProfiles(app.xpediteApp, profileInfo)
+  return app, result
 
 def loadProbes(binary, profileInfo, txnCount, threadCount, remote=None, workspace=None):
   """
@@ -104,9 +104,10 @@ def compareAgainstBaseline(profileInfoPath, baselinePath, dataDir, workspace=Non
   with open(os.path.join(dataDir, 'baselineCpuInfo.json')) as fileHandle:
     fullCpuInfo = json.load(fileHandle)
   sampleFilePath = '{}/xpedite-*-{}-[0-9]*.data'.format(dataDir, runId)
-  reportProfiles, _ = runXpediteReport(
+  result = runXpediteReport(
     runId, profileInfo, sampleFilePath=sampleFilePath, cpuInfo=fullCpuInfo, workspace=workspace
   )
+  reportProfiles = result.profiles
   reportProfiles.transactionRepo = None # transactionRepo not stored in .xpd files
   reportProfiles.cpuInfo.cpuId = baselineProfiles.cpuInfo.cpuId
   if profileInfo.benchmarkPaths:
@@ -161,12 +162,12 @@ def buildNotebook(dataDir, binary, txnCount, threadCount, remote=None, profileIn
   from xpedite.benchmark import makeBenchmark
   profileInfoPath = profileInfoPath if profileInfoPath else os.path.join(dataDir, 'profileInfo.py')
   profileInfo = loadProfileInfo(dataDir, profileInfoPath, remote)
-  (profiles, app, result) = (None, None, None)
+  (app, result) = (None, None)
   if not runId:
-    app, profiles, result = runXpediteRecord(binary, profileInfo, txnCount, threadCount, remote, workspace=workspace)
+    app, result = runXpediteRecord(binary, profileInfo, txnCount, threadCount, remote, workspace=workspace)
     runId = app.xpediteApp.runId
   else:
-    profiles, result = runXpediteReport(runId, profileInfo, workspace=workspace)
+    result = runXpediteReport(runId, profileInfo, workspace=workspace)
 
   tempDir = tempfile.mkdtemp()
   tempDataDir = os.path.join(tempDir, 'xpData')
@@ -174,6 +175,6 @@ def buildNotebook(dataDir, binary, txnCount, threadCount, remote=None, profileIn
   notebookPath = os.path.join(tempDir, 'xpediteTest.ipynb')
   dataFilePath = os.path.join(tempDir, 'xpData/xpediteTest.xpd')
   notebook = xpedite.jupyter.driver.buildNotebook(
-    profileInfo.appName, result, profiles, notebookPath, dataFilePath, runId
+    profileInfo.appName, result, notebookPath, dataFilePath, runId
   )
-  return notebook, dataFilePath, app, result, profiles
+  return notebook, dataFilePath, app, result
