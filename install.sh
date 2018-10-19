@@ -61,7 +61,7 @@ fi
 
 RUNTIME_DIR=${XPEDITE_DIR}/install/runtime/bin
 
-${RUNTIME_DIR}/python -m pip install -r ${XPEDITE_DIR}/scripts/lib/xpedite/requirements.txt
+${RUNTIME_DIR}/python -m pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install -r ${XPEDITE_DIR}/scripts/lib/xpedite/requirements.txt
 if [ $? -ne 0 ]; then
   echo failed to install python dependencies...
   exit 1
