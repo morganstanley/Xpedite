@@ -14,11 +14,11 @@ def pytest_addoption(parser):
   """
   workspaceDefault = os.path.join(os.path.abspath(__file__).split('/test/')[0], '')
   parser.addoption('--hostname', action='store', default='127.0.0.1', help='enter remote host')
-  parser.addoption('--transactions', action='store', default=1000, help='enter number of transactions to run')
+  parser.addoption('--transactions', action='store', default=1024, help='enter number of transactions to run')
   parser.addoption('--multithreaded', action='store', default=1, help='enter number of threads')
   parser.addoption('--workspace', action='store', default=workspaceDefault, help='workspace path to trim from file paths')
-  parser.addoption('--tempdir', action='store', default='', help='directory to extract files to')
- 
+  parser.addoption('--rundir', action='store', default='', help='directory to extract files to')
+  parser.addoption('--apps', action='store', default='[slowFixDecoderApp]', help='apps to test')
 
 @pytest.fixture
 def hostname(request):
@@ -49,9 +49,16 @@ def workspace(request):
   return request.config.option.workspace
 
 @pytest.fixture
-def tempdir(request):
+def rundir(request):
   """
   Directory to extract files to
   """
-  return request.config.option.tempdir
+  return request.config.option.rundir
 
+@pytest.fixture
+def apps(request):
+  """
+  Directory to extract files to
+  """
+  apps = request.config.option.apps
+  return apps.split(',')

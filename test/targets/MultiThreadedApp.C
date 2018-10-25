@@ -19,19 +19,23 @@
 unsigned childCount {2};
 unsigned threadCount {4};
 unsigned txnCount {100};
+unsigned cpu {0};
 
 void parseArgs(int argc_, char** argv_) {
   int arg;
-  while ((arg = getopt (argc_, argv_, "T:t:g:")) != -1) {
+  while ((arg = getopt (argc_, argv_, "m:t:g:c:")) != -1) {
     switch (arg) {
     case 'g':
       childCount = std::stoi(optarg);
       break;
-    case 'T':
+    case 'm':
       threadCount = std::stoi(optarg);
       break;
     case 't':
       txnCount = std::stoi(optarg);
+      break;
+    case 'c':
+      cpu = std::stoi(optarg);
       break;
     case '?':
     default:

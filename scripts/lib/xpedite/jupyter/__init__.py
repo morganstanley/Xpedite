@@ -26,7 +26,7 @@ ARCHIVE_FILE_EXT = '.tar{}'.format(DATA_FILE_EXT)
 EXPORT_PREFIX = 'xpediteExport'
 SHELL_PREFIX = 'xpediteShell'
 TEMP_PREFIX = 'xpedite'
-
+PROFILES_KEY = 'profiles'
 
 def buildXpdName(notebookName):
   """
