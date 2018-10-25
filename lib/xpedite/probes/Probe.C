@@ -20,27 +20,25 @@ namespace xpedite { namespace probes {
   util::AddressSpace::Segment* locateSegment(Probe& probe_, const char* action_) noexcept {
     auto codeSegment = util::addressSpace().find(probe_.rawCallSite());
     if(!codeSegment) {
-      XpediteLogCritical << "failed to " << action_ << " probe \n\t" << probe_.toString() 
-        << "\n\tCannot locate segment for call site - " << reinterpret_cast<const void*>(probe_.rawCallSite())
-        << XpediteLogEnd;
+      auto probeStr = probe_.toString();
+      fprintf(stderr, "failed to %s probe \n\t%s\n\tcannot locate segment for call site - %p\n",
+          action_,  probeStr.c_str(), reinterpret_cast<const void*>(probe_.rawCallSite()));
       return {};
     }
 
     if(!codeSegment->isPatchable()) {
-      XpediteLogCritical << "failed to " << action_ << " probe \n\t" << probe_.toString()
-        << "\n\tCode segment not patchable" << XpediteLogEnd;
-      return {};
+      if(!codeSegment->makeWritable()) {
+        auto probeStr = probe_.toString();
+        fprintf(stderr, "failed to %s probe \n\t%s\n\tcode segment not patchable\n",
+            action_, probeStr.c_str());
+        return {};
+      }
     }
     return codeSegment; 
   }
 
   bool Probe::activate() noexcept {
-    if(auto codeSegment = locateSegment(*this, "activate")) {
-      if(!isPositionIndependent() && codeSegment->isPositionIndependent()) {
-        XpediteLogCritical << "failed to activate probe \n\t" << toString() << "\n\tDetected NON PIC probe in shared object '" 
-          << codeSegment->file() << "'. Rebuild shared object with -DXPEDITE_PIC" << XpediteLogEnd;
-        return {};
-      }
+    if(locateSegment(*this, "activate")) {
       _attr.markActive();
       activateCallSite();
       return true;
@@ -59,18 +57,11 @@ namespace xpedite { namespace probes {
 
   void Probe::activateCallSite() noexcept {
     Instructions instructions {_callSite->_quadWord};
-    if(isPositionIndependent()) {
-      memcpy(instructions._bytes, PIC_CALL, sizeof(PIC_CALL));
-      XpediteLogInfo << "Enable position independent probe " << toString() << " | with indirect jump" << XpediteLogEnd;
-    }
-    else {
-      instructions._bytes[0] = OPCODE_CALL;
-      Trampoline trampoline {recorderCtl().trampoline(canStoreData(), canSuspendTxn())};
-      uint32_t jmpOffset {offset(_callSite, trampoline)};
-      memcpy(instructions._bytes + 1, &jmpOffset, sizeof(jmpOffset));
-      XpediteLogInfo << "Enable probe " << toString() << " | trampoline - " << reinterpret_cast<void*>(trampoline)
-        << " offset - " << jmpOffset << XpediteLogEnd;
-    }
+    instructions._bytes[0] = OPCODE_JMP;
+    uint32_t jmpOffset {offset(_callSite, _trampoline)};
+    memcpy(instructions._bytes + 1, &jmpOffset, sizeof(jmpOffset));
+    XpediteLogInfo << "Enable probe " << toString() << " | trampoline - " << reinterpret_cast<void*>(_trampoline)
+      << " offset - " << jmpOffset << XpediteLogEnd;
     _callSite->_quadWord = instructions._quadWord;
   }
 
@@ -129,6 +120,7 @@ namespace xpedite { namespace probes {
     std::ostringstream os;
     os << "Probe [" << _name << std::hex << " - " << this << "]"
       << " call site - " << reinterpret_cast<const void*>(rawCallSite())
+      << " recorder call site - " << reinterpret_cast<const void*>(rawRecorderCallSite())
       << std::dec << " at - " << _file << ":" << _line;
     return os.str();
   }

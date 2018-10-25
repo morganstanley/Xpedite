@@ -41,12 +41,14 @@ The main features include
 
 To build xpedite, you will need [cmake](http://cmake.org/) 3.4 or later, [GNU gcc](https://gcc.gnu.org/) 5.2 or later, and a version 2.5 or later Linux kernel.
 
-With cmake, and g++ installed, after downloading this code you should be able to build and install xpedite just by running:
+With cmake and g++ installed, to use xpedite, clone this repository and run the following from xpedite source dir:
 
 ```
-$ build.sh      # builds xpedite c++ library
+$ ./build.sh      # builds xpedite c++ library
 
-$ install.sh    # creates a virtual environment and installs xpedite python dependencies
+$ ./install.sh    # creates a virtual environment and installs xpedite python dependencies
+
+$ alias xpedite="PATH=`pwd`/install/runtime/bin `pwd`/scripts/bin/xpedite" # Adds an alias for xpedite to shell
 
 ```
 

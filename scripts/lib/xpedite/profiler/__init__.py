@@ -12,9 +12,37 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import sys
+import os
 import logging
+import xpedite
+from xpedite.profiler.profileInfo       import loadProfileInfo
+from xpedite.profiler.app               import XpediteApp, XpediteDormantApp, pingApp
+from logger                             import enableVerboseLogging
 
 LOGGER = logging.getLogger(__name__)
+
+def buildReportName(appName, reportName):
+  """Constructs report name from app + user supplied report name"""
+  import re
+  from datetime import datetime
+  reportName = reportName if reportName else '{}-{}'.format(appName, datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))
+  reportName = re.sub(r'[^\w\-:_\. ]', '_', reportName)
+  return reportName
+
+def validateBenchmarkPath(path):
+  """Validate the given path for write access"""
+  if path:
+    if os.path.exists(path):
+      LOGGER.error('cannot create/overwrite benchmark at "%s". path already exists\n', path)
+      sys.exit(10)
+    xpedite.util.mkdir(path)
+
+def _loadProbes(app):
+  """Attaches to application and loads probe data"""
+  with app:
+    pingApp(app)
+    from xpedite.profiler.probeAdmin import ProbeAdmin
+    return ProbeAdmin.loadProbes(app)
 
 class Profiler(object):
   """Xpedite Profiler"""
@@ -97,3 +125,107 @@ class Profiler(object):
     if reportPath:
       runtime.makeBenchmark(reportPath)
     return runtime
+
+  @staticmethod
+  def record(profileInfoPath, benchmarkPath=None, duration=None, heartbeatInterval=None,
+      cprofile=None, profileName=None, verbose=None, result=None):
+    """
+    Records an xpedite profile using the supplied parameters
+
+    :param profileInfoPath: Path to profile info module
+    :type profileInfoPath: str
+    :param benchmarkPath: Path to persist profile data for benchmarking
+    :type benchmarkPath: str
+    :param duration: Profile duration - The session is automatically terminated after elapse
+                     of duration seconds (Default value = None)
+    :type duration: int
+    :param heartbeatInterval: Heartbeat interval for profiler's tcp connection
+    :type heartbeatInterval: int
+    :param cprofile: Handle to capture self profile Xpedite report generation code (Default value = None)
+    :type cprofile: C{xpedite.selfProfile.CProfile}
+    :param profileName: Name of the profile report
+    :type profileName: str
+    :param verbose: Flag to enable, verbose logging
+    :type verbose: bool
+    :param result: Object for gathering and storing profile results
+    :type result: xpedite.jupyter.result.Result
+    """
+    if verbose:
+      enableVerboseLogging()
+    profileInfo = loadProfileInfo(profileInfoPath)
+    validateBenchmarkPath(benchmarkPath)
+    app = XpediteApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo)
+    with app:
+      from xpedite.jupyter.result import Result
+      result = result if result else Result()
+      reportName = buildReportName(profileInfo.appName, profileName)
+      Profiler.profile(
+        app, profileInfo, reportName, benchmarkPath, False, result, heartbeatInterval=heartbeatInterval,
+        duration=duration, cprofile=cprofile
+      )
+    return profileInfo, result
+
+  @staticmethod
+  def report(profileInfoPath, runId, benchmarkPath=None, cprofile=None, profileName=None, verbose=None, result=None):
+    """
+    Generates report for a previous profiling runs
+
+    :param profileInfoPath: Path to profile info module
+    :type profileInfoPath: str
+    :param runId: Unique identifier for a previous run
+    :type runId: str
+    :param benchmarkPath: Path to persist profile data for benchmarking
+    :type benchmarkPath: str
+    :param cprofile: Handle to capture self profile Xpedite report generation code (Default value = None)
+    :type cprofile: C{xpedite.selfProfile.CProfile}
+    :param profileName: Name of the profile report
+    :type profileName: str
+    :param verbose: Flag to enable, verbose logging
+    :type verbose: bool
+    :param result: Object for gathering and storing profile results
+    :type result: xpedite.jupyter.result.Result
+    """
+    if verbose:
+      enableVerboseLogging()
+    profileInfo = loadProfileInfo(profileInfoPath)
+    validateBenchmarkPath(benchmarkPath)
+    app = XpediteDormantApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo, runId)
+    with app:
+      from xpedite.jupyter.result import Result
+      result = result if result else Result()
+      reportName = buildReportName(profileInfo.appName, profileName)
+      Profiler.profile(app, profileInfo, reportName, benchmarkPath, True, result, cprofile=cprofile)
+    return profileInfo, result
+
+  @staticmethod
+  def probes(profileInfoPath):
+    """
+    Attaches to application and loads probe data
+
+    :param profileInfoPath: Path to profile info module
+    :type profileInfoPath: str
+    """
+    profileInfo = loadProfileInfo(profileInfoPath)
+    app = XpediteApp('app', profileInfo.appHost, profileInfo.appInfo)
+    return _loadProbes(app)
+
+  @staticmethod
+  def generate(appInfoPath, hostname=None):
+    """
+    Attaches to application and generates default profile info
+
+    :param appInfoPath: Path to app info module
+    :type appInfoPath: str
+    :param hostname: Name of the host running the target process
+    :type hostname: str
+    """
+    hostname = hostname if hostname else 'localhost'
+    app = XpediteApp('app', hostname, appInfoPath)
+    probes = _loadProbes(app)
+    if probes:
+      from xpedite.profiler.profileInfoGenerator import ProfileInfoGenerator
+      appInfoAbsolutePath = os.path.abspath(appInfoPath)
+      profilerPath = os.path.abspath(os.path.join(__file__, '../../../../bin/xpedite'))
+      ProfileInfoGenerator(app.executableName, hostname, appInfoAbsolutePath, probes, profilerPath).generate()
+    else:
+      LOGGER.error('failed to generate profile_info.py. cannot locate probes in app. Have you instrumented any ?\n')

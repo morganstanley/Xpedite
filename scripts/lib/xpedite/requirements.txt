@@ -6,7 +6,7 @@ netifaces>=0.10.4
 numpy>=1.6.1
 pygments>=2.0.2
 rpyc>=3.3.0
-cement>=2.8.2
+cement==2.8.2
 termcolor>=1.1.0
 py-cpuinfo>=0.1.2
 jupyter>=1.0.0

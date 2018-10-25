@@ -71,19 +71,19 @@ static ssize_t resetOffcoreCounters(void) {
   return err;
 }
 
-static ssize_t enableFixedCtrCtl(EventSelect *eventSelect_) {
-  ssize_t err = wrmsr_safe(PMU_MSR_IA32_FIXED_CTR_CTRL, eventSelect_->_fixedEvtSel, 0 /*high*/);
+static ssize_t enableFixedCtrCtl(EventSet *eventSet_) {
+  ssize_t err = wrmsr_safe(PMU_MSR_IA32_FIXED_CTR_CTRL, eventSet_->_fixedEvtSel, 0 /*high*/);
   if(err) {
     printk(KERN_ALERT "Xpedite: Failed to reset IA32_FIXED_CTR_CTRL on core %d\n", smp_processor_id());
   }
   return err;
 }
 
-static ssize_t enableGpCounters(EventSelect *eventSelect_) {
+static ssize_t enableGpCounters(EventSet *eventSet_) {
   ssize_t err = 0;
   unsigned i;
-  for(i=0; i < eventSelect_->_gpEvtCount; ++i) {
-    err = wrmsr_safe(PMU_MSR_PerfEvtSel0 + i, eventSelect_->_gpEvtSel[i], 0);
+  for(i=0; i < eventSet_->_gpEvtCount; ++i) {
+    err = wrmsr_safe(PMU_MSR_PerfEvtSel0 + i, eventSet_->_gpEvtSel[i], 0);
     if(err) {
       printk(KERN_ALERT "Xpedite: Failed to reset PerfEvtSel(%u) on core %d\n", i, smp_processor_id());
       break;
@@ -92,13 +92,13 @@ static ssize_t enableGpCounters(EventSelect *eventSelect_) {
   return err;
 }
 
-static ssize_t enableOffcoreCounters(EventSelect *eventSelect_) {
+static ssize_t enableOffcoreCounters(EventSet *eventSet_) {
   ssize_t err = 0;
   unsigned i;
   u32 low, high;
-  for(i=0; i < eventSelect_->_offcoreEvtCount; ++i) {
-    low = eventSelect_->_offcoreEvtSel[i];
-    high = eventSelect_->_offcoreEvtSel[i] >> 32;
+  for(i=0; i < eventSet_->_offcoreEvtCount; ++i) {
+    low = eventSet_->_offcoreEvtSel[i];
+    high = eventSet_->_offcoreEvtSel[i] >> 32;
     printk(KERN_INFO "Xpedite: setting MSR_OFFCORE_RSP_%u -> %x | %x\n", i, high, low);
     err = wrmsr_safe(PMU_MSR_OFFCORE_RSP_0 + i, low, high);
     if(err) {
@@ -129,42 +129,42 @@ ssize_t pmuClearEventSet(unsigned char gpEvtCount_) {
   return err;
 }
 
-ssize_t pmuEnableEventSet(EventSelect *eventSelect_) {
+ssize_t pmuEnableEventSet(EventSet *eventSet_) {
   u32 low, high;
 
-  if(eventSelect_->_gpEvtCount > XPEDITE_PMC_CTRL_GP_EVENT_MAX) {
-    eventSelect_->_err = -EFAULT;
-    return eventSelect_->_err;
+  if(eventSet_->_gpEvtCount > XPEDITE_PMC_CTRL_GP_EVENT_MAX) {
+    eventSet_->_err = -EFAULT;
+    return eventSet_->_err;
   }
 
-  eventSelect_->_err = pmuClearEventSet(eventSelect_->_gpEvtCount);
-  if(eventSelect_->_err) {
-    return eventSelect_->_err;
+  eventSet_->_err = pmuClearEventSet(eventSet_->_gpEvtCount);
+  if(eventSet_->_err) {
+    return eventSet_->_err;
   }
 
-  eventSelect_->_err = enableGpCounters(eventSelect_);
+  eventSet_->_err = enableGpCounters(eventSet_);
 
-  if(!eventSelect_->_err) {
-    eventSelect_->_err = enableOffcoreCounters(eventSelect_);
+  if(!eventSet_->_err) {
+    eventSet_->_err = enableOffcoreCounters(eventSet_);
   }
 
-  if(!eventSelect_->_err) {
-    eventSelect_->_err = enableFixedCtrCtl(eventSelect_);
+  if(!eventSet_->_err) {
+    eventSet_->_err = enableFixedCtrCtl(eventSet_);
   }
 
-  low = (1 << eventSelect_->_gpEvtCount) -1;
-  high = eventSelect_->_fixedEvtGlobalCtl;
-  if(!eventSelect_->_err) {
-    eventSelect_->_err = enableGlobalCtl(low, high);
+  low = (1 << eventSet_->_gpEvtCount) -1;
+  high = eventSet_->_fixedEvtGlobalCtl;
+  if(!eventSet_->_err) {
+    eventSet_->_err = enableGlobalCtl(low, high);
   }
 
-  if(eventSelect_->_err) {
-    pmuClearEventSet(eventSelect_->_gpEvtCount);
+  if(eventSet_->_err) {
+    pmuClearEventSet(eventSet_->_gpEvtCount);
   }
   else {
     uint64_t globalCtrCtl = ((uint64_t)high << 32) | low;
     printk(KERN_INFO "Xpedite: enabled pmu counters | IA32_FIXED_CTR_CTRL [0x%08llX] | IA32_PERF_GLOBAL_CTRL [0x%016llX] | on core %d", 
-      (uint64_t)eventSelect_->_fixedEvtSel, globalCtrCtl, smp_processor_id());
+      (uint64_t)eventSet_->_fixedEvtSel, globalCtrCtl, smp_processor_id());
   }
-  return eventSelect_->_err;
+  return eventSet_->_err;
 }

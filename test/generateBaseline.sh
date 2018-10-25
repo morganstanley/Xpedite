@@ -19,11 +19,13 @@ fi
 export PYTHONPATH=$PYTHONPATH:${PYTEST_DIR}
 export PYTHONPATH=$PYTHONPATH:${XPEDITE_DIR}
 
+WORKSPACE=`cd ${TEST_DIR}/..; cd -`
+
 TEMP_DIR=`mktemp -d`
 APP_NAME="slowFixDecoder"
 
 ${TEST_DIR}/tarFiles.sh -d ${TEMP_DIR} -a ${APP_NAME} -x
 
-python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py ${TEMP_DIR} ${APP_NAME}
+python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py ${TEMP_DIR} ${APP_NAME} ${WORKSPACE}
 
 ${TEST_DIR}/tarFiles.sh -d ${TEMP_DIR} -a ${APP_NAME} -z

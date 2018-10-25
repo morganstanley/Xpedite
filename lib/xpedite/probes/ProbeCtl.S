@@ -14,7 +14,10 @@
 #
 #######################################################################################
 
+#include <xpedite/probes/StackAlign.H>
+
 .section .text
+
 .global  xpediteTrampoline
 .type xpediteTrampoline, @function 
 
@@ -26,7 +29,6 @@
 
 xpediteTrampoline:
   push  %rax
-  push  %rcx
   push  %rdx
   push  %rsi
 
@@ -39,7 +41,7 @@ xpediteTrampoline:
   rdtsc
   shl   $0x20, %rdx
   or    %rax, %rdx
-  movq  0x20(%rsp), %rax
+  movq  0x18(%rsp), %rax
 
   movq  %rdx, (%rcx)
   movq  %rax, 0x8(%rcx)
@@ -48,13 +50,11 @@ xpediteTrampoline:
 
   pop   %rsi
   pop   %rdx
-  pop   %rcx
   pop   %rax
   ret
 
 xpediteRecorderTrampoline:
   push  %rax
-  push  %rcx
   push  %rdx
   push  %rsi
 1:
@@ -67,15 +67,18 @@ xpediteRecorderTrampoline:
   rdtsc
   shl    $0x20, %rdx
   or     %rax, %rdx
-  mov    %rdx, %rsi
-  movq   0x48(%rsp), %rdi
+  movq   %rdx, %rsi
+  movq   0x40(%rsp), %rdi
 
+  XPEDITE_ALIGN_STACK(r11)
 #ifdef XPEDITE_PIE
-  callq *activeXpediteRecorder@plt
+  movq activeXpediteRecorder@GOTPCREL(%rip), %rcx
+  callq *(%rcx)
 #else 
   callq *activeXpediteRecorder
 #endif
-  
+  XPEDITE_RESTORE_STACK
+
   pop  %r11
   pop  %r10
   pop  %r9
@@ -83,6 +86,5 @@ xpediteRecorderTrampoline:
   pop  %rdi
   pop  %rsi
   pop  %rdx
-  pop  %rcx
   pop  %rax
   ret

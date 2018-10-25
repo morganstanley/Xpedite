@@ -8,7 +8,7 @@
 
 #pragma once
 #include "fwd.h"
-#include <xpedite/pmu/EventSelect.h>
+#include <xpedite/pmu/EventSet.h>
 
 #ifdef __cplusplus
 extern "C" {

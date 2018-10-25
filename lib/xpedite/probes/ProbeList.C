@@ -45,7 +45,6 @@ extern "C" {
         probe_->name(), probe_->file(), probe_->line());
       return;
     }
-
     ProbeList::get().add(probe_);
   }
  

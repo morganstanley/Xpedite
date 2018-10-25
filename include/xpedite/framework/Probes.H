@@ -20,9 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <xpedite/probes/ProbeCtl.H>
-#include <xpedite/framework/ProbeData.H>
-#include <iostream>
 
 /*
  * A util macro used for building RAII for probes in thread transaction boundaries
@@ -37,6 +34,9 @@
  */
 
 #ifndef XPEDITE_DISABLE
+#include <xpedite/probes/ProbeCtl.H>
+#include <xpedite/framework/ProbeData.H>
+
 #define CONCAT3_INDIRECT(A, B, C) A##B##C
 #define CONCAT3(A, B, C) CONCAT3_INDIRECT(A, B, C)
 
@@ -100,10 +100,6 @@
 #define XPEDITE_TXN_END(NAME) XPEDITE_FLAGGED_PROBE(NAME, xpedite::probes::CallSiteAttr::CAN_END_TXN)
 
 #define XPEDITE_TXN_SCOPE(NAME) XPEDITE_PROBE_GUARD(XPEDITE_TXN_BEGIN, XPEDITE_TXN_END, NAME, CONCAT3(XpediteGuard, NAME, __LINE__))
-
-namespace xpedite { namespace framework {
-  using TxnId = __uint128_t;
-}}
 #else
 
 #define XPEDITE_PROBE(NAME)
@@ -117,3 +113,7 @@ namespace xpedite { namespace framework {
 #define XPEDITE_TXN_SCOPE(NAME)
 
 #endif
+
+namespace xpedite { namespace framework {
+  using TxnId = __uint128_t;
+}}

@@ -80,7 +80,7 @@ def buildReportLink(reportKey, action):
   """Returns an url to uniquely identify a report"""
   return '/xpedite?{}={{0}}&reportKey={}&action={}'.format(Context.fileKey, reportKey, action)
 
-def buildReportCells(nb, result, dataFilePath, profiles):
+def buildReportCells(nb, result, dataFilePath):
   """
   Method to build the report cells. Populates the
    metadata to be stored in init cell and preloads
@@ -99,7 +99,7 @@ def buildReportCells(nb, result, dataFilePath, profiles):
 
   xpdf = XpediteDataFactory(dataFilePath)
   xpdf.appendRecord('envReport', 'environment report', result.envReport.zContent)
-  xpdProfiles = copy.deepcopy(profiles)
+  xpdProfiles = copy.deepcopy(result.profiles)
   xpdProfiles.transactionRepo = None
   xpdf.appendRecord('profiles', 'xpedite profiles', xpdProfiles)
 
@@ -170,7 +170,7 @@ def buildInitCell(nb, numOfCategories, d3Flots, appName, runId):
   'd3Flots': d3Flots})] + nb['cells']
 
 
-def buildNotebook(appName, result, profiles, notebookPath, dataFilePath, runId):
+def buildNotebook(appName, result, notebookPath, dataFilePath, runId):
   """
   Method to build .ipynb notebook with init code
    cell for profiles and one report cell per category.
@@ -179,7 +179,7 @@ def buildNotebook(appName, result, profiles, notebookPath, dataFilePath, runId):
   begin = time.time()
   LOGGER.info('generating notebook %s -> ', os.path.basename(notebookPath))
   nb = nbf.new_notebook()
-  numOfCategories, d3Flots = buildReportCells(nb, result, dataFilePath, profiles)
+  numOfCategories, d3Flots = buildReportCells(nb, result, dataFilePath)
   buildInitCell(nb, numOfCategories, d3Flots, appName, runId)
 
   try:
@@ -242,21 +242,11 @@ class Driver(object):
   """Xpedite driver to render profile results in jupyter shell"""
 
   @staticmethod
-  def runProfiler(app, profileInfo, reportName, leanReports, reportPath=None, # pylint: disable=unused-argument
-    dryRun=False, duration=None, heartbeatInterval=120, cprofile=None):
+  def render(profileInfo, result, leanReports=None, cprofile=None): # pylint: disable=unused-argument
     """Runs a profile session and renders results in a jupyter shell"""
-    from xpedite.jupyter.result import Result
-    from xpedite.profiler import Profiler
-    notebookPath, dataFilePath, profileInfo.homeDir = validatePath(profileInfo.homeDir, reportName)
-    with app:
-      result = Result()
-      profiler = Profiler.profile(
-        app, profileInfo, reportName, reportPath, dryRun, result, heartbeatInterval=heartbeatInterval,
-        duration=duration, cprofile=cprofile
-      )
-
+    notebookPath, dataFilePath, profileInfo.homeDir = validatePath(profileInfo.homeDir, result.reportName)
     if result.reportCells:
-      rc = buildNotebook(profileInfo.appName, result, profiler.profiles, notebookPath, dataFilePath, app.runId)
+      rc = buildNotebook(profileInfo.appName, result, notebookPath, dataFilePath, result.runId)
       if cprofile:
         cprofile.disable()
       if rc:

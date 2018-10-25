@@ -28,13 +28,10 @@ from xpedite.dependencies               import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Cement)
 from cement.core.foundation             import CementApp
 from cement.ext.ext_argparse            import ArgparseController, expose
-from xpedite.profiler.app               import XpediteApp, XpediteDormantApp, pingApp
-from xpedite.profiler.profileInfo       import loadProfileInfo
-from logger                             import enableVerboseLogging
 import logging
 import xpedite
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger('xpedite')
 
 installPath = os.path.dirname(os.path.abspath(__file__))
 profileInfoTemplate = os.path.dirname(installPath) + '/lib/examples/profileInfo.py'
@@ -44,12 +41,6 @@ def _loadPerfEventsDb():
   from xpedite.pmu.eventsDb import loadEventsDb
   from xpedite.util import getCpuId
   return loadEventsDb(getCpuId())
-
-def _loadProbes(app):
-  app.start()
-  pingApp(app)
-  from xpedite.profiler.probeAdmin import ProbeAdmin
-  return ProbeAdmin.loadProbes(app)
 
 def _loadDriver(name = None):
   import signal
@@ -61,20 +52,6 @@ def _loadDriver(name = None):
     from xpedite.jupyter.driver import Driver
     return Driver()
   return driver
-
-def validateBenchmarkPath(path):
-  if path:
-    if os.path.exists(path):
-      LOGGER.error('cannot create/overwrite benchmark at "%s". path already exists\n', path)
-      sys.exit(10)
-    xpedite.util.mkdir(path)
-
-def buildReportName(appName, reportName):
-  import re
-  from datetime import datetime
-  reportName = reportName if reportName else '{}-{}'.format(appName, datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))
-  reportName = re.sub('[^\w\-:_\. ]', '_', reportName)
-  return reportName
 
 class AppController(ArgparseController):
   class Meta:
@@ -99,17 +76,16 @@ class AppController(ArgparseController):
     help='Attach to a live process and begin profiling'
   )
   def record(self):
-    profileInfo = loadProfileInfo(self.app.pargs.profileInfo)
-    app = XpediteApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo)
     from xpedite.selfProfile import CProfile
     cprofile = CProfile(self.app.pargs.selfProfile) if self.app.pargs.selfProfile else None
-    reportName = buildReportName(profileInfo.appName, self.app.pargs.name)
-    validateBenchmarkPath(self.app.pargs.createBenchmark)
+    from xpedite.profiler import Profiler
+    profileInfo, result = Profiler.record(
+      self.app.pargs.profileInfo, benchmarkPath=self.app.pargs.createBenchmark, duration=self.app.pargs.duration,
+      heartbeatInterval=self.app.pargs.heartbeat, cprofile=cprofile, profileName=self.app.pargs.name,
+      verbose=self.app.pargs.verbose
+    )
     driver = _loadDriver(self.app.pargs.driver)
-    if self.app.pargs.verbose:
-      enableVerboseLogging()
-    driver.runProfiler(app, profileInfo, reportName, self.app.pargs.lean, reportPath=self.app.pargs.createBenchmark,
-      duration = self.app.pargs.duration, heartbeatInterval = self.app.pargs.heartbeat, cprofile = cprofile)
+    driver.render(profileInfo, result, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
   @expose(
     arguments=[
@@ -118,9 +94,8 @@ class AppController(ArgparseController):
     help='List all xpedite probes instrumeted in process, with their current status'
   )
   def probes(self):
-    profileInfo = loadProfileInfo(self.app.pargs.profileInfo)
-    app = XpediteApp('app', profileInfo.appHost, profileInfo.appInfo)
-    probes = _loadProbes(app)
+    from xpedite.profiler import Profiler
+    probes = Profiler.probes(self.app.pargs.profileInfo)
     if(len(probes)):
       LOGGER.info('%-80s \t %s', 'probe name', 'status')
       for probe in probes:
@@ -132,23 +107,14 @@ class AppController(ArgparseController):
 
   @expose(
     arguments=[
-      (['-H', '--host'], dict(action='store', default='127.0.0.1', help='host where the app runs')),
+      (['-H', '--hostname'], dict(action='store', default='127.0.0.1', help='host where the app runs')),
       (['-a', '--appInfo'], dict(action='store', required=True, help='path to appInfo file, used in xpedite framework initilization')),
     ],
     help='Generate profile info for xpedite instrumented application'
   )
   def generate(self):
-    host = self.app.pargs.host if self.app.pargs.host else 'localhost'
-    app = XpediteApp('app', host, self.app.pargs.appInfo)
-    probes = _loadProbes(app)
-    absolutePath = os.path.abspath(self.app.pargs.appInfo)
-    if(len(probes)):
-      profilerPath = os.path.abspath(__file__)
-      from xpedite.profiler.profileInfoGenerator import ProfileInfoGenerator
-      ProfileInfoGenerator(app.executableName, host, absolutePath, probes, profilerPath).generate()
-    else:
-      LOGGER.error('failed to generate profile_info.py. cannot locate probes in app. Have you instrumented any ?\n')
-
+    from xpedite.profiler import Profiler
+    Profiler.generate(self.app.pargs.appInfo, hostname=self.app.pargs.hostname)
 
   @expose(
     arguments=[
@@ -186,7 +152,6 @@ class FrameworkController(ArgparseController):
       (['-p', '--profileInfo'], dict(action='store', required=True, help=profileInfoHelp)),
       (['-b', '--createBenchmark'], dict(action='store', help='store report at the given path, for future benchmarking')),
       (['-D', '--driver'], dict(action='store', help='driver for report generation')),
-      (['-i', '--interactive'], dict(action='store_true', help='explore jupyter and perform analytics on reports')),
       (['-r', '--runId'], dict(action='store', required=True, help='run-id to generate the report for')),
       (['-v', '--verbose'], dict(action='store_true', help='verbose mode, with tsc values in perf report')),
       (['-s', '--selfProfile'], dict(action='store', required=False, help='self profile xpedite - path to store the profile data')),
@@ -196,16 +161,15 @@ class FrameworkController(ArgparseController):
     help='Generate report for a previous run'
   )
   def report(self):
-    profileInfo = loadProfileInfo(self.app.pargs.profileInfo)
-    app = XpediteDormantApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo, self.app.pargs.runId)
     from xpedite.selfProfile import CProfile
     cprofile = CProfile(self.app.pargs.selfProfile) if self.app.pargs.selfProfile else None
-    reportName = buildReportName(profileInfo.appName, self.app.pargs.name)
-    validateBenchmarkPath(self.app.pargs.createBenchmark)
-    if self.app.pargs.verbose:
-      enableVerboseLogging()
+    from xpedite.profiler import Profiler
+    profileInfo, result = Profiler.report(
+      self.app.pargs.profileInfo, self.app.pargs.runId, benchmarkPath=self.app.pargs.createBenchmark,
+      cprofile=cprofile, profileName=self.app.pargs.name, verbose=self.app.pargs.verbose
+    )
     driver = _loadDriver(self.app.pargs.driver)
-    driver.runProfiler(app, profileInfo, reportName, self.app.pargs.lean, reportPath = self.app.pargs.createBenchmark, dryRun=True, cprofile = cprofile)
+    driver.render(profileInfo, result, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
   @expose(help='List the NON Archtectural hardware performance counters, that can be profiled with xpedite')
   def list(self):

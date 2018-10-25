@@ -14,7 +14,6 @@
 ////////////////////////////////////////////////////////////////////////////////////
 
 #include "SamplesLoader.H"
-#include <xpedite/probes/CallSite.H>
 #include <iostream>
 #include <iomanip>
 #include <ios>
@@ -29,15 +28,14 @@ int main(int argc_, char** argv_) {
   using namespace xpedite::framework;
   SamplesLoader loader {argv_[1]};
   auto pmcCount = loader.pmcCount();
-  std::cout << "Tsc,CallSite,Data";
+  std::cout << "Tsc,ReturnSite,Data";
   for(unsigned i=0; i<pmcCount; ++i) {
     std::cout << ",Pmc-" << i+1;
   }
   std::cout << std::endl;
 
   for(auto& sample : loader) {
-    auto callSite = getcallSite(sample.returnSite());
-    std::cout << std::hex << sample.tsc() << std::dec << "," << callSite;
+    std::cout << std::hex << sample.tsc() << std::dec << "," << sample.returnSite();
     if (sample.hasData()) {
       std::cout << std::hex << "," << std::get<1>(sample.data()) << std::setw(16) << std::setfill('0') 
         << std::right << std::get<0>(sample.data()) << std::dec;
