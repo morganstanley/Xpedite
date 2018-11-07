@@ -9,9 +9,10 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 import os
 import time
-from concurrent import futures
+from concurrent      import futures
 import logging
-from enum import Enum
+from enum            import Enum
+from xpedite.jupyter import PROFILES_KEY
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class Context(object):
     """Load profile data from Xpedite data file"""
     from xpedite.jupyter.xpediteData import XpediteDataReader
     with XpediteDataReader(self.dataFile) as xpd:
-      profiles = xpd.getData('profiles')
+      profiles = xpd.getData(PROFILES_KEY)
     return profiles
 
   def loadProfileAsync(self):

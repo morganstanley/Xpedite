@@ -23,6 +23,7 @@ from nbformat                     import v4 as nbf
 from xpedite.util                 import formatHumanReadable
 from xpedite.types                import InvariantViloation
 from xpedite.jupyter.context      import Context
+from xpedite.jupyter              import PROFILES_KEY
 
 LOGGER = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ def buildReportCells(nb, result, dataFilePath):
   xpdf.appendRecord('envReport', 'environment report', result.envReport.zContent)
   xpdProfiles = copy.deepcopy(result.profiles)
   xpdProfiles.transactionRepo = None
-  xpdf.appendRecord('profiles', 'xpedite profiles', xpdProfiles)
+  xpdf.appendRecord(PROFILES_KEY, 'xpedite profiles', xpdProfiles)
 
   # create and compress snippets
   snippetData = buildSnippets(xpdProfiles)

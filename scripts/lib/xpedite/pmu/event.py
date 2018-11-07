@@ -130,10 +130,12 @@ class TopdownMetrics(object):
     return topdownValues
 
   def __eq__(self, other):
-    return (
-      set([node.name for node in self.nodes]) == set([node.name for node in other.nodes]) and
-      set([metric.name for metric in self.metrics]) == set([metric.name for metric in other.metrics])
-    )
+    if other:
+      return (
+        set([node.name for node in self.nodes]) == set([node.name for node in other.nodes]) and
+        set([metric.name for metric in self.metrics]) == set([metric.name for metric in other.metrics])
+      )
+    return False
 
   def __repr__(self):
     return str(self.__dict__)
