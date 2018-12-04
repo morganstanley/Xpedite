@@ -115,9 +115,7 @@ function runPytests() {
   
   RUN_DIR_ARG="--rundir=${RUN_DIR}"
 
-  PYTHONPATH=${XPEDITE_DIR} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS}
-
-  ${TEST_DIR}/validateTarFiles.sh
+  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS}
 
   if [ $? -ne 0 ]; then
     echo detected one or more pytest failures

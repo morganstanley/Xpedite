@@ -85,14 +85,12 @@ class Scenario(object):
     """
     Create a scenario and load parameters and expected results
     """
-    from xpedite.jupyter.result     import Result
     from xpedite.transport.remote   import Remote
     from xpedite.util               import makeLogPath
     self.name = name
     self.dataDir = os.path.join(runPath, appName, self.name)
     self.remote = remote
     self.binary = os.path.join(DIR_PATH, SRC_DIR_PATH, BINARY_PATH.format(appName))
-    self.result = Result()
     self.parameters = None
     self.expectedResult = None
     self.tempDir = None

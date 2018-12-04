@@ -79,13 +79,13 @@ class AppController(ArgparseController):
     from xpedite.selfProfile import CProfile
     cprofile = CProfile(self.app.pargs.selfProfile) if self.app.pargs.selfProfile else None
     from xpedite.profiler import Profiler
-    profileInfo, result = Profiler.record(
+    profileInfo, report = Profiler.record(
       self.app.pargs.profileInfo, benchmarkPath=self.app.pargs.createBenchmark, duration=self.app.pargs.duration,
       heartbeatInterval=self.app.pargs.heartbeat, cprofile=cprofile, profileName=self.app.pargs.name,
       verbose=self.app.pargs.verbose
     )
     driver = _loadDriver(self.app.pargs.driver)
-    driver.render(profileInfo, result, leanReports = self.app.pargs.lean, cprofile = cprofile)
+    driver.render(profileInfo, report, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
   @expose(
     arguments=[
@@ -164,12 +164,12 @@ class FrameworkController(ArgparseController):
     from xpedite.selfProfile import CProfile
     cprofile = CProfile(self.app.pargs.selfProfile) if self.app.pargs.selfProfile else None
     from xpedite.profiler import Profiler
-    profileInfo, result = Profiler.report(
+    profileInfo, report = Profiler.report(
       self.app.pargs.profileInfo, self.app.pargs.runId, benchmarkPath=self.app.pargs.createBenchmark,
       cprofile=cprofile, profileName=self.app.pargs.name, verbose=self.app.pargs.verbose
     )
     driver = _loadDriver(self.app.pargs.driver)
-    driver.render(profileInfo, result, leanReports = self.app.pargs.lean, cprofile = cprofile)
+    driver.render(profileInfo, report, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
   @expose(help='List the NON Archtectural hardware performance counters, that can be profiled with xpedite')
   def list(self):

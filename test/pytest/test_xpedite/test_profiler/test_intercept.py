@@ -30,7 +30,8 @@ def test_intercept(capsys):
   for scenarios in SCENARIO_LOADER:
     with scenarios as scenarios:
       with capsys.disabled():
-        _, profiles, _, _ = runXpediteRecord(CONTEXT, scenarios)
+        report, _, _ = runXpediteRecord(CONTEXT, scenarios)
+        profiles = report.profiles
         assert len(profiles) == 1
         timelines = profiles[0].current.timelineCollection
         assert len(timelines) == int(CONTEXT.txnCount)

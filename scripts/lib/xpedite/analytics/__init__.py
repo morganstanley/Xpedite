@@ -134,7 +134,7 @@ class Analytics(object):
     """
     from xpedite.profiler.profile import Profiles, Profile
     txnTree, benchmarkCompositeTree = self.buildTxnTree(txnRepo, classifier)
-    profiles = Profiles(txnRepo)
+    profiles = Profiles(name, txnRepo)
 
     for category, categoryNode in txnTree.getChildren().iteritems():
       i = 1

@@ -10,13 +10,14 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import zlib
 import base64
 
-class Report(object):
+class ZippedMarkup(object):
   """Class to store compressed html reports"""
 
-  def __init__(self, name, description, zContent):
-    self.name = name
-    self.description = description
-    self.zContent = zContent
+  def __init__(self, markup):
+    self.name = markup.name
+    self.description = markup.description
+    self.zContent = zlib.compress(markup.content)
+    self.zContent = base64.b64encode(self.zContent)
 
 class Reportcell(object):
   """Class to store profile results for a category"""
@@ -28,42 +29,15 @@ class Reportcell(object):
 class Result(object):
   """Class to store profile results for the current session"""
 
-  def __init__(self):
+  def __init__(self, report):
+    self.runId = report.runId
+    self.profiles = report.profiles
+    self.envReport = ZippedMarkup(report.envReport)
+    self.reportName = report.profiles.name
     self.reportCells = []
-    self.envReport = None
-    self.profiles = None
-    self.runId = None
-    self.reportName = None
 
-  @staticmethod
-  def _buildReport(title, description, content):
-    zContent = zlib.compress(content)
-    zContent = base64.b64encode(zContent)
-    return Report(title, description, zContent)
-
-  def attachEnvReport(self, title, description, content):
-    """
-    Attaches a html report with details about the test environment
-
-    :param description: description of the report
-    :param title: title of the report
-    :param content: html content of the report
-
-    """
-    self.envReport = self._buildReport(title, description, content)
-
-  def attach(self, report):
-    """
-    Adds a new latency distribution visaulization to this result object
-    """
-    reportcell = Reportcell(report.histogram)
-    for constituent in report.constituents:
-      report = self._buildReport(constituent.title, constituent.description, constituent.report)
-      reportcell.htmlReport.append(report)
-    self.reportCells.append(reportcell)
-
-  def commit(self, app, profiles, reportName):
-    """Commits results"""
-    self.profiles = profiles
-    self.runId = app.runId
-    self.reportName = reportName
+    for category in report.categories.values():
+      reportcell = Reportcell(category.histogram)
+      for routeMarkup  in category.routes:
+        reportcell.htmlReport.append(ZippedMarkup(routeMarkup))
+      self.reportCells.append(reportcell)

@@ -243,8 +243,10 @@ class Driver(object):
   """Xpedite driver to render profile results in jupyter shell"""
 
   @staticmethod
-  def render(profileInfo, result, leanReports=None, cprofile=None): # pylint: disable=unused-argument
+  def render(profileInfo, report, leanReports=None, cprofile=None): # pylint: disable=unused-argument
     """Runs a profile session and renders results in a jupyter shell"""
+    from xpedite.jupyter.result import Result
+    result = Result(report)
     notebookPath, dataFilePath, profileInfo.homeDir = validatePath(profileInfo.homeDir, result.reportName)
     if result.reportCells:
       rc = buildNotebook(profileInfo.appName, result, notebookPath, dataFilePath, result.runId)

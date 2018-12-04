@@ -40,7 +40,6 @@ class AbstractRuntime(object):
     pingApp(app)
     self.app = app
     self.probes = probes
-    self.profiles = None
     self.probeResolver = ProbeResolver()
     self.cpuInfo = None
     self.eventsDbCache = EventsDbCache()
@@ -225,7 +224,7 @@ class Runtime(AbstractRuntime):
       LOGGER.exception('failed to start profiling')
       raise ex
 
-  def report(self, result, reportName=None, benchmarkPaths=None, classifier=DefaultClassifier(), txnFilter=None,
+  def report(self, reportName=None, benchmarkPaths=None, classifier=DefaultClassifier(), txnFilter=None,
       reportThreshold=3000, resultOrder=ResultOrder.WorstToBest):
     """
     Ends active profile session and generates reports.
@@ -236,8 +235,6 @@ class Runtime(AbstractRuntime):
     3. Groups related counters to build transactions and timelines
     4. Generates html report and stores results
 
-    :param result: Handle to collect and store profile results
-    :type result: xpedite.jupyter.Result
     :param reportName: Name of the profile report (Default value = None)
     :type reportName: str
     :param benchmarkPaths: List of stored reports from previous runs, for benchmarking (Default value = None)
@@ -271,19 +268,9 @@ class Runtime(AbstractRuntime):
       )
       reportName = reportName if reportName else self.app.name
       reportGenerator = ReportGenerator(reportName)
-      self.profiles = reportGenerator.generateReport(
-        self.app, repo, result, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
+      return reportGenerator.generateReport(
+        self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
       )
     except Exception as ex:
       LOGGER.exception('failed to generate report')
       raise ex
-
-  def makeBenchmark(self, path):
-    """
-    Persists samples for current run in the given path for future benchmarking
-
-    :param path: Path to persist profiles for the current session
-
-    """
-    from xpedite import benchmark
-    return benchmark.makeBenchmark(self.profiles, path)

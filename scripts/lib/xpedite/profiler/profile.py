@@ -69,7 +69,8 @@ class Profiles(object):
   Profiles stores a collection of Profile objects, one for each category and route combination
   """
 
-  def __init__(self, transactionRepo):
+  def __init__(self, name, transactionRepo):
+    self.name = name
     self.transactionRepo = transactionRepo
     self.profiles = []
 
@@ -81,6 +82,16 @@ class Profiles(object):
 
     """
     self.profiles.append(profile)
+
+  def makeBenchmark(self, path):
+    """
+    Persists samples for current run in the given path for future benchmarking
+
+    :param path: Path to persist profiles for the current session
+
+    """
+    from xpedite import benchmark
+    return benchmark.makeBenchmark(self, path)
 
   @property
   def cpuInfo(self):
