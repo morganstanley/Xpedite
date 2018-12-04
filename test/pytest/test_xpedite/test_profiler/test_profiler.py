@@ -67,10 +67,10 @@ def test_record_vs_report(capsys):
   for scenarios in SCENARIO_LOADER:
     with scenarios as scenarios:
       with capsys.disabled():
-        app, recordProfiles, _, _ = runXpediteRecord(CONTEXT, scenarios)
-      reportProfiles = runXpediteReport(app.xpediteApp.runId, CONTEXT, scenarios)
-      findDiff(reportProfiles.__dict__, recordProfiles.__dict__)
-      assert reportProfiles == recordProfiles
+        currentReport, _, _ = runXpediteRecord(CONTEXT, scenarios)
+      report = runXpediteReport(currentReport.runId, CONTEXT, scenarios)
+      findDiff(report.profiles.__dict__, currentReport.profiles.__dict__)
+      assert report.profiles == currentReport.profiles
 
 def test_generate_cmd_vs_baseline():
   """
@@ -113,6 +113,6 @@ def test_notebook_build(capsys):
   for scenarios in SCENARIO_LOADER:
     with scenarios as scenarios:
       with capsys.disabled():
-        notebook, _, _, _, _ = buildNotebook(CONTEXT, scenarios)
-        assert len(scenarios.result.reportCells) > 0
+        notebook, _, report, _, _ = buildNotebook(CONTEXT, scenarios)
+        assert len(report.categories) > 0
       assert notebook

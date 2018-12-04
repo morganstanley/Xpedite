@@ -20,9 +20,7 @@ fi
 
 export PYTHONPATH=$PYTHONPATH:${PYTEST_DIR}
 export PYTHONPATH=$PYTHONPATH:${XPEDITE_DIR}
-
-WORKSPACE=`cd ${TEST_DIR}/..; cd -`
-APP_NAME="slowFixDecoder"
+HOST_NAME=localhost
 
 function usage() {
 cat << EOM

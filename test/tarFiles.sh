@@ -33,7 +33,7 @@ function unzipFiles() {
   rm -rf $1/*
 
   for i in "${APPS[@]}"; do
-    tar -C $1 -zxvf ${PYTEST_DIR}/test_xpedite/data/$i.tar.gz
+    tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/$i.tar.gz
   done
 }
 

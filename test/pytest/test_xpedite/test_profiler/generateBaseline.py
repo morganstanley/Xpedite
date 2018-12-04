@@ -67,7 +67,8 @@ def benchmarkProfile(context, scenario, runDir):
   """
   with TargetLauncher(context, scenario) as app:
     if not os.path.isdir(os.path.join(runDir, scenario.appName, BENCHMARK_SCENARIO)):
-      profiles = generateProfiles(app.xpediteApp, scenario)
+      report = generateProfiles(app.xpediteApp, scenario)
+      profiles = report.profiles 
       makeBenchmark(profiles, os.path.join(runDir, scenario.appName))
       benchmarkAppInfoPath = os.path.join(runDir, scenario.appName, BENCHMARK_APP_INFO_PATH)
       replaceWorkspace(benchmarkAppInfoPath, context.workspace, benchmarkAppInfoPath)
@@ -111,14 +112,14 @@ def generateBaseline(context, scenario, runDir):
     if BENCHMARK_SCENARIO not in scenario.name:
       benchmarkProfile(context, scenario, runDir)
     runDir = os.path.join(runDir, scenario.appName, scenario.name)
-    _, dataFilePath, app, fullCpuInfo, dataFiles = buildNotebook(context, scenario)
+    _, dataFilePath, report, fullCpuInfo, dataFiles = buildNotebook(context, scenario)
 
     copy(dataFilePath, os.path.join(runDir, REPORT_CMD_BASELINE_PATH))
 
     for dataFile in dataFiles:
       copy(dataFile, os.path.join(runDir, os.path.basename(dataFile)))
     replaceWorkspace(
-      app.xpediteApp.appInfoPath, context.workspace, os.path.join(runDir, XPEDITE_APP_INFO_PATH)
+      report.app.appInfoPath, context.workspace, os.path.join(runDir, XPEDITE_APP_INFO_PATH)
     )
 
     baselineCpuInfoPath = os.path.join(runDir, BASELINE_CPU_INFO_PATH)
