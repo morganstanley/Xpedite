@@ -2,9 +2,7 @@
 //
 // Xpedite Recorder control - Provides logic to setup recorders for a profile session
 //
-// The class exposes API to enable / reset generic and fixed pmu events
-//
-// Enabling event, automatically sets the appropriate recorders
+// The class exposes API to select trampolines and corresponding recorders
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
@@ -12,7 +10,6 @@
 
 #pragma once
 #include <xpedite/probes/CallSite.H>
-#include <xpedite/pmu/FixedPmcSet.H>
 #include <xpedite/probes/Recorders.H>
 
 using XpediteRecorder = void (*)(const void*, uint64_t);
@@ -23,15 +20,27 @@ extern XpediteDataProbeRecorder activeXpediteDataProbeRecorder;
 
 namespace xpedite { namespace probes {
 
+  namespace test {
+    struct ProbeTest;
+  }
+
+  enum class RecorderType
+  {
+    TRIVIAL_RECORDER,
+    EXPANDABLE_RECORDER,
+    PMC_RECORDER,
+    lOGGING_RECORDER
+  };
+
   class RecorderCtl
   {
     using Recorders = std::array<XpediteRecorder, 16>;
     using DataProbeRecorders = std::array<XpediteDataProbeRecorder, 16>;
 
+    friend test::ProbeTest;
+
     Recorders _recorders;
     DataProbeRecorders _dataRecorders;
-    uint8_t _genericPmcCount;
-    pmu::FixedPmcSet _fixedPmcSet;
 
     static RecorderCtl _instance;
 
@@ -39,22 +48,10 @@ namespace xpedite { namespace probes {
 
     public:
 
-    uint8_t genericPmcCount() const noexcept { return _genericPmcCount;                   }
-    pmu::FixedPmcSet fixedPmcSet() const noexcept { return _fixedPmcSet;                       }
-    uint8_t fixedPmcCount()   const noexcept { return _fixedPmcSet.size();                }
-    uint8_t pmcCount()        const noexcept { return _genericPmcCount + fixedPmcCount(); }
+    RecorderType activeXpediteRecorderType() noexcept;
 
-
-    void enableGenericPmc(uint8_t genericPmcCount_) noexcept;
-    void resetGenericPmc() noexcept;
-
-    void enableFixedPmc(uint8_t index_) noexcept;
-    void resetFixedPmc() noexcept;
-
-    int activeRecorderIndex() noexcept;
-    int activeDataProbeRecorderIndex() noexcept;
-    bool canActivateRecorder(int index_) noexcept;
-    bool activateRecorder(int index_, bool nonTrivial_) noexcept;
+    bool canActivateRecorder(RecorderType type_) noexcept;
+    bool activateRecorder(RecorderType type_) noexcept;
 
     Trampoline trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept;
 

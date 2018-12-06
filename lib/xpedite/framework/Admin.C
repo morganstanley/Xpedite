@@ -80,7 +80,7 @@ namespace xpedite { namespace framework {
         if(name_ == OPT_PMU_COUNT) {
           profile_.enableGpPMC(atoi(value_));
         }
-        if(name_ == OPT_PMU_FIXED) {
+        else if(name_ == OPT_PMU_FIXED) {
           char opt[strlen(value_)+1];
           strcpy(opt, value_);
           char* ptr;
