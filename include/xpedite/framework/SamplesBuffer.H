@@ -80,6 +80,7 @@ namespace xpedite { namespace framework {
     }
 
     static bool isInitialized();
+    static SamplesBuffer* samplesBuffer();
     static void expand();
     
     bool isReaderAttached() const noexcept {

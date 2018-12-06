@@ -11,6 +11,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/util/Tsc.H>
 #include <xpedite/platform/Builtins.H>
 #include <xpedite/probes/Recorders.H>
@@ -53,14 +54,16 @@ namespace xpedite { namespace probes {
       *reinterpret_cast<AliasingData*>(_data) = data_;
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, int pmcCount_, pmu::FixedPmcSet fixedPmcSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, bool /*collectPmc*/)
       : Sample {returnSite_, tsc_ | FLAG_PMC} {
-      readPmc(pmcCount_, fixedPmcSet_, _data);
+      _data[0] = pmu::pmuCtl().pmcCount();
+      pmu::pmuCtl().readPmc(_data + 1);
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, Data data_, int pmcCount_, pmu::FixedPmcSet fixedPmcSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, Data data_, bool /*collectPmc*/)
       : Sample {returnSite_, tsc_ | FLAG_PMC, data_} {
-      readPmc(pmcCount_, fixedPmcSet_, _data + 2);
+      _data[2] = pmu::pmuCtl().pmcCount();
+      pmu::pmuCtl().readPmc(_data + 3);
     }
 
     Sample(const Sample&)            = delete;
@@ -133,26 +136,6 @@ namespace xpedite { namespace probes {
 
     inline const Sample* next() const noexcept {
       return const_cast<Sample*>(this)->next();
-    }
-
-    static void readPmc(int pmcCount_, pmu::FixedPmcSet fixedPmcSet_, uint64_t* data_) {
-      auto ptr = data_ + 1;
-      for (int i = 0; i < pmcCount_; i++) {
-        ptr[i] = RDPMC(i);
-      }
-
-      if(fixedPmcSet_.isEnabled<pmu::FixedPmcSet::INST_RETIRED_ANY>()) {
-        ptr[pmcCount_++] = RDPMC(0x40000000);  // 0x309
-      }
-
-      if(fixedPmcSet_.isEnabled<pmu::FixedPmcSet::CPU_CLK_UNHALTED_CORE>()) {
-        ptr[pmcCount_++] = RDPMC(0x40000001);  // 0x30A
-      }
-      
-      if(fixedPmcSet_.isEnabled<pmu::FixedPmcSet::CPU_CLK_UNHALTED_REF>()) {
-        ptr[pmcCount_++] = RDPMC(0x40000002);  // 0x30B
-      }
-      data_[0] = pmcCount_;
     }
 
     std::string toString() const {

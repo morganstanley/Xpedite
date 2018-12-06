@@ -2,9 +2,7 @@
 //
 // Xpedite Recorder control - Provides logic to setup recorders for a profile session
 //
-// The class exposes API to enable / reset generic and fixed pmu events
-//
-// Enabling event, automatically sets the appropriate recorders
+// The class exposes API to select trampolines and corresponding recorders
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
@@ -27,91 +25,66 @@ namespace xpedite { namespace probes {
 
   RecorderCtl RecorderCtl::_instance;
 
+  RecorderType activeRecorderType {};
+
+  inline int recorderIndex(RecorderType type_) {
+    return static_cast<int>(type_);
+  }
+
+  inline const char* recorderName(RecorderType type_) {
+    switch(type_) {
+      case (RecorderType::TRIVIAL_RECORDER):
+        return "Trivial";
+      case (RecorderType::EXPANDABLE_RECORDER):
+        return "Expandable";
+      case (RecorderType::PMC_RECORDER):
+        return "PMC";
+      case (RecorderType::lOGGING_RECORDER):
+        return "Logging";
+    }
+    return "Unknown";
+  }
+
+
   RecorderCtl::RecorderCtl()
-    : _recorders {
-        xpediteExpandAndRecord,
-        xpediteRecord,
-        xpediteRecordPmc,
-        xpediteRecordAndLog
-      }, 
-      _dataRecorders {
-        xpediteExpandAndRecordWithData,
-        xpediteRecordWithData,
-        xpediteRecordPmcWithData,
-        xpediteRecordWithDataAndLog
-      },
-      _genericPmcCount {},
-      _fixedPmcSet {} {
+    : _recorders {}, _dataRecorders {} {
+    _recorders[recorderIndex(RecorderType::TRIVIAL_RECORDER     )] = xpediteRecord;
+    _recorders[recorderIndex(RecorderType::EXPANDABLE_RECORDER  )] = xpediteExpandAndRecord;
+    _recorders[recorderIndex(RecorderType::PMC_RECORDER         )] = xpediteRecordPmc;
+    _recorders[recorderIndex(RecorderType::lOGGING_RECORDER     )] = xpediteRecordAndLog;
+
+    _dataRecorders[recorderIndex(RecorderType::TRIVIAL_RECORDER     )] = xpediteRecordWithData;
+    _dataRecorders[recorderIndex(RecorderType::EXPANDABLE_RECORDER  )] = xpediteExpandAndRecordWithData;
+    _dataRecorders[recorderIndex(RecorderType::PMC_RECORDER         )] = xpediteRecordPmcWithData;
+    _dataRecorders[recorderIndex(RecorderType::lOGGING_RECORDER     )] = xpediteRecordWithDataAndLog;
   }
 
-  int RecorderCtl::activeRecorderIndex() noexcept {
-    for(int i=0; i<static_cast<int>(_recorders.size()) && _recorders[i]; ++i) {
-      if(_recorders[i] == activeXpediteRecorder) {
-        return i;
-      }
-    }
-    return -1;
+  RecorderType RecorderCtl::activeXpediteRecorderType() noexcept {
+    return activeRecorderType;
   }
 
-  int RecorderCtl::activeDataProbeRecorderIndex() noexcept {
-    for(int i=0; i<static_cast<int>(_dataRecorders.size()) && _dataRecorders[i]; ++i) {
-      if(_dataRecorders[i] == activeXpediteDataProbeRecorder) {
-        return i;
-      }
-    }
-    return -1;
+  bool RecorderCtl::canActivateRecorder(RecorderType type_) noexcept {
+    auto index = recorderIndex(type_);
+    return static_cast<unsigned>(index) < _recorders.size() && _recorders[index] 
+      && static_cast<unsigned>(index) < _dataRecorders.size() && _dataRecorders[index];
   }
 
-  bool RecorderCtl::canActivateRecorder(int index_) noexcept {
-    return static_cast<unsigned>(index_) < _recorders.size() && _recorders[index_] 
-      && static_cast<unsigned>(index_) < _dataRecorders.size() && _dataRecorders[index_];
-  }
+  bool RecorderCtl::activateRecorder(RecorderType type_) noexcept {
+    if(canActivateRecorder(type_)) {
+      activeRecorderType = type_;
+      auto index = recorderIndex(type_);
+      activeXpediteRecorder = _recorders[index];
+      activeXpediteDataProbeRecorder = _dataRecorders[index];
 
-  bool RecorderCtl::activateRecorder(int index_, bool nonTrivial_) noexcept {
-    if(canActivateRecorder(index_)) {
-      activeXpediteRecorder = _recorders[index_];
-      activeXpediteDataProbeRecorder = _dataRecorders[index_];
+      bool nonTrivial {recorderIndex(type_) >= recorderIndex(RecorderType::PMC_RECORDER)};
+      xpediteTrampolinePtr = trampoline(false, false, nonTrivial);
+      xpediteDataProbeTrampolinePtr = trampoline(true, false, nonTrivial);
+      xpediteIdentityTrampolinePtr = trampoline(false, true, nonTrivial);
 
-      xpediteTrampolinePtr = trampoline(false, false, nonTrivial_);
-      xpediteDataProbeTrampolinePtr = trampoline(true, false, nonTrivial_);
-      xpediteIdentityTrampolinePtr = trampoline(false, true, nonTrivial_);
-
-      XpediteLogInfo << "Activated recorder at index " << index_ << XpediteLogEnd;
+      XpediteLogInfo << "Activated " << recorderName(type_) << " recorder" << XpediteLogEnd;
       return true;
     }
     return {};
-  }
-
-  void RecorderCtl::enableGenericPmc(uint8_t genericPmcCount_) noexcept {
-    if(pmcCount() == 0) {
-      activateRecorder(2, true);
-    }
-    _genericPmcCount = genericPmcCount_;
-  }
-
-  void RecorderCtl::resetGenericPmc() noexcept {
-    if(_genericPmcCount) {
-      _genericPmcCount = 0;
-      if(pmcCount() == 0) {
-        activateRecorder(0, false);
-      }
-    }
-  }
-
-  void RecorderCtl::enableFixedPmc(uint8_t index_) noexcept {
-    if(pmcCount() == 0) {
-      activateRecorder(2, true);
-    }
-    _fixedPmcSet.enable(index_);
-  }
-
-  void RecorderCtl::resetFixedPmc() noexcept {
-    if(_fixedPmcSet.size()) {
-      _fixedPmcSet.reset();
-      if(pmcCount() == 0) {
-        activateRecorder(0, false);
-      }
-    }
   }
 
   Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_, bool nonTrivial_) noexcept {
@@ -125,7 +98,8 @@ namespace xpedite { namespace probes {
   }
 
   Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept {
-    return trampoline(canStoreData_, canSuspendTxn_, pmcCount()>0);
+    bool nonTrivial {recorderIndex(activeRecorderType) >= recorderIndex(RecorderType::PMC_RECORDER)};
+    return trampoline(canStoreData_, canSuspendTxn_, nonTrivial);
   }
 
 }}
