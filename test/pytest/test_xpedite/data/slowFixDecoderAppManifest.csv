@@ -1,0 +1,23 @@
+file name, size, lines
+slowFixDecoderApp/__init__.py,1,1
+slowFixDecoderApp/benchmark/.benchmark,135,8
+slowFixDecoderApp/benchmark/1543899877/64103-00002ba383f08700/samples-0000.csv,460820,18433
+slowFixDecoderApp/benchmark/1543899877/64098-00002ba382b03f60/samples-0000.csv,20,1
+slowFixDecoderApp/benchmark/appinfo.txt,5554,23
+slowFixDecoderApp/slowFixDecoderApp_benchmark/baselineCpuInfo.json,1271,0
+slowFixDecoderApp/slowFixDecoderApp_benchmark/xpedite-appinfo.txt,5554,23
+slowFixDecoderApp/slowFixDecoderApp_benchmark/profileInfo.py,880,22
+slowFixDecoderApp/slowFixDecoderApp_benchmark/probeCmdBaseline.pkl,3630,668
+slowFixDecoderApp/slowFixDecoderApp_benchmark/reportCmdBaseline.xpd,6993858,9023
+slowFixDecoderApp/slowFixDecoderApp_benchmark/xpedite-slowFixDecoderApp-1543899895-64294-00002ba1d0f61700.data,295424,146
+slowFixDecoderApp/slowFixDecoderApp_benchmark/generateCmdBaseline.py,5408,111
+slowFixDecoderApp/slowFixDecoderApp_benchmark/xpedite-slowFixDecoderApp-1543899895-64290-00002ba1cfb5cf60.data,352,2
+slowFixDecoderApp/slowFixDecoderApp_regular/__init__.py,2,1
+slowFixDecoderApp/slowFixDecoderApp_regular/baselineCpuInfo.json,1271,0
+slowFixDecoderApp/slowFixDecoderApp_regular/xpedite-appinfo.txt,5554,23
+slowFixDecoderApp/slowFixDecoderApp_regular/profileInfo.py,5420,115
+slowFixDecoderApp/slowFixDecoderApp_regular/xpedite-slowFixDecoderApp-1543899882-64179-00002b0c1568d700.data,295424,278
+slowFixDecoderApp/slowFixDecoderApp_regular/probeCmdBaseline.pkl,3630,668
+slowFixDecoderApp/slowFixDecoderApp_regular/reportCmdBaseline.xpd,7005014,9621
+slowFixDecoderApp/slowFixDecoderApp_regular/xpedite-slowFixDecoderApp-1543899882-64107-00002b0c14288f60.data,352,2
+slowFixDecoderApp/slowFixDecoderApp_regular/generateCmdBaseline.py,5383,110

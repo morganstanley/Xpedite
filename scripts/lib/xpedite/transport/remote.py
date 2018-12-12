@@ -102,15 +102,13 @@ class Remote(object):
     from xpedite.dependencies import binPath
     python = binPath('python')
     rpyproc = os.path.join(os.path.dirname(__file__), 'rpyc')
-    ssh = binPath('ssh')
-    keytabCmd = binPath('krb5_keytab')
 
     if self.host == 'localhost':
       self.proc = subprocess.Popen([python, rpyproc], stderr=self.std.err, stdout=self.std.out)
     else:
       pluginPath = os.environ.get('XPEDITE_PLUGIN_PATH', '')
       env = 'export XPEDITE_PLUGIN_PATH={};'.format(pluginPath) if pluginPath else ''
-      subprocess.Popen([ssh, '-T', '-o', 'StrictHostKeyChecking=no', self.host, keytabCmd]).wait()
+      ssh = binPath('ssh')
       self.proc = subprocess.Popen([ssh, '-T', '-o', 'StrictHostKeyChecking=no', self.host, env, python, rpyproc],
                                    stderr=self.std.err,
                                    stdout=self.std.out)

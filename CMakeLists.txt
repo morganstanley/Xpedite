@@ -23,9 +23,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")
 set(CMAKE_EXE_LINKER_FLAGS "-no-pie" CACHE INTERNAL "")
 
-file(GLOB_RECURSE lib_headers lib/*.[hH])
-file(GLOB_RECURSE lib_source lib/*.[cC])
-file(GLOB_RECURSE asm_source lib/*.S)
+file(GLOB_RECURSE lib_headers lib/xpedite/*.[hH])
+file(GLOB_RECURSE lib_source lib/xpedite/*.[cC])
+file(GLOB_RECURSE asm_source lib/xpedite/*.S)
 set(lib_files ${lib_headers} ${lib_source} ${asm_source})
 include_directories(include)
 
@@ -38,6 +38,9 @@ add_library(xpedite-pie STATIC ${lib_files})
 target_link_libraries(xpedite-pie pthread rt dl)
 target_compile_definitions(xpedite-pie PRIVATE XPEDITE_PIE=1)
 install(TARGETS xpedite-pie DESTINATION "lib")
+
+add_library(xpedite-stub SHARED lib/stub/Stub.C)
+install(TARGETS xpedite-stub DESTINATION "lib")
 
 file(GLOB_RECURSE bin_headers bin/*.H)
 file(GLOB_RECURSE bin_source bin/*.C)
@@ -107,9 +110,9 @@ add_executable(picApp test/targets/PicApp.C)
 target_link_libraries(picApp xpedite pic)
 install(TARGETS picApp DESTINATION "test")
 
-add_executable(slowFixDecoder test/targets/SlowFixDecoder.C)
-target_link_libraries(slowFixDecoder xpedite)
-install(TARGETS slowFixDecoder DESTINATION "test")
+add_executable(slowFixDecoderApp test/targets/SlowFixDecoder.C)
+target_link_libraries(slowFixDecoderApp xpedite)
+install(TARGETS slowFixDecoderApp DESTINATION "test")
 
 ######################### test #############################
 

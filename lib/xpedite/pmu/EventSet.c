@@ -12,6 +12,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <xpedite/pmu/EventSelect.h>
 #include <xpedite/pmu/EventSet.h>
 #include <xpedite/pmu/Formatter.h>
 
@@ -20,26 +21,6 @@
 **************************************************************************/
 
 static uint32_t buildPerfEvtSelBitmask(const PMUGpEvent* e_) {
-  typedef struct
-  {
-    union {
-      uint32_t    _value;
-      struct {
-        unsigned char _eventSelect  : 8;
-        unsigned char _unitMask     : 8;
-        unsigned char _user         : 1;
-        unsigned char _kernel       : 1;
-        unsigned char _edgeDetect   : 1;
-        unsigned char _pinControl   : 1;
-        unsigned char _interruptEn  : 1;
-        unsigned char _anyThread    : 1;
-        unsigned char _enable       : 1;
-        unsigned char _invertCMask  : 1;
-        unsigned char _counterMask  : 8;
-      } _f;
-    };
-  } PerfEvtSelReg;
- 
   PerfEvtSelReg r;
   r._f._eventSelect  = e_->_eventSelect;
   r._f._unitMask     = e_->_unitMask;
@@ -66,7 +47,15 @@ static const PMUFixedEvent* findFixedEvtForCtr(unsigned char ctrIndex_, const PM
   return NULL;
 }
 
-static unsigned char feEnablemask(const PMUFixedEvent* fixedEvents_) {
+unsigned char maskEnabledInUserSpace(unsigned char mask_) {
+  return mask_ & 2;
+}
+
+unsigned char maskEnabledInKernel(unsigned char mask_) {
+  return mask_ & 1;
+}
+
+static unsigned char fixedEventEnablemask(const PMUFixedEvent* fixedEvents_) {
   return (
     fixedEvents_->_user && fixedEvents_->_kernel ? 3 : (
       fixedEvents_->_user ? 2 : 1
@@ -75,37 +64,18 @@ static unsigned char feEnablemask(const PMUFixedEvent* fixedEvents_) {
 }
 
 static uint32_t buildFixedEvtSelBitmask(const PMUFixedEvent* fixedEvents_, unsigned char fixedEvtCount_) {
-  typedef struct
-  {
-    union {
-      uint32_t    _value;
-      struct {
-        unsigned char _enable0       : 2;
-        unsigned char _anyThread0    : 1;
-        unsigned char _interruptEn0  : 1;
-        unsigned char _enable1       : 2;
-        unsigned char _anyThread1    : 1;
-        unsigned char _interruptEn1  : 1;
-        unsigned char _enable2       : 2;
-        unsigned char _anyThread2    : 1;
-        unsigned char _interruptEn2  : 1;
-        uint32_t      _reservedBits  : 20;
-      } _f;
-    };
-  } FixedEvtSelReg;
-
   const PMUFixedEvent* evt0 = findFixedEvtForCtr(0, fixedEvents_, fixedEvtCount_);
   const PMUFixedEvent* evt1 = findFixedEvtForCtr(1, fixedEvents_, fixedEvtCount_);
   const PMUFixedEvent* evt2 = findFixedEvtForCtr(2, fixedEvents_, fixedEvtCount_);
 
   FixedEvtSelReg r;
-  r._f._enable0      = evt0 ? feEnablemask(evt0) : 0;
+  r._f._enable0      = evt0 ? fixedEventEnablemask(evt0) : 0;
   r._f._anyThread0   = 0;
   r._f._interruptEn0 = 0;
-  r._f._enable1      = evt1 ? feEnablemask(evt1) : 0;
+  r._f._enable1      = evt1 ? fixedEventEnablemask(evt1) : 0;
   r._f._anyThread1   = 0;
   r._f._interruptEn1 = 0;
-  r._f._enable2      = evt2 ? feEnablemask(evt2) : 0;
+  r._f._enable2      = evt2 ? fixedEventEnablemask(evt2) : 0;
   r._f._anyThread2   = 0;
   r._f._interruptEn2 = 0;
   r._f._reservedBits = 0;

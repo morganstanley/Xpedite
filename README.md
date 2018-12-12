@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Morgan-Stanley/Xpedite.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/Xpedite)
+[![codecov](https://codecov.io/gh/Morgan-Stanley/Xpedite/branch/master/graph/badge.svg)](https://codecov.io/gh/Morgan-Stanley/Xpedite)
 
 # Morgan Stanley Performance Toolkit
 

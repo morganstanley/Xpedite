@@ -23,7 +23,7 @@ before_script:
 script:
   - ./build.sh
   - ./install.sh
-  - ./test/runTest.sh
+  - ./test/runTest.sh -c
 
 after_success:
   - PATH=./install/runtime/bin:${PATH} python -m pip install codecov

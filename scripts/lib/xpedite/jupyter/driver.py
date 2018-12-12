@@ -23,6 +23,7 @@ from nbformat                     import v4 as nbf
 from xpedite.util                 import formatHumanReadable
 from xpedite.types                import InvariantViloation
 from xpedite.jupyter.context      import Context
+from xpedite.jupyter              import PROFILES_KEY
 
 LOGGER = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ def buildReportCells(nb, result, dataFilePath):
   xpdf.appendRecord('envReport', 'environment report', result.envReport.zContent)
   xpdProfiles = copy.deepcopy(result.profiles)
   xpdProfiles.transactionRepo = None
-  xpdf.appendRecord('profiles', 'xpedite profiles', xpdProfiles)
+  xpdf.appendRecord(PROFILES_KEY, 'xpedite profiles', xpdProfiles)
 
   # create and compress snippets
   snippetData = buildSnippets(xpdProfiles)
@@ -242,8 +243,10 @@ class Driver(object):
   """Xpedite driver to render profile results in jupyter shell"""
 
   @staticmethod
-  def render(profileInfo, result, leanReports=None, cprofile=None): # pylint: disable=unused-argument
+  def render(profileInfo, report, leanReports=None, cprofile=None): # pylint: disable=unused-argument
     """Runs a profile session and renders results in a jupyter shell"""
+    from xpedite.jupyter.result import Result
+    result = Result(report)
     notebookPath, dataFilePath, profileInfo.homeDir = validatePath(profileInfo.homeDir, result.reportName)
     if result.reportCells:
       rc = buildNotebook(profileInfo.appName, result, notebookPath, dataFilePath, result.runId)

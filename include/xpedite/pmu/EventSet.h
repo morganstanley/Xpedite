@@ -73,6 +73,11 @@ typedef struct
 extern "C" {
 #endif
   int buildEventSet(const PMUCtlRequest* r_, EventSet* eventSet_);
+
+  unsigned char maskEnabledInUserSpace(unsigned char mask_);
+
+  unsigned char maskEnabledInKernel(unsigned char mask_);
+
 #ifdef __cplusplus
 }
 #endif

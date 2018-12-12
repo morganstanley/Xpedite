@@ -65,7 +65,7 @@ class TimelineFilter(object):
     :param profiles: collection of profiles to be filtered
 
     """
-    filtredProfiles = Profiles(profiles.transactionRepo)
+    filtredProfiles = Profiles(profiles.name, profiles.transactionRepo)
     for profile in profiles:
       filteredProfile = self.filterProfile(profile)
       if filteredProfile:

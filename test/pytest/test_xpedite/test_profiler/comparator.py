@@ -5,8 +5,6 @@ difference for fields that are added, removed or modified
 Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 """
 
-import os
-import sys
 from test_xpedite.test_profiler.formatters import Formatters
 from logger                                import LOG_CONFIG_PATH
 import logging
@@ -45,7 +43,7 @@ def findDiff(dict1, dict2, path=''):
       if not isinstance(dict1[key], list):
         try:
           findDiff(dict1[key].__dict__, dict2[key].__dict__, path)
-        except:
+        except AttributeError:
           LOGGER.info('---------------- DIFF ----------------\n')
           LOGGER.info('Path: %s', path)
           LOGGER.info('Diff for Key: %s', key)
@@ -57,7 +55,7 @@ def findDiff(dict1, dict2, path=''):
           try:
             if dict1[key][i] != dict2[key][i]:
               findDiff(dict1[key][i].__dict__, dict2[key][i].__dict__, path + '[{}]'.format(i))
-          except:
+          except AttributeError:
             path = path + '[{}]'.format(i)
             if dict1[key][i] != dict2[key][i]:
               LOGGER.info(path)

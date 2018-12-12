@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ##############################################################################################################
 #
-# Xpedite pytest
+# Script to run Xpedite pytests, gtests, and pylint
 #
 # Author: Brooke Elizabeth Cantwell, Morgan Stanley
 #
@@ -28,7 +28,7 @@ function usage() {
 cat << EOM
 -------------------------------------------------------------------------------------------------
 
-usage: ${PROGRAM_NAME} [lgpw:cr:s:Pt:m:c:]
+usage: ${PROGRAM_NAME} [lgpw:cr:s:Pt:m:a:]
 -l|--lint           run lint test
 -g|--gtest          run gtest
 -p|--pytest         run pytests
@@ -36,18 +36,20 @@ usage: ${PROGRAM_NAME} [lgpw:cr:s:Pt:m:c:]
 -c|--cov            check pytest code coverage
 -r|--remote         set a remote hostname for the application to run on: ${PROGRAM_NAME} -r <hostname>
 -s|--single         choose a single test to run: ${PROGRAM_NAME} -s test_name
--P|--pmc            use flag to enable performance counters: ${PROGRAM_NAME} -p
+-P|--pmc            use flag to enable performance counters: ${PROGRAM_NAME} -P
 -t|--transactions   specify a number of transactions for the target application: ${PROGRAM_NAME} -t <transactions>
 -m|--multithreaded  specify the number of threads for the target application: ${PROGRAM_NAME} -m <number of threads>
+-a|--apps           a comma separated list of binaries to test: ${PROGRAM_NAME} -a <app1,app2,app3>
 
 -------------------------------------------------------------------------------------------------
 
 examples:
 to run locally: ${PROGRAM_NAME}
+to run only pytests: ${PROGRAM_NAME} -p
 to run remotely: ${PROGRAM_NAME} -r <hostname>
-to run remotely with pmc: ${PROGRAM_NAME} -r <hostname> -P
-to run one test: ${PROGRAM_NAME} -s test_record_against_report
-to run the target application to create 3000 transactions with 3 threads: ${PROGRAM_NAME} -t 3000 -m 3
+to run one test: ${PROGRAM_NAME} -s test_record_vs_report
+to run tone target application to create 3000 transactions with 3 threads: ${PROGRAM_NAME} -t 3000 -m 3
+to run only pytests for one application: ${PROGRAM_NAME} -p <app>
 
 -------------------------------------------------------------------------------------------------
 
@@ -63,9 +65,9 @@ the following flags can only be enabled when running pytests
 -c|--cov            check pytest code coverage
 -r|--remote         set a remote hostname for the application to run on
 -s|--single         choose a single test to run
--P|--pmc            use flag to enable performance counters
 -t|--transactions   specify a number of transactions for the target application
 -m|--multithreaded  specify the number of threads for the target application
+-a|--apps           a comma separated list of binaries to test
 
 -------------------------------------------------------------------------------------------------
 
@@ -80,8 +82,15 @@ function rsyncSource() {
   DEST_PATH=`readlink -f ${DEST_DIR}`
 
   if ! doesDirectoryExist $1 ${SRC_PATH}; then
+    echo "_____________________________"
     echo "rsyncing to host $1 ..."
+    echo "_____________________________"
     rsync -avz ${SRC_PATH} $1:${DEST_PATH}
+  fi
+
+  if [ "$?" -ne "0" ]; then
+    "failed to rsync Xpedite source files"
+    exit 1
   fi
 }
 
@@ -94,19 +103,19 @@ function doesDirectoryExist() {
 }
 
 function runPytests() {
-  TEMP_DIR=`mktemp -d`
-  APP_NAME='slowFixDecoder'
+  RUN_DIR=`mktemp -d`
 
-  ${TEST_DIR}/tarFiles.sh -d ${TEMP_DIR} -a ${APP_NAME} -x
-  TEMP_DIR_ARG="--tempdir=${TEMP_DIR}"
-
-  if [ "${PMC}" ]; then
-    # run test with performance counters
-    PYTHONPATH=${XPEDITE_DIR} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${TEMP_DIR_ARG}
-  else
-    # omit test with performance counters
-    PYTHONPATH=${XPEDITE_DIR} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${TEMP_DIR_ARG} -m 'not pmc'
+  if [ "$?" -ne "0" ]; then
+    "failed to create temporary directory"
+    exit 1
   fi
+
+  rm -rf ${RUN_DIR}/*
+  ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -x
+  
+  RUN_DIR_ARG="--rundir=${RUN_DIR}"
+
+  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS}
 
   if [ $? -ne 0 ]; then
     echo detected one or more pytest failures
@@ -148,8 +157,10 @@ function runAllTests() {
 
 TEST_NAME=${PYTEST_DIR}
 COV=""
+REMOTE=""
+APPS="--apps=slowFixDecoderApp"
 
-ARGS=`getopt -o lgpw:cr:s:Pt:m:c: --long lint,gtest,pytest,workspace,cov,remote:,test:,pmc,transactions:,multithreaded:,connect: -- "$@"`
+ARGS=`getopt -o lgpw:cr:s:Pt:m:a: --long lint,gtest,pytest,workspace,cov,remote:,test:,pmc,transactions:,multithreaded:,apps: -- "$@"`
 
 if [ $? -ne 0 ]; then
   usage
@@ -180,6 +191,7 @@ while true ; do
       shift
       ;;
     -r|--remote)
+      REMOTE=$2
       APP_HOST="--hostname=$2"
       rsyncSource "$2" ;
       shift 2
@@ -190,7 +202,7 @@ while true ; do
       shift 2
       ;;
     -P|--pmc)
-      PMC=true ;
+      PMC=true
       shift
       ;;
     -t|--transactions)
@@ -199,6 +211,10 @@ while true ; do
       ;;
      -m|--multithreaded)
       THREAD_COUNT="--multithreaded=$2"
+      shift 2
+      ;;
+    -a|--apps)
+      APPS="--apps=$2"
       shift 2
       ;;
     --)
@@ -222,7 +238,7 @@ fi
 if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then
   runAllTests
 else
-  if [ "${PYTEST}" = true ] && [[ "${APP_HOST}" || "${TEST_NAME}" || "${PMC}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" ]]; then
+  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" ]]; then
     pytestUsage
   fi
 

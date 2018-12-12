@@ -15,8 +15,8 @@
 
 #include <xpedite/probes/ProbeList.H>
 #include <xpedite/probes/Recorders.H>
-#include <xpedite/probes/RecorderCtl.H>
 #include <xpedite/framework/SamplesBuffer.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/log/Log.H>
 
 extern "C" {
@@ -91,7 +91,7 @@ extern "C" {
       xpedite::framework::SamplesBuffer::expand();
     }
     if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
-      new (samplesBufferPtr) Sample {returnSite_, tsc_, recorderCtl().genericPmcCount(), recorderCtl().fixedPmcSet()};
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, true};
       samplesBufferPtr = samplesBufferPtr->next();
     }
   }
@@ -102,7 +102,7 @@ extern "C" {
       xpedite::framework::SamplesBuffer::expand();
     }
     if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
-      new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, recorderCtl().genericPmcCount(), recorderCtl().fixedPmcSet()};
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, true};
       samplesBufferPtr = samplesBufferPtr->next();
     }
   }

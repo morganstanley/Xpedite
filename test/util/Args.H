@@ -14,7 +14,7 @@
 struct Args
 {
   int threadCount {1};
-  int txnCount {10000};
+  int txnCount {1024};
   int cpu {0};
 };
 

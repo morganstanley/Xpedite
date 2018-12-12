@@ -1,0 +1,20 @@
+file name, size, lines
+dataTxnApp/__init__.py,3,1
+dataTxnApp/dataTxnApp_benchmark/xpedite-dataTxnApp-1543899816-63409-00002b5164c6af60.data,656240,659
+dataTxnApp/dataTxnApp_benchmark/baselineCpuInfo.json,1271,0
+dataTxnApp/dataTxnApp_benchmark/xpedite-appinfo.txt,9708,34
+dataTxnApp/dataTxnApp_benchmark/profileInfo.py,906,22
+dataTxnApp/dataTxnApp_benchmark/probeCmdBaseline.pkl,4560,808
+dataTxnApp/dataTxnApp_benchmark/reportCmdBaseline.xpd,8937950,11879
+dataTxnApp/dataTxnApp_benchmark/generateCmdBaseline.py,5796,116
+dataTxnApp/benchmark/.benchmark,121,8
+dataTxnApp/benchmark/1543899796/63221-00002af645a77f60/samples-0000.csv,999648,22529
+dataTxnApp/benchmark/appinfo.txt,9708,34
+dataTxnApp/dataTxnApp_regular/__init__.py,2,1
+dataTxnApp/dataTxnApp_regular/baselineCpuInfo.json,1271,0
+dataTxnApp/dataTxnApp_regular/xpedite-appinfo.txt,9708,34
+dataTxnApp/dataTxnApp_regular/profileInfo.py,5881,120
+dataTxnApp/dataTxnApp_regular/xpedite-dataTxnApp-1543899801-63331-00002ae8ef36ff60.data,656240,681
+dataTxnApp/dataTxnApp_regular/probeCmdBaseline.pkl,4560,808
+dataTxnApp/dataTxnApp_regular/reportCmdBaseline.xpd,8925890,11563
+dataTxnApp/dataTxnApp_regular/generateCmdBaseline.py,5795,115

@@ -48,7 +48,7 @@ class Profiler(object):
   """Xpedite Profiler"""
 
   @staticmethod
-  def profile(app, profileInfo, reportName, reportPath, dryRun, result, # pylint: disable=too-many-locals
+  def profile(app, profileInfo, reportName, reportPath, dryRun, # pylint: disable=too-many-locals
     heartbeatInterval=120, interactive=True, duration=None, cprofile=None):
     """
     Orchestrates a Xpedite profile session
@@ -70,8 +70,6 @@ class Profiler(object):
     :type reportPath: str
     :param dryRun: Flag to enable simulation of profiling target
     :type dryRun: bool
-    :param result: Object for gathering and storing profile results
-    :type result: xpedite.jupyter.result.Result
     :param heartbeatInterval: Heartbeat interval for profiler's tcp connection
     :type heartbeatInterval: int
     :param interactive: Flag to enable, an interactive profiling session (Default value = True)
@@ -120,15 +118,15 @@ class Profiler(object):
     if cprofile:
       cprofile.enable()
 
-    runtime.report(result=result, reportName=reportName, benchmarkPaths=profileInfo.benchmarkPaths
+    report = runtime.report(reportName=reportName, benchmarkPaths=profileInfo.benchmarkPaths
         , classifier=classifier, resultOrder=profileInfo.resultOrder, txnFilter=profileInfo.txnFilter)
     if reportPath:
-      runtime.makeBenchmark(reportPath)
-    return runtime
+      report.makeBenchmark(reportPath)
+    return report
 
   @staticmethod
   def record(profileInfoPath, benchmarkPath=None, duration=None, heartbeatInterval=None,
-      cprofile=None, profileName=None, verbose=None, result=None):
+      cprofile=None, profileName=None, verbose=None):
     """
     Records an xpedite profile using the supplied parameters
 
@@ -147,8 +145,6 @@ class Profiler(object):
     :type profileName: str
     :param verbose: Flag to enable, verbose logging
     :type verbose: bool
-    :param result: Object for gathering and storing profile results
-    :type result: xpedite.jupyter.result.Result
     """
     if verbose:
       enableVerboseLogging()
@@ -156,17 +152,15 @@ class Profiler(object):
     validateBenchmarkPath(benchmarkPath)
     app = XpediteApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo)
     with app:
-      from xpedite.jupyter.result import Result
-      result = result if result else Result()
       reportName = buildReportName(profileInfo.appName, profileName)
-      Profiler.profile(
-        app, profileInfo, reportName, benchmarkPath, False, result, heartbeatInterval=heartbeatInterval,
+      report = Profiler.profile(
+        app, profileInfo, reportName, benchmarkPath, False, heartbeatInterval=heartbeatInterval,
         duration=duration, cprofile=cprofile
       )
-    return profileInfo, result
+    return profileInfo, report
 
   @staticmethod
-  def report(profileInfoPath, runId, benchmarkPath=None, cprofile=None, profileName=None, verbose=None, result=None):
+  def report(profileInfoPath, runId, benchmarkPath=None, cprofile=None, profileName=None, verbose=None):
     """
     Generates report for a previous profiling runs
 
@@ -182,8 +176,6 @@ class Profiler(object):
     :type profileName: str
     :param verbose: Flag to enable, verbose logging
     :type verbose: bool
-    :param result: Object for gathering and storing profile results
-    :type result: xpedite.jupyter.result.Result
     """
     if verbose:
       enableVerboseLogging()
@@ -191,11 +183,9 @@ class Profiler(object):
     validateBenchmarkPath(benchmarkPath)
     app = XpediteDormantApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo, runId)
     with app:
-      from xpedite.jupyter.result import Result
-      result = result if result else Result()
       reportName = buildReportName(profileInfo.appName, profileName)
-      Profiler.profile(app, profileInfo, reportName, benchmarkPath, True, result, cprofile=cprofile)
-    return profileInfo, result
+      report = Profiler.profile(app, profileInfo, reportName, benchmarkPath, True, cprofile=cprofile)
+    return profileInfo, report
 
   @staticmethod
   def probes(profileInfoPath):

@@ -12,7 +12,6 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import numpy
 import logging
 import xpedite.report
-from xpedite.report.env              import EnvReportBuilder
 from xpedite.report.histogram        import (
                                        formatLegend, formatBuckets, buildHistograms,
                                        buildBuckets, buildDistribution, Histogram
@@ -96,38 +95,13 @@ class ReportGenerator(object):
       histograms.update({category: Histogram(title, description, data, options)})
     return histograms
 
-  @staticmethod
-  def generateEnvironmentReport(app, result, repo, resultOrder, classifier, txnFilter, benchmarkPaths):
+  def generateReport(self, app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths):
     """
-    Generates report with environment details
-
-    :param app: an instance of xpedite app, to interact with target application
-    :param result: Handle to gather and store profiling results
-    :param repo: Repository of loaded transactions
-    :param resultOrder: Sort order of transactions in latency constituent reports
-    :param classifier: Predicate to classify transactions into different categories
-    :param txnFilter: Lambda to filter transactions prior to report generation
-    :param benchmarkPaths: List of stored reports from previous runs, for benchmarking
-
-    """
-    envReport = EnvReportBuilder().buildEnvironmentReportFile(
-      app, repo, resultOrder, classifier, txnFilter, benchmarkPaths
-    )
-    description = """
-    Test environment report (cpu clock frequency, kernel configuration etc.)
-    """
-    envReportTitle = 'Test Environment Report'
-    if envReport:
-      result.attachEnvReport(envReportTitle, description, envReport)
-
-  def generateReport(self, app, repo, result, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths):
-    """
-    Generates statistics for the current profile session and attaches reports to the given result object
+    Generates report for the current profile session
 
     :param app: An instance of xpedite app, to interact with target application
     :param repo: Repository of transaction collection
     :type repo: xpedite.txn.repo.TxnRepo
-    :param result: Handle to gather and store profiling results
     :param classifier: Predicate to classify transactions into different categories
     :param resultOrder: Sort order of transactions in latency constituent reports
     :param reportThreshold: Threshold for number of transactions rendered in html reports.
@@ -140,13 +114,11 @@ class ReportGenerator(object):
         self.analytics.filterTxns(repo, txnFilter)
       histograms = self.generateHistograms(repo, classifier, app.runId)
       profiles = self.analytics.generateProfiles(self.reportName, repo, classifier)
-      reports = xpedite.report.generate(profiles, histograms, resultOrder, reportThreshold)
-      for report in reports:
-        result.attach(report)
-      self.generateEnvironmentReport(app, result, repo, resultOrder, classifier, txnFilter, benchmarkPaths)
+      report = xpedite.report.generate(
+        app, profiles, histograms, resultOrder, classifier, txnFilter, benchmarkPaths, reportThreshold
+      )
       LOGGER.info('\nTo recreate the report run - "xpedite report -p profileInfo.py -r %s"\n', app.runId)
-      result.commit(app, profiles, self.reportName)
-      return profiles
+      return report
     except Exception as ex:
       LOGGER.exception('failed to generate report')
       raise ex
