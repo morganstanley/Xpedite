@@ -23,6 +23,7 @@ before_script:
 script:
   - ./build.sh
   - ./install.sh
+  - ./test/validateTarFiles.sh
   - ./test/runTest.sh -c
 
 after_success:

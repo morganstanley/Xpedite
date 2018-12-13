@@ -28,20 +28,18 @@ from test_xpedite                       import (
                                           PROBE_CMD_BASELINE_PATH,
                                           GENERATE_CMD_BASELINE_PATH,
                                           XPEDITE_APP_INFO_PATH,
-                                          loadProfileInfo
+                                          XPEDITE_APP_INFO_PARAMETER_PATH,
+                                          PARAMETERS_DATA_DIR, DIR_PATH, SRC_DIR_PATH,
+                                          LOCALHOST, BINARY_PATH, loadProfileInfo
                                         )
 from test_xpedite.test_profiler.profile import validateBenchmarks
 from xpedite.jupyter                    import PROFILES_KEY
 
-DIR_PATH = os.path.dirname(__file__)
-SRC_DIR_PATH = os.path.join(DIR_PATH, '../../../..')
-BINARY_PATH = 'install/test/{}'
-PROFILER_PATH = 'scripts/bin/xpedite'
 
 class ScenarioType(Enum):
   """Scenarios used in testing"""
-  benchmark = 'benchmark'
-  regular = 'regular'
+  benchmark = 'Benchmark'
+  regular = 'Regular'
 
 class ParameterFiles(object):
   """
@@ -51,8 +49,7 @@ class ParameterFiles(object):
     """
     Load input files for a scenario
     """
-    baselineCpuInfoPath = os.path.join(dataDir, BASELINE_CPU_INFO_PATH)
-    with open(baselineCpuInfoPath) as fileHandle:
+    with open(os.path.join(dataDir, BASELINE_CPU_INFO_PATH)) as fileHandle:
       self.fullCpuInfo = json.load(fileHandle)
     appInfoPath = os.path.join(tempDir, XPEDITE_APP_INFO_PATH)
     self.profileInfo = loadProfileInfo(
@@ -63,17 +60,15 @@ class ExpectedResultFiles(object):
   """
   Set expected results for a scenario
   """
-  def __init__(self, dataDir, remote=None):
+  def __init__(self, dataDir):
     """
     Load files with expected results for comparison
     """
     import cPickle as pickle
     from xpedite.jupyter.xpediteData    import XpediteDataReader
-    baselineProbePath = os.path.join(dataDir, PROBE_CMD_BASELINE_PATH)
-    with open(baselineProbePath) as probeFileHandle:
+    with open(os.path.join(dataDir, PROBE_CMD_BASELINE_PATH)) as probeFileHandle:
       self.baselineProbeMap = pickle.load(probeFileHandle)
-    profileDataPath = os.path.join(dataDir, REPORT_CMD_BASELINE_PATH)
-    with XpediteDataReader(profileDataPath) as xpediteDataReader:
+    with XpediteDataReader(os.path.join(dataDir, REPORT_CMD_BASELINE_PATH)) as xpediteDataReader:
       self.baselineProfiles = xpediteDataReader.getData(PROFILES_KEY)
     self.baselineProfileInfo = loadProfileInfo(dataDir, GENERATE_CMD_BASELINE_PATH)
 
@@ -81,16 +76,17 @@ class Scenario(object):
   """
   Load parameters and expected results information for a specific scenario of a test
   """
-  def __init__(self, runPath, appName, name, remote=None):
+  def __init__(self, runPath, appName, name, scenarioType, remote=None):
     """
     Create a scenario and load parameters and expected results
     """
     from xpedite.transport.remote   import Remote
     from xpedite.util               import makeLogPath
     self.name = name
-    self.dataDir = os.path.join(runPath, appName, self.name)
+    self.dataDir = os.path.join(runPath, self.name)
     self.remote = remote
     self.binary = os.path.join(DIR_PATH, SRC_DIR_PATH, BINARY_PATH.format(appName))
+    self.scenarioType = scenarioType
     self.parameters = None
     self.expectedResult = None
     self.tempDir = None
@@ -101,9 +97,12 @@ class Scenario(object):
     """
     self._mkdtemp()
     self.parameters = ParameterFiles(self.dataDir, self.tempDir, self.remote)
-    self.expectedResult = ExpectedResultFiles(self.dataDir, self.remote)
-    if self.benchmarkPaths:
-      validateBenchmarks(self.baselineProfiles, len(self.benchmarkPaths))
+    try:
+      self.expectedResult = ExpectedResultFiles(self.dataDir)
+      if self.benchmarkPaths:
+        validateBenchmarks(self.baselineProfiles, len(self.benchmarkPaths))
+    except IOError:
+      pass # skip loading expected results when generating baseline files
     return self
 
   def __exit__(self, excType, excVal, excTb):
@@ -136,16 +135,16 @@ class Scenario(object):
     Create an Xpedite dormant app (dry run without enabling probes)
     """
     from xpedite.profiler.app import XpediteDormantApp
+    appInfo = os.path.join(
+      self.dataDir, XPEDITE_APP_INFO_PARAMETER_PATH
+    ) if sampleFilePath else os.path.join(self.tempDir, XPEDITE_APP_INFO_PATH)
     if sampleFilePath:
-      appInfo = os.path.join(self.dataDir, XPEDITE_APP_INFO_PATH)
-      appHost = 'localhost'
-    else:
-      appInfo = os.path.join(self.tempDir, XPEDITE_APP_INFO_PATH)
-      appHost = self.remote.host if self.remote else 'localhost'
-    xpediteApp = XpediteDormantApp(self.appName, appHost, appInfo, runId, workspace=workspace)
-    if sampleFilePath:
+      xpediteApp = XpediteDormantApp(self.appName, LOCALHOST, appInfo, runId, workspace=workspace)
       xpediteApp.sampleFilePath = sampleFilePath
-    return xpediteApp
+      return xpediteApp
+    else:
+      appHost = self.remote.host if self.remote else LOCALHOST
+      return XpediteDormantApp(self.appName, appHost, appInfo, runId, workspace=workspace)
 
   def _mkdtemp(self):
     """
@@ -154,8 +153,9 @@ class Scenario(object):
     from test_xpedite import mkdtemp
     if self.remote:
       self.remote.connection.modules.sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-      rpyc.utils.classic.teleport_function(self.remote.connection, mkdtemp)
-      self.tempDir = self.remote.connection.modules.os.getcwd()
+      remoteMkdtemp = rpyc.utils.classic.teleport_function(self.remote.connection, mkdtemp)
+      self.tempDir = remoteMkdtemp()
+      self.remote.connection.modules.os.chdir(self.tempDir)
     else:
       self.tempDir = mkdtemp()
       os.chdir(self.tempDir)
@@ -164,32 +164,9 @@ class Scenario(object):
     """
     Collect data files from the test directory to determine the run ID
     """
-    runId = None
-    for fileName in os.listdir(self.dataDir):
+    for fileName in os.listdir(os.path.join(self.dataDir, PARAMETERS_DATA_DIR)):
       if fileName.endswith(DATA_FILE_EXT):
-        words = fileName.split('-')
-        runId = (words[2])
-        return runId
-
-  def generateProfileInfo(self, xpediteApp):
-    """
-    Generate profile information for a specific app to be compared to an expected result
-    """
-    from xpedite.profiler.profileInfoGenerator import ProfileInfoGenerator
-    from xpedite.profiler.probeAdmin           import ProbeAdmin
-    profiler = os.path.join(DIR_PATH, SRC_DIR_PATH, PROFILER_PATH)
-    probes = ProbeAdmin.loadProbes(xpediteApp)
-    generator = ProfileInfoGenerator(
-      xpediteApp.executableName, xpediteApp.ip, xpediteApp.appInfoPath,
-      probes, profiler
-    )
-    generator.generate()
-    generatedProfileInfo = loadProfileInfo(self.dataDir, generator.filePath, self.remote)
-    generatedProfileInfo.appInfo = XPEDITE_APP_INFO_PATH
-    generatedProfileInfo.cpuSet = [0]
-    generatedProfileInfo.benchmarkPaths = []
-    generatedProfileInfo.appHost = 'localhost'
-    return generatedProfileInfo
+        return (fileName.split('-')[2])
 
   @property
   def appName(self):
@@ -275,11 +252,13 @@ class ScenarioLoader(object):
     Load benchmark / regular scenarios for a list of applications
     """
     for app in apps:
-      name = '{}_{}'.format(app, ScenarioType.regular.value)
-      scenario = Scenario(runPath, app, name, remote)
+      scenario = Scenario(
+        runPath, app, '{}{}'.format(app, ScenarioType.regular.value), ScenarioType.regular, remote
+      )
       self._scenarios[scenario.name] = scenario
-      name = '{}_{}'.format(app, ScenarioType.benchmark.value)
-      scenario = Scenario(runPath, app, name, remote)
+      scenario = Scenario(
+        runPath, app, '{}{}'.format(app, ScenarioType.benchmark.value), ScenarioType.benchmark, remote
+      )
       self._scenarios[scenario.name] = scenario
 
   def __getitem__(self, scenario):

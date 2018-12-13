@@ -18,15 +18,26 @@ This package contains pytests for Xpedite profiling including:
 Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 """
 
-REPORT_CMD_BASELINE_PATH = 'reportCmdBaseline.xpd'
-PROFILE_INFO_PATH = 'profileInfo.py'
+import os
+
+PARAMETERS = 'parameters'
+PARAMETERS_DATA_DIR = os.path.join(PARAMETERS, 'data')
+EXPECTED_RESULTS = 'expectedResults'
 XPEDITE_APP_INFO_PATH = 'xpedite-appinfo.txt'
+XPEDITE_APP_INFO_PARAMETER_PATH = os.path.join(PARAMETERS, XPEDITE_APP_INFO_PATH)
+PROFILE_INFO_PATH = os.path.join(PARAMETERS, 'profileInfo.py')
+BASELINE_CPU_INFO_PATH = os.path.join(PARAMETERS, 'baselineCpuInfo.json')
+REPORT_CMD_BASELINE_PATH = os.path.join(EXPECTED_RESULTS, 'reportCmdBaseline.xpd')
+PROBE_CMD_BASELINE_PATH = os.path.join(EXPECTED_RESULTS, 'probeCmdBaseline.pkl')
+GENERATE_CMD_BASELINE_PATH = os.path.join(EXPECTED_RESULTS, 'generateCmdBaseline.py')
 DATA_FILE_EXT = '.data'
-BASELINE_CPU_INFO_PATH = 'baselineCpuInfo.json'
-PROBE_CMD_BASELINE_PATH = 'probeCmdBaseline.pkl'
-GENERATE_CMD_BASELINE_PATH = 'generateCmdBaseline.py'
 TXN_COUNT = 1024
 THREAD_COUNT = 1
+DIR_PATH = os.path.dirname(__file__)
+SRC_DIR_PATH = os.path.join(DIR_PATH, '../../..')
+BINARY_PATH = 'install/test/{}'
+PROFILER_PATH = 'scripts/bin/xpedite'
+LOCALHOST = 'localhost'
 
 def loadProfileInfo(dataDir, profileInfoPath, appInfoPath=None, remote=None):
   """
@@ -36,7 +47,6 @@ def loadProfileInfo(dataDir, profileInfoPath, appInfoPath=None, remote=None):
   @param remote: Remote environment information if a remote host is passed to the pytest parser
   @type remote: C{xpedite.transport.remote.Remote}
   """
-  import os
   import xpedite.profiler.profileInfo
   profileInfo = xpedite.profiler.profileInfo.loadProfileInfo(os.path.join(dataDir, profileInfoPath))
   if appInfoPath:
@@ -44,14 +54,15 @@ def loadProfileInfo(dataDir, profileInfoPath, appInfoPath=None, remote=None):
   if remote:
     profileInfo.appHost = remote.host
   if profileInfo.benchmarkPaths:
-    profileInfo.benchmarkPaths = [os.path.dirname(dataDir)]
+    profileInfo.benchmarkPaths = [dataDir]
   return profileInfo
 
 def mkdtemp():
   """
   Create and clean a temporary directory
   """
-  import os
+  import os # pylint: disable=reimported,redefined-outer-name
+            # re-importing os needed for rpyc teleport function
   import sys
   import tempfile
   import test_xpedite.test_profiler

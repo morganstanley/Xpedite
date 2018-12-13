@@ -1,0 +1,13 @@
+file name, size, lines
+multiThreadedAppBenchmark/benchmark/.benchmark,151,8
+multiThreadedAppBenchmark/benchmark/1544799035/28418-00002b9f10084000/samples-0000.csv,20,1
+multiThreadedAppBenchmark/benchmark/1544799035/28441-00002b9f11488700/samples-0000.csv,157687,4097
+multiThreadedAppBenchmark/benchmark/appinfo.txt,2180,13
+multiThreadedAppBenchmark/expectedResults/generateCmdBaseline.py,4657,100
+multiThreadedAppBenchmark/expectedResults/probeCmdBaseline.pkl,1088,164
+multiThreadedAppBenchmark/expectedResults/reportCmdBaseline.xpd,11869304,93242
+multiThreadedAppBenchmark/parameters/baselineCpuInfo.json,1271,0
+multiThreadedAppBenchmark/parameters/data/xpedite-multiThreadedApp-1544799042-28456-00002ba13cf9a000.data,192,0
+multiThreadedAppBenchmark/parameters/data/xpedite-multiThreadedApp-1544799042-28475-00002ba13e39e700.data,98544,85
+multiThreadedAppBenchmark/parameters/profileInfo.py,947,22
+multiThreadedAppBenchmark/parameters/xpedite-appinfo.txt,2180,13

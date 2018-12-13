@@ -157,7 +157,6 @@ function runAllTests() {
 
 TEST_NAME=${PYTEST_DIR}
 COV=""
-REMOTE=""
 APPS="--apps=slowFixDecoderApp"
 
 ARGS=`getopt -o lgpw:cr:s:Pt:m:a: --long lint,gtest,pytest,workspace,cov,remote:,test:,pmc,transactions:,multithreaded:,apps: -- "$@"`
@@ -191,7 +190,6 @@ while true ; do
       shift
       ;;
     -r|--remote)
-      REMOTE=$2
       APP_HOST="--hostname=$2"
       rsyncSource "$2" ;
       shift 2
@@ -238,7 +236,7 @@ fi
 if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then
   runAllTests
 else
-  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" ]]; then
+  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" || "${TEST_NAME}" ]]; then
     pytestUsage
   fi
 

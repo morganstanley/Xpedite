@@ -8,12 +8,20 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 import os
 import copy
 from test_xpedite.test_profiler.app         import TargetLauncher
-from test_xpedite                           import TXN_COUNT, XPEDITE_APP_INFO_PATH
+from test_xpedite                           import (
+                                              TXN_COUNT, XPEDITE_APP_INFO_PATH,
+                                              XPEDITE_APP_INFO_PARAMETER_PATH,
+                                              PARAMETERS_DATA_DIR, DIR_PATH,
+                                              SRC_DIR_PATH, PROFILER_PATH, LOCALHOST,
+                                            )
 from test_xpedite.test_profiler.comparator  import findDiff
 from xpedite.profiler.probeAdmin            import ProbeAdmin
 
+
 REPORT_NAME = 'XpediteTest'
-SAMPLE_FILE_PATH = '{}/xpedite-*-{}-[0-9]*.data'
+SAMPLE_FILE_PATH = '{{dataDir}}/{parameterDir}/xpedite-*-{{runId}}-[0-9]*.data'.format(
+  parameterDir=PARAMETERS_DATA_DIR
+)
 
 def generateProfiles(app, scenario):
   """
@@ -31,7 +39,7 @@ def runXpediteReport(runId, context, scenario, sampleFilePath=None, cpuInfoOverr
   with scenario.makeXpediteDormantApp(runId, context.workspace, sampleFilePath) as xpediteApp:
     if cpuInfoOverride:
       xpediteApp.env.proxy.fullCpuInfo = scenario.fullCpuInfo
-    xpediteApp.appInfoPath = os.path.join(scenario.dataDir, XPEDITE_APP_INFO_PATH)
+    xpediteApp.appInfoPath = os.path.join(scenario.dataDir, XPEDITE_APP_INFO_PARAMETER_PATH)
     return generateProfiles(xpediteApp, scenario)
 
 def runXpediteRecord(context, scenario):
@@ -56,7 +64,7 @@ def compareVsBaseline(context, scenario):
   Compare profiles with benchmarks and profiles without benchmarks against existing profiles
   """
   runId = scenario.discoverRunId()
-  sampleFilePath = SAMPLE_FILE_PATH.format(scenario.dataDir, runId)
+  sampleFilePath = SAMPLE_FILE_PATH.format(dataDir=scenario.dataDir, runId=runId)
   report = runXpediteReport(
     runId, context, scenario, sampleFilePath=sampleFilePath, cpuInfoOverride=True
   )
@@ -77,6 +85,19 @@ def validateBenchmarks(profiles, benchmarkCount):
     assert len(profile.benchmarks) == benchmarkCount
     for benchmark in profile.benchmarks.keys():
       assert len(profile.benchmarks[benchmark].timelineCollection) == TXN_COUNT
+
+def generateProfileInfoFile(xpediteApp, probes):
+  """
+  Generate profile information for a specific app to be compared to an expected result
+  """
+  from xpedite.profiler.profileInfoGenerator import ProfileInfoGenerator
+  profiler = os.path.join(DIR_PATH, SRC_DIR_PATH, PROFILER_PATH)
+  generator = ProfileInfoGenerator(
+    xpediteApp.executableName, LOCALHOST, XPEDITE_APP_INFO_PATH,
+    probes, profiler
+  )
+  generator.generate()
+  return generator.filePath
 
 def buildNotebook(context, scenario):
   """

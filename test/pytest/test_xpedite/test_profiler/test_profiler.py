@@ -15,9 +15,10 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 """
 
 import pytest
+from test_xpedite                             import loadProfileInfo
 from test_xpedite.test_profiler.profile       import (
                                                 runXpediteReport, runXpediteRecord, loadProbes,
-                                                buildNotebook, compareVsBaseline
+                                                buildNotebook, compareVsBaseline, generateProfileInfoFile,
                                               )
 from test_xpedite.test_profiler.comparator    import findDiff
 from test_xpedite.test_profiler.context       import Context
@@ -82,7 +83,10 @@ def test_generate_cmd_vs_baseline():
   for scenarios in SCENARIO_LOADER:
     with scenarios as scenarios:
       with TargetLauncher(CONTEXT, scenarios) as app:
-        generatedProfileInfo = scenarios.generateProfileInfo(app.xpediteApp)
+        probes = ProbeAdmin.loadProbes(app.xpediteApp)
+        profileInfoFile = generateProfileInfoFile(app.xpediteApp, probes)
+        generatedProfileInfo = loadProfileInfo(scenarios, profileInfoFile)
+        generatedProfileInfo.benchmarkPaths = None # generating does not set benchmark paths
       findDiff(generatedProfileInfo.__dict__, scenarios.baselineProfileInfo.__dict__)
       assert generatedProfileInfo == scenarios.baselineProfileInfo
 

@@ -37,10 +37,10 @@ def findDiff(dict1, dict2, path=''):
     else:
       path += ' -> ' + key
 
-    if isinstance(dict1[key], dict):
+    if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
       findDiff(dict1[key], dict2[key], path)
     else:
-      if not isinstance(dict1[key], list):
+      if not isinstance(dict1[key], list) or not isinstance(dict2[key], list):
         try:
           findDiff(dict1[key].__dict__, dict2[key].__dict__, path)
         except AttributeError:
