@@ -20,7 +20,6 @@ fi
 
 export PYTHONPATH=$PYTHONPATH:${PYTEST_DIR}
 export PYTHONPATH=$PYTHONPATH:${XPEDITE_DIR}
-HOST_NAME=localhost
 
 function usage() {
 cat << EOM
@@ -66,8 +65,10 @@ fi
 
 rm -rf ${RUN_DIR}/*
 
-${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -x
+${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -e -x
 
 python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py --rundir ${RUN_DIR} --hostname ${HOST_NAME}
 
 ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -z
+
+${TEST_DIR}/validateTarFiles.sh

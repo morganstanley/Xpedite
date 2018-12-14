@@ -7,10 +7,12 @@
 #
 #############################################################################
 
+PROGRAM_NAME=$0
 TEST_DIR=`dirname $0`
 DATA_DIR=`readlink -f ${TEST_DIR}/pytest/test_xpedite/data`
 
 declare -a APPS=("allocatorApp" "dataTxnApp" "multiThreadedApp" "slowFixDecoderApp")
+declare -a SCENARIOS=("Regular" "Benchmark")
 
 function usage() {
 cat << EOM
@@ -76,6 +78,8 @@ function validate() {
   message "$1 ARCHIVE FILE HAS BEEN VALIDATED"
 }
 
-for i in "${APPS[@]}"; do
-  validate ${i}
+for a in "${APPS[@]}"; do
+  for s in "${SCENARIOS[@]}"; do
+    validate ${a}${s}
+  done
 done

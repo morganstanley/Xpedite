@@ -11,15 +11,18 @@ TEST_DIR=`dirname $0`
 PYTEST_DIR=${TEST_DIR}/pytest
 SAMPLES_LOADER=`readlink ${TESTDIR}/../install/bin/xpediteSamplesLoader`
 
+declare -a APPS=("allocatorApp" "dataTxnApp" "multiThreadedApp" "slowFixDecoderApp")
+declare -a SCENARIOS=("Regular" "Benchmark")
+
 function usage() {
 cat << EOM
 ------------------------------------------------------------------------------
 
-usage: $0 [xzt:a:]
--d|--dirname      directory to use for zipping / extracting
--a|--appname      app name
--x|--extract      extract files
--z|--zip          zip files
+usage: $0 [d:exz]
+-d|--dirname           directory to use for zipping / extracting
+-e|--excludeResults    disable unzipping for benchmarks (during baseline file generation)
+-x|--extract           extract files
+-z|--zip               zip files
 
 ------------------------------------------------------------------------------
 
@@ -27,13 +30,17 @@ EOM
 exit 1
 }
 
-declare -a APPS=("allocatorApp" "dataTxnApp" "multiThreadedApp" "slowFixDecoderApp")
-
 function unzipFiles() {
   rm -rf $1/*
 
-  for i in "${APPS[@]}"; do
-    tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/$i.tar.gz
+  for a in "${APPS[@]}"; do
+    for s in "${SCENARIOS[@]}"; do
+      if [ "${EXCLUDE_RESULTS}" == false ]; then
+        tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/${a}${s}.tar.gz
+      else
+        tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/${a}${s}.tar.gz --exclude=${a}${s}/benchmark --exclude=${a}${s}/expectedResults --exclude=${a}${s}/parameters/data
+      fi
+    done
   done
 }
 
@@ -43,28 +50,34 @@ function zipFiles() {
   
   cd $1
   find . -name "*.pyc" -type f -delete
-  for i in "${APPS[@]}"; do
-    MANIFEST_PATH=${TEST_DIR_PATH}/pytest/test_xpedite/data/${i}Manifest.csv
-    rm ${MANIFEST_PATH}
+  
+  for a in "${APPS[@]}"; do
+    for s in "${SCENARIOS[@]}"; do
+      MANIFEST_PATH=${TEST_DIR_PATH}/pytest/test_xpedite/data/${a}${s}Manifest.csv
+      rm ${MANIFEST_PATH}
     
-    echo "file name, size, lines" >> ${MANIFEST_PATH}
-    for FILE in `find $i -type f`; do
-      FULL_PATH=$1/${FILE}
-      echo -n "${FILE}," >> ${MANIFEST_PATH}
-      echo -n "`wc -c < ${FULL_PATH}`," >> ${MANIFEST_PATH}
+      echo "file name, size, lines" >> ${MANIFEST_PATH}
+      for FILE in `find ${a}${s} -type f | sort`; do
+        FULL_PATH=$1/${FILE}
+        echo -n "${FILE}," >> ${MANIFEST_PATH}
+        echo -n "`wc -c < ${FULL_PATH}`," >> ${MANIFEST_PATH}
       
-      if [[ ${FILE: -4} == "*.data" ]]; then
-        echo "`${SAMPLES_LOADER} ${FILES} | wc -l`" >> ${MANIFEST_PATH}
-      else
-        echo "`wc -l < ${FULL_PATH}`" >> ${MANIFEST_PATH}
+        if [[ ${FILE: -4} == "*.data" ]]; then
+          echo "`${SAMPLES_LOADER} ${FILES} | wc -l`" >> ${MANIFEST_PATH}
+        else
+          echo "`wc -l < ${FULL_PATH}`" >> ${MANIFEST_PATH}
+        fi
+      done
+      tar -czf ${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz ${a}${s} --files-from=${a}${s}/parameters --files-from=${a}${s}/expectedResults
+      if [ "${s}" == "Benchmark" ]; then
+        tar -czf ${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz ${a}${s} --files-from=${a}${s}/benchmark
       fi
     done
-
-    tar -czf ${FILE_PATH}/test_xpedite/data/$i.tar.gz $i
   done
 }
 
-ARGS=`getopt -o d:xz --long dirname:,extract,zip -- "$@"`
+ARGS=`getopt -o d:exz --long dirname:,excludeResults,extract,zip -- "$@"`
+EXCLUDE_RESULTS=false
 
 if [ $? -ne 0 ]; then
   usage
@@ -82,8 +95,12 @@ while true ; do
       zipFiles ${DIR_NAME}
       shift
       ;;
+    -e|--excludeResults)
+      EXCLUDE_RESULTS=true
+      shift 
+      ;;
     -x|--extract)
-      unzipFiles ${DIR_NAME}
+      unzipFiles ${DIR_NAME} ${EXCLUDE_RESULTS}
       shift
       ;;
     --)
