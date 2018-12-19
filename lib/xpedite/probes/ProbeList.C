@@ -15,7 +15,6 @@
 #include <xpedite/probes/Config.H>
 #include <xpedite/probes/ProbeList.H>
 #include <xpedite/probes/ProbeCtl.H>
-#include <xpedite/framework/SamplesBuffer.H>
 #include <cstdio>
 
 xpedite::probes::ProbeList* xpedite::probes::ProbeList::_instance;
