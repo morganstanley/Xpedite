@@ -38,8 +38,14 @@ from xpedite.jupyter                    import PROFILES_KEY
 
 class ScenarioType(Enum):
   """Scenarios used in testing"""
-  benchmark = 'Benchmark'
-  regular = 'Regular'
+  Benchmark = 'Benchmark'
+  Regular = 'Regular'
+
+  def __str__(self):
+    """
+    String representation of scenario types
+    """
+    return self.value
 
 class ParameterFiles(object):
   """
@@ -82,14 +88,17 @@ class Scenario(object):
     """
     from xpedite.transport.remote   import Remote
     from xpedite.util               import makeLogPath
-    self.name = name
-    self.dataDir = os.path.join(runPath, self.name)
-    self.remote = remote
-    self.binary = os.path.join(DIR_PATH, SRC_DIR_PATH, BINARY_PATH.format(appName))
-    self.scenarioType = scenarioType
-    self.parameters = None
-    self.expectedResult = None
     self.tempDir = None
+    self.parameters = None
+    self.name = name
+    self.remote = remote
+    self.scenarioType = scenarioType
+    self.dataDir = os.path.join(runPath, self.name)
+    self.binary = os.path.join(DIR_PATH, SRC_DIR_PATH, BINARY_PATH.format(appName))
+    try:
+      self.expectedResult = ExpectedResultFiles(self.dataDir)
+    except IOError:
+      self.expectedResult = None # skip loading expected results when generating baseline files
 
   def __enter__(self):
     """
@@ -97,12 +106,8 @@ class Scenario(object):
     """
     self._mkdtemp()
     self.parameters = ParameterFiles(self.dataDir, self.tempDir, self.remote)
-    try:
-      self.expectedResult = ExpectedResultFiles(self.dataDir)
-      if self.benchmarkPaths:
-        validateBenchmarks(self.baselineProfiles, len(self.benchmarkPaths))
-    except IOError:
-      pass # skip loading expected results when generating baseline files
+    if self.expectedResult and self.benchmarkPaths:
+      validateBenchmarks(self.baselineProfiles, len(self.benchmarkPaths))
     return self
 
   def __exit__(self, excType, excVal, excTb):
@@ -166,7 +171,7 @@ class Scenario(object):
     """
     for fileName in os.listdir(os.path.join(self.dataDir, PARAMETERS_DATA_DIR)):
       if fileName.endswith(DATA_FILE_EXT):
-        return (fileName.split('-')[2])
+        return fileName.split('-')[2]
 
   @property
   def appName(self):
@@ -247,19 +252,16 @@ class ScenarioLoader(object):
     self._scenarios = OrderedDict()
     self.remote = None
 
-  def loadScenarios(self, runPath, apps, remote=None):
+  def loadScenarios(self, runPath, apps, scenarioTypes, remote=None):
     """
     Load benchmark / regular scenarios for a list of applications
     """
     for app in apps:
-      scenario = Scenario(
-        runPath, app, '{}{}'.format(app, ScenarioType.regular.value), ScenarioType.regular, remote
-      )
-      self._scenarios[scenario.name] = scenario
-      scenario = Scenario(
-        runPath, app, '{}{}'.format(app, ScenarioType.benchmark.value), ScenarioType.benchmark, remote
-      )
-      self._scenarios[scenario.name] = scenario
+      for scenarioType in scenarioTypes:
+        scenario = Scenario(
+          runPath, app, '{}{}'.format(app, scenarioType), scenarioType, remote
+        )
+        self._scenarios[scenario.name] = scenario
 
   def __getitem__(self, scenario):
     """Support indexing for scenario loader object"""

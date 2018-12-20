@@ -7,6 +7,11 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 import os
 import pytest
+from test_xpedite.test_profiler.scenario import ScenarioType
+
+PARAMETER_NAME = 'scenarioName'
+APPS_ARG = 'apps'
+SCENARIOS_ARG = 'scenarioTypes'
 
 def pytest_addoption(parser):
   """
@@ -19,46 +24,68 @@ def pytest_addoption(parser):
   parser.addoption('--workspace', action='store', default=workspaceDefault, help='workspace path to trim from file paths')
   parser.addoption('--rundir', action='store', default='', help='directory to extract files to')
   parser.addoption('--apps', action='store', default='[slowFixDecoderApp]', help='apps to test')
+  parser.addoption('--scenarioTypes', action='store', default='[Regular, Benchmark]', help='scenarios to run')
 
-@pytest.fixture
+def pytest_generate_tests(metafunc):
+  """
+  Parametrize pytests by scenario name
+  """
+  if PARAMETER_NAME in metafunc.fixturenames:
+    scenarioNames = []
+    for app in metafunc.config.getoption(APPS_ARG).split(','):
+      for scenario in metafunc.config.getoption(SCENARIOS_ARG).split(','):
+        scenarioNames.append('{}{}'.format(app, scenario))
+    metafunc.parametrize(PARAMETER_NAME, scenarioNames)
+
+@pytest.fixture(scope='module')
 def hostname(request):
   """
   The hostname of a remote host to run a target application on
   """
   return request.config.option.hostname
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def transactions(request):
   """
   The number of transactions a target application should create
   """
   return request.config.option.transactions
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def multithreaded(request):
   """
   The number of threads to use in the target application
   """
   return request.config.option.multithreaded
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def workspace(request):
   """
-  The number of threads to use in the target application
+  Workspace path to trim from file paths
   """
   return request.config.option.workspace
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def rundir(request):
   """
   Directory to extract files to
   """
   return request.config.option.rundir
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def apps(request):
   """
-  Directory to extract files to
+  Apps to test
   """
-  apps = request.config.option.apps
-  return apps.split(',')
+  return request.config.option.apps.split(',')
+
+@pytest.fixture(scope='module')
+def scenarioTypes(request):
+  """
+  Scenarios to run
+  """
+  scenarioTypes = []
+  for scenarioType in request.config.option.scenarioTypes.split(','):
+    scenarioTypes.append(ScenarioType[scenarioType])
+  return scenarioTypes
+

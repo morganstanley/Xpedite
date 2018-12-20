@@ -27,8 +27,8 @@ from test_xpedite.test_profiler.scenario      import ScenarioLoader
 CONTEXT = None
 SCENARIO_LOADER = ScenarioLoader()
 
-@pytest.fixture(autouse=True)
-def setTestParameters(hostname, transactions, multithreaded, workspace, rundir, apps):
+@pytest.fixture(scope='module', autouse=True)
+def setTestParameters(hostname, transactions, multithreaded, workspace, rundir, apps, scenarioTypes):
   """
   A method run at the beginning of tests to create and enter a REMOTE environment
   and at the end of tests to exit the REMOTE environment
@@ -46,77 +46,71 @@ def setTestParameters(hostname, transactions, multithreaded, workspace, rundir, 
     remote = Remote(hostname, makeLogPath('remote'))
     remote.__enter__()
   CONTEXT = Context(transactions, multithreaded, workspace)
-  SCENARIO_LOADER.loadScenarios(rundir, apps, remote)
-
+  SCENARIO_LOADER.loadScenarios(rundir, apps, scenarioTypes, remote)
   yield
   if remote:
     remote.__exit__(None, None, None)
 
-def test_report_vs_baseline():
+def test_report_vs_baseline(scenarioName):
   """
   Run xpedite report on a data file in the test directory, return profiles and compare
   the previously generated profiles from the same xpedite run
   """
-  for scenarios in SCENARIO_LOADER:
-    with scenarios as scenarios:
-      compareVsBaseline(CONTEXT, scenarios)
+  with SCENARIO_LOADER[scenarioName] as scenarios:
+    compareVsBaseline(CONTEXT, scenarios)
 
-def test_record_vs_report(capsys):
+def test_record_vs_report(capsys, scenarioName):
   """
   Run xpedite record and xpedite report to compare profiles
   """
-  for scenarios in SCENARIO_LOADER:
-    with scenarios as scenarios:
-      with capsys.disabled():
-        currentReport, _, _ = runXpediteRecord(CONTEXT, scenarios)
-      report = runXpediteReport(currentReport.runId, CONTEXT, scenarios)
-      findDiff(report.profiles.__dict__, currentReport.profiles.__dict__)
-      assert report.profiles == currentReport.profiles
+  with SCENARIO_LOADER[scenarioName] as scenarios:
+    with capsys.disabled():
+      currentReport, _, _ = runXpediteRecord(CONTEXT, scenarios)
+    report = runXpediteReport(currentReport.runId, CONTEXT, scenarios)
+    findDiff(report.profiles.__dict__, currentReport.profiles.__dict__)
+    assert report.profiles == currentReport.profiles
 
-def test_generate_cmd_vs_baseline():
+def test_generate_cmd_vs_baseline(scenarioName):
   """
   Test xpedite generate by generating a new profileInfo.py file and comparing to baseline
   profileInfo.py in the test data directory
   """
   from test_xpedite.test_profiler.app import TargetLauncher
   from xpedite.profiler.probeAdmin    import ProbeAdmin
-  for scenarios in SCENARIO_LOADER:
-    with scenarios as scenarios:
-      with TargetLauncher(CONTEXT, scenarios) as app:
-        probes = ProbeAdmin.loadProbes(app.xpediteApp)
-        profileInfoFile = generateProfileInfoFile(app.xpediteApp, probes)
-        generatedProfileInfo = loadProfileInfo(scenarios, profileInfoFile)
-        generatedProfileInfo.benchmarkPaths = None # generating does not set benchmark paths
-      findDiff(generatedProfileInfo.__dict__, scenarios.baselineProfileInfo.__dict__)
-      assert generatedProfileInfo == scenarios.baselineProfileInfo
+  with SCENARIO_LOADER[scenarioName] as scenarios:
+    with TargetLauncher(CONTEXT, scenarios) as app:
+      probes = ProbeAdmin.loadProbes(app.xpediteApp)
+      profileInfoFile = generateProfileInfoFile(app.xpediteApp, probes)
+      generatedProfileInfo = loadProfileInfo(scenarios, profileInfoFile)
+      generatedProfileInfo.benchmarkPaths = None # generating does not set benchmark paths
+    findDiff(generatedProfileInfo.__dict__, scenarios.baselineProfileInfo.__dict__)
+    assert generatedProfileInfo == scenarios.baselineProfileInfo
 
-def test_probe_states(capsys):
+def test_probe_states(capsys, scenarioName):
   """
   Test xpedite probes and probes state for an application's against baseline probe states
   for the application
   """
   import cPickle as pickle
   from xpedite.types.probe import compareProbes
-  for scenarios in SCENARIO_LOADER:
-    with scenarios as scenarios:
-      probeMap = {}
-      with capsys.disabled():
-        probes = loadProbes(CONTEXT, scenarios)
-        for probe in probes:
-          probeMap[probe.sysName] = probe
-      assert len(probes) == len(scenarios.baselineProbeMap.keys())
-      findDiff(probeMap, scenarios.baselineProbeMap)
-      for probe in probeMap.keys():
-        assert compareProbes(probeMap[probe], scenarios.baselineProbeMap[probe])
+  with SCENARIO_LOADER[scenarioName] as scenarios:
+    probeMap = {}
+    with capsys.disabled():
+      probes = loadProbes(CONTEXT, scenarios)
+      for probe in probes:
+        probeMap[probe.sysName] = probe
+    assert len(probes) == len(scenarios.baselineProbeMap.keys())
+    findDiff(probeMap, scenarios.baselineProbeMap)
+    for probe in probeMap.keys():
+      assert compareProbes(probeMap[probe], scenarios.baselineProbeMap[probe])
 
-def test_notebook_build(capsys):
+def test_notebook_build(capsys, scenarioName):
   """
   Test to confirm a Jupyter notebook can be creating from profile information and results
   generated by xpedite record
   """
-  for scenarios in SCENARIO_LOADER:
-    with scenarios as scenarios:
-      with capsys.disabled():
-        notebook, _, report, _, _ = buildNotebook(CONTEXT, scenarios)
-        assert len(report.categories) > 0
-      assert notebook
+  with SCENARIO_LOADER[scenarioName] as scenarios:
+    with capsys.disabled():
+      notebook, _, report, _, _ = buildNotebook(CONTEXT, scenarios)
+      assert len(report.categories) > 0
+    assert notebook

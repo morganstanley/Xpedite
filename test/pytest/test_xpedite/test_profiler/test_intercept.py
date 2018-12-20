@@ -12,13 +12,13 @@ SCENARIO_LOADER = ScenarioLoader()
 ALLOCATOR_APP = ['allocatorApp']
 
 @pytest.fixture(autouse=True)
-def setTestParameters(transactions, multithreaded, workspace, rundir):
+def setTestParameters(transactions, multithreaded, workspace, rundir, scenarioTypes):
   """
   A method run at the beginning of tests to set test context variables
   """
   global CONTEXT # pylint: disable = global-statement
   CONTEXT = Context(transactions, multithreaded, workspace)
-  SCENARIO_LOADER.loadScenarios(rundir, ALLOCATOR_APP)
+  SCENARIO_LOADER.loadScenarios(rundir, ALLOCATOR_APP, scenarioTypes)
 
 def test_intercept(capsys):
   """

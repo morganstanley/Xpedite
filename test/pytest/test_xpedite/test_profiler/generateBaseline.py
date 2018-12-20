@@ -101,7 +101,7 @@ def generateBaseline(context, scenario, runDir):
   os.mkdir(os.path.join(runDir, PARAMETERS_DATA_DIR))
   os.mkdir(os.path.join(runDir, EXPECTED_RESULTS))
   with scenario as scenario:
-    if scenario.scenarioType == ScenarioType.benchmark:
+    if scenario.scenarioType == ScenarioType.Benchmark:
       benchmarkProfile(context, scenario, runDir)
     _, dataFilePath, report, fullCpuInfo, dataFiles = buildNotebook(context, scenario)
     copy(dataFilePath, os.path.join(runDir, REPORT_CMD_BASELINE_PATH))
