@@ -180,6 +180,10 @@ h3 {
   text-align: left;
 }
 
+.pmu td, .pmu th {
+  border: none;
+}
+
 .pmu .pmn {
   font-weight: bold;
   color: #ffc90e;
@@ -189,6 +193,11 @@ h3 {
   text-align: right;
   color: #fbfbfb;
 }
+
+#xpedite-report .pmu {
+  font-size: .9em;
+}
+
 a:focus {
   outline:0;
 }

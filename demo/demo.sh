@@ -20,24 +20,28 @@ Run a demo for xpedite profiling.
 
 Mandatory arguments to long options are mandatory for short options too.
   -r, --remote               remote host where the app runs.
+  -c, --cpu                  pin to the given cpu core
   -p, --pmc                  collect hardware performance counters
 EOM
 exit 1
 }
 
-ARGS=`getopt -o r:p --long remote:,pmc -- "$@"`
+ARGS=`getopt -o r:c:p --long remote:,cpu:,pmc -- "$@"`
 if [ $? -ne 0 ]; then
   usage
 fi
 
 APP_LAUNCHER='eval'
 eval set -- "$ARGS"
+CPU=0
 
 while true ; do
   case "$1" in
     -r|--remote)
         APP_HOST=$2
         APP_LAUNCHER="ssh $APP_HOST" ; shift 2 ;;
+    -c|--cpu)
+        CPU=$2 ; shift 2 ;;
     -p|--pmc)
         PMC=true; shift 1 ;;
     --) shift ; break ;;
@@ -74,9 +78,9 @@ else
 fi
 
 APP_NAME=`basename ${DEMO_APP}`
-DEMO_APP_PID=`${APP_LAUNCHER} "cd $LOG_DIR; ./${APP_NAME} >$LOG_DIR/app.log 2>&1& echo \\\$!"`
+DEMO_APP_PID=`${APP_LAUNCHER} "cd $LOG_DIR; ./${APP_NAME} -c ${CPU} >$LOG_DIR/app.log 2>&1& echo \\\$!"`
 
-XPEDITE_DEMO_APP_HOST=${APP_HOST:-localhost} XPEDITE_DEMO_LOG_DIR=${LOG_DIR} XPEDITE_DEMO_PMC=${PMC} ${PROFILER} record -p ${DEMO_DIR}/profileInfo.py -H 1 "$@"
+XPEDITE_DEMO_APP_HOST=${APP_HOST:-localhost} XPEDITE_DEMO_LOG_DIR=${LOG_DIR} XPEDITE_DEMO_PMC=${PMC} XPEDITE_DEMO_CPU_SET=${CPU} ${PROFILER} record -p ${DEMO_DIR}/profileInfo.py -H 1 "$@"
 
 if [ ! -z ${DEMO_APP_PID} ]; then
   ${APP_LAUNCHER} "kill ${DEMO_APP_PID}"

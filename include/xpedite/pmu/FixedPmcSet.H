@@ -22,6 +22,7 @@ namespace xpedite { namespace pmu {
   class FixedPmcSet
   {
     uint8_t _counterSet;
+    uint8_t _size;
 
     public:
 
@@ -33,7 +34,7 @@ namespace xpedite { namespace pmu {
     };
 
     FixedPmcSet()
-      : _counterSet {} {
+      : _counterSet {}, _size {} {
     }
 
     template<uint8_t CounterIndex>
@@ -41,6 +42,7 @@ namespace xpedite { namespace pmu {
       static_assert(CounterIndex < MAX_COUNTER_COUNT, "Invalid fixed pmu counter index");
       constexpr uint8_t mask {1 << CounterIndex};
       _counterSet |= mask; 
+      _size = __builtin_popcount(_counterSet);
     }
 
     void enable(uint8_t index_) {
@@ -64,6 +66,7 @@ namespace xpedite { namespace pmu {
       static_assert(CounterIndex < MAX_COUNTER_COUNT, "Invalid fixed pmu counter index");
       constexpr uint8_t mask {~(1 << CounterIndex)};
       _counterSet &= mask; 
+      _size = __builtin_popcount(_counterSet);
     }
 
     template<uint8_t CounterIndex>
@@ -75,10 +78,11 @@ namespace xpedite { namespace pmu {
 
     void reset() noexcept {
       _counterSet = 0;
+      _size = 0;
     }
 
     uint8_t size() const noexcept {
-      return __builtin_popcount(_counterSet);
+      return _size;
     }
     
     std::string toString() const {

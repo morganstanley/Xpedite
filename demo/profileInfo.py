@@ -44,5 +44,5 @@ if os.environ.get('XPEDITE_DEMO_PMC'):
   ]
 
 #List of cpu, where the harware performance counters will be enabled
-cpuSet = [0]
+cpuSet = [int(c) for c in os.environ.get('XPEDITE_DEMO_CPU_SET').split(',')]
 
