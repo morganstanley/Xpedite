@@ -1,20 +1,26 @@
 """
 
-Test to orchestrate register allocation and events loading
+Test to orchestrate events loading
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 
 """
 
 import os
-import pytest
-from xpedite.pmu.pmuctrl import PMUCtrl
+from xpedite.pmu.pmuctrl      import PMUCtrl
 from xpedite.pmu.eventsLoader import EventsLoader
-from xpedite.pmu.eventsDb import loadEventsDb
-from xpedite.pmu.request import RequestSorter
-from xpedite.pmu.event import Event
+from xpedite.pmu.event        import Event
+from logger                   import LOG_CONFIG_PATH
+import logging
+import logging.config
+
+logging.config.fileConfig(LOG_CONFIG_PATH)
+LOGGER = logging.getLogger('xpedite')
 
 def test_request_sorter():
+  """
+  Test loading and sorting of performance counter events
+  """
   eventsFile = os.path.join(os.path.dirname(__file__), 'test_events.json')
   eventsDb = EventsLoader().loadJson(eventsFile)
   assert eventsDb
@@ -31,6 +37,6 @@ def test_request_sorter():
     assert event.uarchName == eventState.genericRequests[i].uarchName
   PMUCtrl.allocateEvents(eventState)
   assert len(eventState.genericRequests) == len(events)
-  print(eventState.genericRequests)
+  LOGGER.info(eventState.genericRequests)
   for i, event in enumerate(events):
     assert event.uarchName == eventState.genericRequests[len(events)-i-1].uarchName

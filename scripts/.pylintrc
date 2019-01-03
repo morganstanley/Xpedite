@@ -2,9 +2,9 @@
 
 ############## xpedite customizations ##############
 
-# Accept camel case for names
+# Accept camel case and pytest function names
 # Regular expression matching correct function names
-function-rgx=_?_?[a-z][A-Za-z0-9]{1,30}$
+function-rgx=_?_?[a-z][A-Za-z0-9]|[__test_][a-z]{1,30}$
 # Regular expression matching correct variable names
 variable-rgx=_?[a-z][A-Za-z0-9]{1,30}$
 # Regular expression matching correct attribute names
