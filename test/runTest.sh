@@ -40,6 +40,7 @@ usage: ${PROGRAM_NAME} [lgpw:cr:s:Pt:m:a:]
 -t|--transactions   specify a number of transactions for the target application: ${PROGRAM_NAME} -t <transactions>
 -m|--multithreaded  specify the number of threads for the target application: ${PROGRAM_NAME} -m <number of threads>
 -a|--apps           a comma separated list of binaries to test: ${PROGRAM_NAME} -a <app1,app2,app3>
+-S|--scenarioTypes  a comma separated list of scenarios to run: ${PROGRAM_NAME} -S <Regular,Benchmark>
 
 -------------------------------------------------------------------------------------------------
 
@@ -68,6 +69,7 @@ the following flags can only be enabled when running pytests
 -t|--transactions   specify a number of transactions for the target application
 -m|--multithreaded  specify the number of threads for the target application
 -a|--apps           a comma separated list of binaries to test
+-S|--scenarioTypes  a comma separated list of scenarios to run
 
 -------------------------------------------------------------------------------------------------
 
@@ -115,7 +117,19 @@ function runPytests() {
   
   RUN_DIR_ARG="--rundir=${RUN_DIR}"
 
-  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS}
+  if [ -z "${TEST_NAME}" ]; then
+    TEST_NAME=${PYTEST_DIR}
+  fi
+
+  if [ -z "${APPS}" ]; then
+    APPS="--apps=allocatorApp,dataTxnApp,multiThreadedApp,slowFixDecoderApp"
+  fi
+
+  if [ -z "${SCENARIO_TYPES}" ]; then
+    SCENARIO_TYPES="--scenarioTypes=Regular,Benchmark"
+  fi
+
+  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES}
 
   if [ $? -ne 0 ]; then
     echo detected one or more pytest failures
@@ -155,11 +169,7 @@ function runAllTests() {
   runPytests
 }
 
-TEST_NAME=${PYTEST_DIR}
-COV=""
-APPS="--apps=slowFixDecoderApp"
-
-ARGS=`getopt -o lgpw:cr:s:Pt:m:a: --long lint,gtest,pytest,workspace,cov,remote:,test:,pmc,transactions:,multithreaded:,apps: -- "$@"`
+ARGS=`getopt -o lgpw:cr:s:Pt:m:a:S: --long lint,gtest,pytest,workspace,cov,remote:,test:,pmc,transactions:,multithreaded:,apps:,scenarioTypes: -- "$@"`
 
 if [ $? -ne 0 ]; then
   usage
@@ -215,6 +225,10 @@ while true ; do
       APPS="--apps=$2"
       shift 2
       ;;
+    -S|--scenarioTypes)
+      SCENARIO_TYPES="--scenarioTypes=$2"
+      shift 2
+      ;;
     --)
       shift ;
       break
@@ -236,7 +250,7 @@ fi
 if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then
   runAllTests
 else
-  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" || "${TEST_NAME}" ]]; then
+  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" || "${TEST_NAME}" || "${APPS}" || "${SCENARIO_TYPES}" ]]; then
     pytestUsage
   fi
 
