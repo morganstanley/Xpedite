@@ -114,7 +114,7 @@ function runPytests() {
 
   rm -rf ${RUN_DIR}/*
   ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -x
-  
+
   RUN_DIR_ARG="--rundir=${RUN_DIR}"
 
   if [ -z "${TEST_NAME}" ]; then
@@ -143,6 +143,12 @@ function runLint() {
     echo detected pylint violations
     RC=`expr $RC + 1`
   fi
+  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pylint --rcfile ${XPEDITE_DIR}/../.pylintrc ${PYTEST_DIR}/test_xpedite
+  if [ $? -ne 0 ]; then
+    echo detected pylint violations
+    RC=`expr $RC + 1`
+  fi
+
 }
 
 function runGtests() {
@@ -238,7 +244,7 @@ while true ; do
       ;;
   esac
 done
-  
+
 RC=0
 
 if [ -d ${TEST_DIR}/../install/runtime/bin ]; then

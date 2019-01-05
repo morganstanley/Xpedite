@@ -16,7 +16,7 @@ def setTestParameters(transactions, multithreaded, workspace, rundir, scenarioTy
   """
   A method run at the beginning of tests to set test context variables
   """
-  global CONTEXT # pylint: disable = global-statement
+  global CONTEXT # pylint: disable=global-statement
   CONTEXT = Context(transactions, multithreaded, workspace)
   SCENARIO_LOADER.loadScenarios(rundir, ALLOCATOR_APP, scenarioTypes)
 
@@ -26,7 +26,6 @@ def test_intercept(capsys):
 
   @param capsys: A pytest fixture allowing disabling of I/O capturing
   """
-  from xpedite import Probe
   for scenarios in SCENARIO_LOADER:
     with scenarios as scenarios:
       with capsys.disabled():

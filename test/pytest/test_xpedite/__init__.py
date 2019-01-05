@@ -61,11 +61,8 @@ def mkdtemp():
   """
   Create and clean a temporary directory
   """
-  import os # pylint: disable=reimported,redefined-outer-name
-            # re-importing os needed for rpyc teleport function
-  import sys
+  import os   # pylint: disable=reimported,redefined-outer-name
   import tempfile
-  import test_xpedite.test_profiler
   tempDir = tempfile.mkdtemp()
   for dataFile in os.listdir(tempDir):
     os.remove(dataFile)

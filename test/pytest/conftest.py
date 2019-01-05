@@ -88,4 +88,3 @@ def scenarioTypes(request):
   for scenarioType in request.config.option.scenarioTypes.split(','):
     scenarioTypes.append(ScenarioType[scenarioType])
   return scenarioTypes
-

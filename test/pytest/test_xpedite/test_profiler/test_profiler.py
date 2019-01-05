@@ -91,7 +91,6 @@ def test_probe_states(capsys, scenarioName):
   Test xpedite probes and probes state for an application's against baseline probe states
   for the application
   """
-  import cPickle as pickle
   from xpedite.types.probe import compareProbes
   with SCENARIO_LOADER[scenarioName] as scenarios:
     probeMap = {}
@@ -99,9 +98,9 @@ def test_probe_states(capsys, scenarioName):
       probes = loadProbes(CONTEXT, scenarios)
       for probe in probes:
         probeMap[probe.sysName] = probe
-    assert len(probes) == len(scenarios.baselineProbeMap.keys())
+    assert len(probes) == len(scenarios.baselineProbeMap)
     findDiff(probeMap, scenarios.baselineProbeMap)
-    for probe in probeMap.keys():
+    for probe in probeMap:
       assert compareProbes(probeMap[probe], scenarios.baselineProbeMap[probe])
 
 def test_notebook_build(capsys, scenarioName):
@@ -112,5 +111,5 @@ def test_notebook_build(capsys, scenarioName):
   with SCENARIO_LOADER[scenarioName] as scenarios:
     with capsys.disabled():
       notebook, _, report, _, _ = buildNotebook(CONTEXT, scenarios)
-      assert len(report.categories) > 0
+      assert report.categories
     assert notebook

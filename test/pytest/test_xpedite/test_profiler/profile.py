@@ -106,7 +106,6 @@ def buildNotebook(context, scenario):
   """
   import xpedite.jupyter.driver
   from xpedite.jupyter            import DATA_DIR, DATA_FILE_EXT, NOTEBOOK_EXT
-  from xpedite.benchmark          import makeBenchmark
   from xpedite.jupyter.result     import Result
   from test_xpedite               import mkdtemp
   report, fullCpuInfo, dataFiles = runXpediteRecord(context, scenario)

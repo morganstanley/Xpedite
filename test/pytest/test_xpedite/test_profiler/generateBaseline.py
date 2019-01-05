@@ -100,7 +100,7 @@ def generateBaseline(context, scenario, runDir):
   runDir = os.path.join(runDir, scenario.name)
   os.mkdir(os.path.join(runDir, PARAMETERS_DATA_DIR))
   os.mkdir(os.path.join(runDir, EXPECTED_RESULTS))
-  with scenario as scenario:
+  with scenario as _:
     if scenario.scenarioType == ScenarioType.Benchmark:
       benchmarkProfile(context, scenario, runDir)
     _, dataFilePath, report, fullCpuInfo, dataFiles = buildNotebook(context, scenario)
@@ -123,7 +123,7 @@ def generateBaseline(context, scenario, runDir):
     for probe in probes:
       baselineProbeMap[probe.sysName] = probe
     with open(os.path.join(runDir, PROBE_CMD_BASELINE_PATH), 'wb') as probeFileHandle:
-      probeFileHandle.write(pickle.dumps(baselineProbeMap))
+      probeFileHandle.write(pickle.dumps(baselineProbeMap)) # pylint: disable=c-extension-no-member
 
 def main():
   """

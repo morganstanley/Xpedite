@@ -1,3 +1,4 @@
+# pylint: disable=wrong-import-position
 """
 This module contains different scenarios that can be tested by Xpedite pytests,
 and loads files that are used as parameters and the expected results for
@@ -73,7 +74,7 @@ class ExpectedResultFiles(object):
     import cPickle as pickle
     from xpedite.jupyter.xpediteData    import XpediteDataReader
     with open(os.path.join(dataDir, PROBE_CMD_BASELINE_PATH)) as probeFileHandle:
-      self.baselineProbeMap = pickle.load(probeFileHandle)
+      self.baselineProbeMap = pickle.load(probeFileHandle) # pylint: disable=c-extension-no-member
     with XpediteDataReader(os.path.join(dataDir, REPORT_CMD_BASELINE_PATH)) as xpediteDataReader:
       self.baselineProfiles = xpediteDataReader.getData(PROFILES_KEY)
     self.baselineProfileInfo = loadProfileInfo(dataDir, GENERATE_CMD_BASELINE_PATH)
@@ -86,8 +87,6 @@ class Scenario(object):
     """
     Create a scenario and load parameters and expected results
     """
-    from xpedite.transport.remote   import Remote
-    from xpedite.util               import makeLogPath
     self.tempDir = None
     self.parameters = None
     self.name = name
@@ -147,9 +146,8 @@ class Scenario(object):
       xpediteApp = XpediteDormantApp(self.appName, LOCALHOST, appInfo, runId, workspace=workspace)
       xpediteApp.sampleFilePath = sampleFilePath
       return xpediteApp
-    else:
-      appHost = self.remote.host if self.remote else LOCALHOST
-      return XpediteDormantApp(self.appName, appHost, appInfo, runId, workspace=workspace)
+    appHost = self.remote.host if self.remote else LOCALHOST
+    return XpediteDormantApp(self.appName, appHost, appInfo, runId, workspace=workspace)
 
   def _mkdtemp(self):
     """
@@ -172,6 +170,7 @@ class Scenario(object):
     for fileName in os.listdir(os.path.join(self.dataDir, PARAMETERS_DATA_DIR)):
       if fileName.endswith(DATA_FILE_EXT):
         return fileName.split('-')[2]
+    return None
 
   @property
   def appName(self):
@@ -252,10 +251,12 @@ class ScenarioLoader(object):
     self._scenarios = OrderedDict()
     self.remote = None
 
-  def loadScenarios(self, runPath, apps, scenarioTypes, remote=None):
+  def loadScenarios(self, runPath, apps, scenarioTypes=None, remote=None):
     """
     Load benchmark / regular scenarios for a list of applications
     """
+    if not scenarioTypes:
+      scenarioTypes = [ScenarioType.Regular, ScenarioType.Benchmark]
     for app in apps:
       for scenarioType in scenarioTypes:
         scenario = Scenario(
