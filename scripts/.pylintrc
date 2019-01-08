@@ -20,8 +20,8 @@ module-rgx=(([a-z_][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9]+))$
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-# Ignore automatically generated files
-ignore=BDX,HSX,SKL,SKX
+# Ignore automatically generated files and external source code
+ignore=BDX,HSX,SKL,SKX,pyprof2calltree.py
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime

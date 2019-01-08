@@ -39,13 +39,11 @@ class CProfile(object):
 
   def disable(self):
     """Disaables profiling"""
+    from xpedite.selfProfile.pyprof2calltree import convert
     self.cprofile.disable()
     strIO = StringIO.StringIO()
     sortby = 'cumulative'
     ps = pstats.Stats(self.cprofile, stream=strIO).sort_stats(sortby)
     LOGGER.info('Profiler disabled, data written to %s', self.path)
-    from xpedite.dependencies import Package, DEPENDENCY_LOADER
-    if DEPENDENCY_LOADER.load(Package.PyProf2Calltree): # pylint: disable=no-member
-      from pyprof2calltree  import convert # pylint: disable=import-error
-      convert(ps, self.path)
-      LOGGER.info('Open the report in KCachegrind to see the profile report')
+    convert(ps, self.path)
+    LOGGER.info('Open the report in KCachegrind to see the profile report')
