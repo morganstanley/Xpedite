@@ -24,37 +24,16 @@ export PYTHONPATH=$PYTHONPATH:${XPEDITE_DIR}
 function usage() {
 cat << EOM
 -------------------------------------------------------------------------------------
-usage: ${PROGRAM_NAME} -h
--h|--hostname   remote host to generate files on (host must have performance counters enabled
+usage: ${PROGRAM_NAME}
 -------------------------------------------------------------------------------------
 
 EOM
 exit 1
 }
 
-ARGS=`getopt -o h: --long hostname: -- "$@"`
-
-if [ $? -ne 0 ]; then
+if [ "$#" -gt 0 ]; then
   usage
 fi
-
-eval set -- "$ARGS"
-
-while true; do
-  case "$1" in
-    -h|--hostname)
-      HOST_NAME=$2
-      shift 2
-      ;;
-    --)
-      shift ;
-      break
-      ;;
-    *)
-      usage
-      ;;
-  esac
-done
 
 RUN_DIR=`mktemp -d`
 
@@ -67,7 +46,7 @@ rm -rf ${RUN_DIR}/*
 
 ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -e -x
 
-python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py --rundir ${RUN_DIR} --hostname ${HOST_NAME}
+python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py --rundir ${RUN_DIR}
 
 ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -z
 

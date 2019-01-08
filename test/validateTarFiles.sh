@@ -9,10 +9,9 @@
 
 PROGRAM_NAME=$0
 TEST_DIR=`dirname $0`
-DATA_DIR=`readlink -f ${TEST_DIR}/pytest/test_xpedite/data`
+DATA_DIR=${TEST_DIR}/pytest/test_xpedite/data
 
-declare -a APPS=("allocatorApp" "dataTxnApp" "multiThreadedApp" "slowFixDecoderApp")
-declare -a SCENARIOS=("Regular" "Benchmark")
+source ${TEST_DIR}/.testrc
 
 function usage() {
 cat << EOM
@@ -40,7 +39,7 @@ function validate() {
   rm -rf ${TEMP_DIR}/*
   tar -C ${TEMP_DIR} -zxvf ${DATA_DIR}/$1.tar.gz
 
-  MANIFEST_FILE=`readlink -f ${DATA_DIR}/$1Manifest.csv`
+  MANIFEST_FILE=`fullPath ${DATA_DIR}/$1Manifest.csv`
   MANIFEST=`tail -n +2 "${MANIFEST_FILE}"`
 
   if [ `tar -tf "${DATA_DIR}"/"$1".tar.gz | grep -vc "/$"` != `echo "${MANIFEST}" | wc -l` ]; then
@@ -52,7 +51,7 @@ function validate() {
   while read -r FILE SIZE LINES; do
     FULL_PATH=${TEMP_DIR}/${FILE}
 
-    if [[ ${FULL_PATH: -4} == *.data ]]; then
+    if [[ ${FULL_PATH: -5} == ".data" ]]; then
       FILE_LINES=`${TEST_DIR}/../install/bin/xpediteSamplesLoader "${FULL_PATH}" | wc -l`
     else
       FILE_LINES=`wc -l < "${FULL_PATH}"`

@@ -24,7 +24,8 @@ def pytest_addoption(parser):
   parser.addoption('--workspace', action='store', default=workspaceDefault, help='workspace path to trim from file paths')
   parser.addoption('--rundir', action='store', default='', help='directory to extract files to')
   parser.addoption('--apps', action='store', default='[slowFixDecoderApp]', help='apps to test')
-  parser.addoption('--scenarioTypes', action='store', default='[Regular, Benchmark]', help='scenarios to run')
+  parser.addoption('--scenarioTypes', action='store', default='[Regular, Benchmark, PMC]', help='scenarios to run')
+  parser.addoption('--recordPMC', action='store', default=False, help='record PMC during testing')
 
 def pytest_generate_tests(metafunc):
   """
@@ -88,3 +89,10 @@ def scenarioTypes(request):
   for scenarioType in request.config.option.scenarioTypes.split(','):
     scenarioTypes.append(ScenarioType[scenarioType])
   return scenarioTypes
+
+@pytest.fixture(scope='module')
+def recordPMC(request):
+  """
+  Record PMC during testing
+  """
+  return request.config.option.recordPMC

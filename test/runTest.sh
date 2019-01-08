@@ -36,11 +36,11 @@ usage: ${PROGRAM_NAME} [lgpw:cr:s:Pt:m:a:]
 -c|--cov            check pytest code coverage
 -r|--remote         set a remote hostname for the application to run on: ${PROGRAM_NAME} -r <hostname>
 -s|--single         choose a single test to run: ${PROGRAM_NAME} -s test_name
--P|--pmc            use flag to enable performance counters: ${PROGRAM_NAME} -P
 -t|--transactions   specify a number of transactions for the target application: ${PROGRAM_NAME} -t <transactions>
 -m|--multithreaded  specify the number of threads for the target application: ${PROGRAM_NAME} -m <number of threads>
 -a|--apps           a comma separated list of binaries to test: ${PROGRAM_NAME} -a <app1,app2,app3>
 -S|--scenarioTypes  a comma separated list of scenarios to run: ${PROGRAM_NAME} -S <Regular,Benchmark>
+-P|--recordPMC      enable recording performance counters during testing
 
 -------------------------------------------------------------------------------------------------
 
@@ -70,7 +70,7 @@ the following flags can only be enabled when running pytests
 -m|--multithreaded  specify the number of threads for the target application
 -a|--apps           a comma separated list of binaries to test
 -S|--scenarioTypes  a comma separated list of scenarios to run
-
+-P|--recordPMC      enable PMC recording during testing
 -------------------------------------------------------------------------------------------------
 
 EOM
@@ -126,10 +126,10 @@ function runPytests() {
   fi
 
   if [ -z "${SCENARIO_TYPES}" ]; then
-    SCENARIO_TYPES="--scenarioTypes=Regular,Benchmark"
+    SCENARIO_TYPES="--scenarioTypes=Regular,Benchmark,PMC"
   fi
 
-  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES}
+  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES} ${RECORD_PMC}
 
   if [ $? -ne 0 ]; then
     echo detected one or more pytest failures
@@ -175,7 +175,7 @@ function runAllTests() {
   runPytests
 }
 
-ARGS=`getopt -o lgpw:cr:s:Pt:m:a:S: --long lint,gtest,pytest,workspace,cov,remote:,test:,pmc,transactions:,multithreaded:,apps:,scenarioTypes: -- "$@"`
+ARGS=`getopt -o lgpw:cr:s:t:m:a:S:P --long lint,gtest,pytest,workspace,cov,remote:,test:,transactions:,multithreaded:,apps:,scenarioTypes:recordPMC -- "$@"`
 
 if [ $? -ne 0 ]; then
   usage
@@ -215,10 +215,6 @@ while true ; do
       echo ${TEST_NAME}
       shift 2
       ;;
-    -P|--pmc)
-      PMC=true
-      shift
-      ;;
     -t|--transactions)
       TRANSACTION_COUNT="--transactions=$2"
       shift 2
@@ -234,6 +230,10 @@ while true ; do
     -S|--scenarioTypes)
       SCENARIO_TYPES="--scenarioTypes=$2"
       shift 2
+      ;;
+    -P|--recordPMC)
+      RECORD_PMC="--recordPMC=True"
+      shift
       ;;
     --)
       shift ;
@@ -256,7 +256,7 @@ fi
 if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then
   runAllTests
 else
-  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" || "${TEST_NAME}" || "${APPS}" || "${SCENARIO_TYPES}" ]]; then
+  if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" || "${TEST_NAME}" || "${APPS}" || "${SCENARIO_TYPES}" || "${RECORD_PMC}" ]]; then
     pytestUsage
   fi
 

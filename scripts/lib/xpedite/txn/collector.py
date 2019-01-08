@@ -10,7 +10,6 @@ import re
 import time
 import fnmatch
 import logging
-from xpedite.profiler.appInfo   import AppInfo
 from xpedite.txn.extractor      import Extractor
 from xpedite.types              import DataSource
 
@@ -95,6 +94,7 @@ class Collector(Extractor):
     :param loader: Loader implementation to build transactions from counters
 
     """
+    from xpedite.profiler.appInfo import AppInfo
     loader.beginCollection(dataSource)
     appInfo = AppInfo(dataSource.appInfoPath)
     appInfo.load()
