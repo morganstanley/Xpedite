@@ -74,3 +74,11 @@ Jupyter-dark-theme
 https://github.com/powerpak/jupyter-dark-theme/blob/master/LICENSE
 
 Copyright (c) 2018 Theodore Pak
+
+pyprof2calltree
+===============
+
+https://github.com/pwaller/pyprof2calltree/blob/master/LICENSE
+
+Copyright (c) 2006-2017 David Allouche, Jp Calderone, Itamar Shtull-Trauring,
+Johan Dahlin, Peter Waller and people listed in CONTRIBUTORS.txt
