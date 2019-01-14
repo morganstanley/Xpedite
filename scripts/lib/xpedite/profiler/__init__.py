@@ -39,10 +39,13 @@ def validateBenchmarkPath(path):
 
 def _loadProbes(app):
   """Attaches to application and loads probe data"""
-  with app:
-    pingApp(app)
-    from xpedite.profiler.probeAdmin import ProbeAdmin
-    return ProbeAdmin.loadProbes(app)
+  from xpedite.profiler.probeAdmin import ProbeAdmin
+  try:
+    with app:
+      pingApp(app)
+      return ProbeAdmin.loadProbes(app)
+  except Exception as _:
+    return app.appInfo.probes.values()
 
 class Profiler(object):
   """Xpedite Profiler"""

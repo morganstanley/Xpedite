@@ -99,6 +99,8 @@ class AppInfo(object):
     else:
       self.raiseError('failed to load appinfo from file {} | missing mandatory records'.format(self.path))
 
+    return self
+
   @staticmethod
   def raiseError(errmsg):
     """
