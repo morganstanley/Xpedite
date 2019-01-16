@@ -8,6 +8,7 @@
 // recordAndLog    - record tsc and log probe details
 // record          - record tsc
 // recordPmc       - record tsc, fixed and general performance counters
+// recordPerfEvents  - record tsc, pmu events using linux perf events api
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
@@ -103,6 +104,32 @@ extern "C" {
     }
     if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
       new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, true};
+      samplesBufferPtr = samplesBufferPtr->next();
+    }
+  }
+
+  void XPEDITE_CALLBACK xpediteRecordPerfEvents(const void* returnSite_, uint64_t tsc_) {
+    using namespace xpedite::probes;
+    using namespace xpedite::pmu;
+    using namespace xpedite::framework;
+    if(XPEDITE_UNLIKELY(samplesBufferPtr >= samplesBufferEnd)) {
+      xpedite::framework::SamplesBuffer::expand();
+    }
+    if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, SamplesBuffer::samplesBuffer()->perfEvents()};
+      samplesBufferPtr = samplesBufferPtr->next();
+    }
+  }
+
+  void XPEDITE_CALLBACK xpediteRecordPerfEventsWithData(const void* returnSite_, uint64_t tsc_, __uint128_t data_) {
+    using namespace xpedite::probes;
+    using namespace xpedite::pmu;
+    using namespace xpedite::framework;
+    if(XPEDITE_UNLIKELY(samplesBufferPtr >= samplesBufferEnd)) {
+      xpedite::framework::SamplesBuffer::expand();
+    }
+    if(XPEDITE_LIKELY(samplesBufferPtr < samplesBufferEnd)) {
+      new (samplesBufferPtr) Sample {returnSite_, tsc_, data_, SamplesBuffer::samplesBuffer()->perfEvents()};
       samplesBufferPtr = samplesBufferPtr->next();
     }
   }

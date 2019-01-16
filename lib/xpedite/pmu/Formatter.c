@@ -8,16 +8,34 @@
 
 #include <xpedite/pmu/Formatter.h>
 
-void logRequest(unsigned ctrIndex_, const PMUGpEvent* e_, uint32_t b_) {
-  XPEDITE_LOG("eventSelect = 0x%02hhX | unitMask = 0x%02hhX | user = 0x%02hhX | kernel = 0x%02hhX |"
-    " invertCMask = 0x%02hhX | counterMask = 0x%02hhX | -> PerfEvtSel%u [0x%08llX]\n", 
-    e_->_eventSelect, e_->_unitMask, e_->_user, e_->_kernel, 
-    e_->_invertCMask, e_->_counterMask, ctrIndex_, (unsigned long long)b_
-  );
-}
+void logEventSet(const PMUCtlRequest* request_, const EventSet* eventSet_) {
+  int i=0;
+  if(request_->_gpEvtCount) {
+    XPEDITE_LOG("%s\n", "Core events: ");
+    for(i=0; i< request_->_gpEvtCount; ++i) {
+      const PMUGpEvent* e = &request_->_gpEvents[i];
+      uint32_t b = eventSet_->_gpEvtSel[i];
+      XPEDITE_LOG("\t\t-> eventSelect = 0x%02hhX | unitMask = 0x%02hhX | user = 0x%02hhX | kernel = 0x%02hhX |"
+        " invertCMask = 0x%02hhX | counterMask = 0x%02hhX | -> PerfEvtSel%u [0x%08llX]\n", 
+        e->_eventSelect, e->_unitMask, e->_user, e->_kernel, 
+        e->_invertCMask, e->_counterMask, i, (unsigned long long)b
+      );
+    }
+  }
 
-void logOffcoreRequest(unsigned ctrIndex_, uint64_t e_) {
-  XPEDITE_LOG("setting MSR_OFFCORE_RSP_%u -> %llx\n", ctrIndex_, (unsigned long long) e_);
+  if(request_->_fixedEvtCount) {
+    XPEDITE_LOG("%s\n", "Fixed events: ");
+    unsigned char feMask = eventSet_->_fixedEvtGlobalCtl;
+    unsigned long long fixedEvtSel = eventSet_->_fixedEvtSel;
+    XPEDITE_LOG("\t\t-> Fixed events global mask = 0x%02hhX | eventSelect = 0x%08llX\n", feMask, fixedEvtSel);
+  }
+
+  if(request_->_offcoreEvtCount) {
+    XPEDITE_LOG("%s\n", "Offcore events: ");
+    for(i=0; i< request_->_offcoreEvtCount; ++i) {
+      XPEDITE_LOG("\t\t-> MSR_OFFCORE_RSP_%u -> %llx\n", i, (unsigned long long) request_->_offcoreEvents[i]);
+    }
+  }
 }
 
 static unsigned char toBoolenChar(int v_) {
@@ -26,53 +44,50 @@ static unsigned char toBoolenChar(int v_) {
 
 int gpEventToString(const PMUGpEvent* event_, char* buffer_, int size_) {
   return snprintf(buffer_, size_,
-    "\nGpEvent {eventSelect - %2hhx, unitMask - %2hhx, user - %c, kernel - %c"
-    ", invertCMask - %2hhx, counterMask - %2hhx, edgeDetect - %2hhx, anyThread - %c}",
+    "\nCore Event [eventSelect - %2hhx, unitMask - %2hhx, user - %c, kernel - %c"
+    ", invertCMask - %2hhx, counterMask - %2hhx, edgeDetect - %2hhx, anyThread - %c]",
     event_->_eventSelect, event_->_unitMask, toBoolenChar(event_->_user), toBoolenChar(event_->_kernel),
     event_->_invertCMask, event_->_counterMask, event_->_edgeDetect, toBoolenChar(event_->_anyThread)
   );
 }
 
 int fixedEventToString(const PMUFixedEvent* event_, char* buffer_, int size_) {
-  return snprintf(buffer_, size_, "\nFixedEvent {index - %2hhu, user - %c, kernel - %c"
+  return snprintf(buffer_, size_, "\nFixed Event [index - %2hhu, user - %c, kernel - %c]"
       , event_->_ctrIndex, toBoolenChar(event_->_user), toBoolenChar(event_->_kernel));
 }
 
 int offcoreEventToString(const PMUOffcoreEvent* event_, char* buffer_, int size_) {
-  return snprintf(buffer_, size_, "\nOffcoreEvent {index - %llx", (unsigned long long) *event_);
+  return snprintf(buffer_, size_, "\nOffcore Event [index - %llx]", (unsigned long long) *event_);
 }
 
-int pmcrqToString(const PMUCtlRequest* request_, char* buffer_, int size_) {
+void pmuRequestToString(const PMUCtlRequest* request_, char* buffer_, int size_) {
 
   char* buffer = buffer_;
   int capacity = size_;
   int fmtSize = 0;
 
   int i=0;
-  for(; capacity > 1 && i< XPEDITE_PMC_CTRL_GP_EVENT_MAX; ++i, buffer += fmtSize, capacity -= fmtSize) {
+  for(; capacity > 1 && i< request_->_gpEvtCount; ++i, buffer += fmtSize, capacity -= fmtSize) {
     fmtSize = gpEventToString(&request_->_gpEvents[i], buffer, capacity);
-    if(fmtSize < 0) {
-      return 0;
+    if(fmtSize >= capacity) {
+      return;
     }
-    fmtSize = (fmtSize < capacity ? fmtSize : capacity - 1);
   }
 
   i=0;
-  for(; capacity > 1 && i< XPEDITE_PMC_CTRL_FIXED_EVENT_MAX; ++i, buffer += fmtSize, capacity -= fmtSize) {
+  for(; capacity > 1 && i< request_->_fixedEvtCount; ++i, buffer += fmtSize, capacity -= fmtSize) {
     fmtSize = fixedEventToString(&request_->_fixedEvents[i], buffer, capacity);
-    if(fmtSize < 0) {
-      return 0;
+    if(fmtSize >= capacity) {
+      return;
     }
-    fmtSize = (fmtSize < capacity ? fmtSize : capacity - 1);
   }
 
   i=0;
-  for(; capacity > 1 && i< XPEDITE_PMC_CTRL_OFFCORE_EVENT_MAX; ++i, buffer += fmtSize, capacity -= fmtSize) {
+  for(; capacity > 1 && i< request_->_offcoreEvtCount; ++i, buffer += fmtSize, capacity -= fmtSize) {
     fmtSize = offcoreEventToString(&request_->_offcoreEvents[i], buffer, capacity);
-    if(fmtSize < 0) {
-      return 0;
+    if(fmtSize >= capacity) {
+      return;
     }
-    fmtSize = (fmtSize < capacity ? fmtSize : capacity - 1);
   }
-  return size_ - capacity;
+  return;
 }

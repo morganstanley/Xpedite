@@ -29,6 +29,7 @@ namespace xpedite { namespace probes {
     TRIVIAL_RECORDER,
     EXPANDABLE_RECORDER,
     PMC_RECORDER,
+    PERF_EVENTS_RECORDER,
     lOGGING_RECORDER
   };
 

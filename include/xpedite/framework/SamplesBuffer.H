@@ -19,6 +19,7 @@
 #include <xpedite/common/WaitFreeBufferPool.H>
 #include <xpedite/probes/Config.H>
 #include <xpedite/probes/Sample.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/framework/Persister.H>
 #include <xpedite/log/Log.H>
 #include <atomic>
@@ -27,12 +28,17 @@
 #include <cstring>
 #include <cassert>
 #include <tuple>
+#include <atomic>
 #include <string>
 #include <sstream>
 #include <iomanip>
 
 extern __thread xpedite::probes::Sample* samplesBufferPtr;
 extern __thread xpedite::probes::Sample* samplesBufferEnd;
+
+namespace xpedite { namespace pmu { namespace test {
+  struct Override;
+}}}
 
 namespace xpedite { namespace framework {
 
@@ -42,6 +48,10 @@ namespace xpedite { namespace framework {
 
     static SamplesBuffer* allocate() {
       return new SamplesBuffer {};
+    }
+
+    static void deallocate(SamplesBuffer* buffer_) {
+      delete buffer_;
     }
 
     static SamplesBuffer* head() noexcept {
@@ -167,6 +177,14 @@ namespace xpedite { namespace framework {
       _lastSampledTsc = lastSampledTsc_;
     }
 
+    const pmu::PerfEventSet* perfEvents() const noexcept {
+      return _perfEventSet.load(std::memory_order_acquire);
+    }
+
+    void updatePerfEvents(pmu::PerfEventSet* perfEventSet_) noexcept {
+      return _perfEventSet.store(perfEventSet_, std::memory_order_release);
+    }
+
     private:
 
     static  uint64_t tlsAddr() noexcept {
@@ -183,11 +201,12 @@ namespace xpedite { namespace framework {
 
     SamplesBuffer() noexcept
       : _bufferPool {}, _fd {-1}, _tid {util::gettid()}, _tlsAddr {tlsAddr()}, _tidStr {buildTidStr()}, _curReadBuf {}
-      , _lastSampledTsc {} , _lastOverflowCount {} {
+      , _lastSampledTsc {} , _lastOverflowCount {}, _perfEventSet {} {
       SamplesBuffer* next = _head.load(std::memory_order_relaxed);
       do {
         _next = next;
       } while(!_head.compare_exchange_weak(next, this, std::memory_order_release, std::memory_order_relaxed));
+      pmu::pmuCtl().attachPerfEvents(this);
     }
 
     std::string buildSampledFilePath(const std::string& fileNamePattern_) const {
@@ -198,6 +217,9 @@ namespace xpedite { namespace framework {
       }
       return std::move(fileName);
     }
+
+    friend class pmu::PmuCtl;
+    friend struct pmu::test::Override;
 
     static std::atomic<SamplesBuffer*> _head;
     static constexpr size_t bufferSize = 4 * 1024;
@@ -215,6 +237,9 @@ namespace xpedite { namespace framework {
     const probes::Sample* _curReadBuf;
     uint64_t _lastSampledTsc;
     uint64_t _lastOverflowCount;
+
+    alignas(common::ALIGNMENT) std::atomic<pmu::PerfEventSet*> _perfEventSet;
+
   };
 
 }}

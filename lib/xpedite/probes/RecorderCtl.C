@@ -25,7 +25,7 @@ namespace xpedite { namespace probes {
 
   RecorderCtl RecorderCtl::_instance;
 
-  RecorderType activeRecorderType {};
+  RecorderType activeRecorderType {RecorderType::EXPANDABLE_RECORDER};
 
   inline int recorderIndex(RecorderType type_) {
     return static_cast<int>(type_);
@@ -39,6 +39,8 @@ namespace xpedite { namespace probes {
         return "Expandable";
       case (RecorderType::PMC_RECORDER):
         return "PMC";
+      case (RecorderType::PERF_EVENTS_RECORDER):
+        return "Perf Events";
       case (RecorderType::lOGGING_RECORDER):
         return "Logging";
     }
@@ -51,11 +53,13 @@ namespace xpedite { namespace probes {
     _recorders[recorderIndex(RecorderType::TRIVIAL_RECORDER     )] = xpediteRecord;
     _recorders[recorderIndex(RecorderType::EXPANDABLE_RECORDER  )] = xpediteExpandAndRecord;
     _recorders[recorderIndex(RecorderType::PMC_RECORDER         )] = xpediteRecordPmc;
+    _recorders[recorderIndex(RecorderType::PERF_EVENTS_RECORDER )] = xpediteRecordPerfEvents;
     _recorders[recorderIndex(RecorderType::lOGGING_RECORDER     )] = xpediteRecordAndLog;
 
     _dataRecorders[recorderIndex(RecorderType::TRIVIAL_RECORDER     )] = xpediteRecordWithData;
     _dataRecorders[recorderIndex(RecorderType::EXPANDABLE_RECORDER  )] = xpediteExpandAndRecordWithData;
     _dataRecorders[recorderIndex(RecorderType::PMC_RECORDER         )] = xpediteRecordPmcWithData;
+    _dataRecorders[recorderIndex(RecorderType::PERF_EVENTS_RECORDER )] = xpediteRecordPerfEventsWithData;
     _dataRecorders[recorderIndex(RecorderType::lOGGING_RECORDER     )] = xpediteRecordWithDataAndLog;
   }
 

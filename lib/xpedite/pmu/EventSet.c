@@ -14,7 +14,6 @@
 
 #include <xpedite/pmu/EventSelect.h>
 #include <xpedite/pmu/EventSet.h>
-#include <xpedite/pmu/Formatter.h>
 
 /*************************************************************************
 * Logic to build bitmask for programming pmu events
@@ -127,13 +126,11 @@ int buildEventSet(const PMUCtlRequest* request_, EventSet* eventSet_) {
 
   for(i=0; i< request_->_gpEvtCount; ++i) {
     eventSet_->_gpEvtSel[i] = buildPerfEvtSelBitmask(&request_->_gpEvents[i]);
-    logRequest(i, &request_->_gpEvents[i], eventSet_->_gpEvtSel[i]);
   }
   eventSet_->_gpEvtCount = request_->_gpEvtCount;
 
   for(i=0; i< request_->_offcoreEvtCount; ++i) {
     eventSet_->_offcoreEvtSel[i] = request_->_offcoreEvents[i];
-    logOffcoreRequest(i, request_->_offcoreEvents[i]);
   }
   eventSet_->_offcoreEvtCount = request_->_offcoreEvtCount;
 

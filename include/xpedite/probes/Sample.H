@@ -66,6 +66,18 @@ namespace xpedite { namespace probes {
       pmu::pmuCtl().readPmc(_data + 3);
     }
 
+    Sample(const void* returnSite_, uint64_t tsc_, const pmu::PerfEventSet* eventSet_)
+      : Sample {returnSite_, tsc_ | FLAG_PMC} {
+      _data[0] = eventSet_->size();
+      eventSet_->read(_data + 1);
+    }
+
+    Sample(const void* returnSite_, uint64_t tsc_, Data data_, const pmu::PerfEventSet* eventSet_)
+      : Sample {returnSite_, tsc_ | FLAG_PMC, data_} {
+      _data[2] = eventSet_->size();
+      eventSet_->read(_data + 3);
+    }
+
     Sample(const Sample&)            = delete;
     Sample& operator=(const Sample&) = delete;
     Sample(Sample&&)                 = delete;
@@ -77,11 +89,13 @@ namespace xpedite { namespace probes {
     friend void XPEDITE_CALLBACK ::xpediteRecordAndLog(const void*, uint64_t);
     friend void XPEDITE_CALLBACK ::xpediteRecord(const void*, uint64_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordPmc(const void*, uint64_t);
+    friend void XPEDITE_CALLBACK ::xpediteRecordPerfEvents(const void*, uint64_t);
 
     friend void XPEDITE_CALLBACK ::xpediteExpandAndRecordWithData(const void*, uint64_t, __uint128_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordWithDataAndLog(const void*, uint64_t, __uint128_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordWithData(const void*, uint64_t, __uint128_t);
     friend void XPEDITE_CALLBACK ::xpediteRecordPmcWithData(const void*, uint64_t, __uint128_t);
+    friend void XPEDITE_CALLBACK ::xpediteRecordPerfEventsWithData(const void*, uint64_t, __uint128_t);
 
     public:
 

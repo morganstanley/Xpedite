@@ -159,3 +159,19 @@ class PMUCtrl(object):
       self.device.write(requestGroup)
       self.device.flush()
     return eventSet
+
+  @staticmethod
+  def buildPerfEventsRequest(eventsDb, events):
+    """
+    Builds a request to enable events with perf events api
+
+    :param eventsDb: Handle to database of PMU events for the target cpu
+    :param events: A list of pmu events to be enabled
+
+    """
+    eventSet = PMUCtrl.buildEventSet(eventsDb, [], events)
+    if not eventSet.offcoreRequestCount():
+      requestGroup = PMUCtrl.buildRequestGroup(0, eventSet)
+      pdu = ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
+      return (eventSet, pdu)
+    return (None, None)
