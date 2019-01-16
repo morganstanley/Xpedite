@@ -25,24 +25,28 @@
 
 #include "Admin.H"
 #include <xpedite/probes/ProbeCtl.H>
-#include <xpedite/log/Log.H>
+#include <xpedite/pmu/EventSet.h>
 #include <xpedite/probes/ProbeList.H>
+#include <xpedite/util/Util.H>
+#include <xpedite/log/Log.H>
 #include "../framework/Profile.H"
 #include <cstring>
+#include <sstream>
 
 namespace xpedite { namespace framework {
 
   namespace {
-    const std::string CMD_SHOW      { "show"    };
-    const std::string CMD_ENABLE    { "enable"  };
-    const std::string CMD_DISABLE   { "disable" };
-    const std::string CMD_PMU       { "pmu"     };
+    const std::string CMD_SHOW        { "show"    };
+    const std::string CMD_ENABLE      { "enable"  };
+    const std::string CMD_DISABLE     { "disable" };
+    const std::string CMD_PMU         { "pmu"     };
 
-    const std::string OPT_FILE      { "--file"         };
-    const std::string OPT_LINE      { "--line"         };
-    const std::string OPT_NAME      { "--name"         };
-    const std::string OPT_PMU_COUNT { "--gpCtrCount"   };
-    const std::string OPT_PMU_FIXED { "--fixedCtrList" };
+    const std::string OPT_FILE        { "--file"         };
+    const std::string OPT_LINE        { "--line"         };
+    const std::string OPT_NAME        { "--name"         };
+    const std::string OPT_PMU_COUNT   { "--gpCtrCount"   };
+    const std::string OPT_PMU_FIXED   { "--fixedCtrList" };
+    const std::string OPT_PMU_REQUEST { "--request"      };
   }
 
   template<typename Extractor>
@@ -50,6 +54,28 @@ namespace xpedite { namespace framework {
     for (unsigned i=1; i+1 < args_.size(); i+=2) {
       extractor_(args_[i], args_[i+1]);
     }
+  }
+
+  static std::string parseRequest(const std::string& reqStr_, PMUCtlRequest& request_) noexcept {
+    auto expectedSize = 3 * sizeof(PMUCtlRequest) - 1;
+    if(reqStr_.size() != expectedSize) {
+      std::ostringstream stream;
+      stream << "Detected invalid pmu request - expected  " << expectedSize << " bytes "
+        << "recieved " << reqStr_.size() << "bytes";
+      return stream.str();
+    }
+    uint8_t* ptr {reinterpret_cast<uint8_t*>(&request_)};
+    const char* buffer {reqStr_.c_str()};
+    bool isValid {true};
+    for(unsigned i=0; i<reqStr_.size() && isValid; i+=3) {
+      std::tie(*ptr++, isValid) = util::atoiHex(buffer + i);
+      if(!isValid) {
+        std::ostringstream stream;
+        stream << "Detected invalid number at offset " << i;
+        return stream.str();
+      }
+    }
+    return {};
   }
 
   std::string admin(Profile& profile_, const std::vector<const char*>& args_) {
@@ -89,6 +115,15 @@ namespace xpedite { namespace framework {
           while(token) {
             profile_.enableFixedPMC(atoi(token));
             token= strtok_r(nullptr, delimiter, &ptr);
+          }
+        }
+        else if(name_ == OPT_PMU_REQUEST) {
+          PMUCtlRequest request;
+          retVal = parseRequest(value_, request);
+          if(retVal.empty()) {
+            if(!profile_.enablePerfEvents(request)) {
+              retVal = "failed to enable pmu events in request";
+            }
           }
         }
       }, args_);

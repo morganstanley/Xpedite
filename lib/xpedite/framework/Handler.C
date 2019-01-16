@@ -14,6 +14,7 @@
 
 #include "Handler.H"
 #include <xpedite/util/Tsc.H>
+#include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/log/Log.H>
 #include <cstring>
 #include <sstream>
@@ -88,6 +89,7 @@ namespace xpedite { namespace framework {
     if(_collector) {
       _collector->poll();
     }
+    pmu::pmuCtl().poll();
     std::this_thread::sleep_for(_pollInterval);
   }
 

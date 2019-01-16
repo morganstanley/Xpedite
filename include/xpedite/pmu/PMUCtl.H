@@ -5,6 +5,10 @@
 //
 // Supports programming and collection of pmu events using
 // 1. RDPMC with events programmed out of band by xpedite kernel module
+// 2. RDPMC with events programmed using the linux perf events api
+//
+// Programming and collecting using xpedite kernel module has less overhead
+// compared to using the perf events api
 //
 // Enabling/disabling pmu events, automatically selects appropriate recorders
 //
@@ -14,20 +18,76 @@
 
 #pragma once
 
-#include <xpedite/util/Allocator.H>
 #include <xpedite/pmu/FixedPmcSet.H>
+#include <xpedite/pmu/PerfEventSet.H>
 #include <xpedite/util/Tsc.H>
+#include <mutex>
+#include <memory>
+#include <map>
+#include <vector>
 #include <sys/types.h>
+
+namespace xpedite { namespace framework {
+  class SamplesBuffer;
+}}
 
 namespace xpedite { namespace pmu {
 
-  class PmuCtl : public util::AlignedObject<XPEDITE_CACHELINE_SIZE>
+  namespace test {
+    struct Override;
+  }
+
+  class PmuCtl
   {
+    using PerfEventSetPtr = std::unique_ptr<PerfEventSet>;
+    using PerfEventSetMap = std::map<pid_t, PerfEventSetPtr>;
+
+    struct InertEvents {
+      PerfEventSetMap _events;
+      uint64_t _generation;
+      uint64_t _tsc;
+
+      InertEvents(PerfEventSetMap&& events_, uint64_t generation_)
+        : _events {std::move(events_)}, _generation {generation_}, _tsc {RDTSC()}
+      {
+      }
+
+      InertEvents(const InertEvents&) = delete;
+      InertEvents& operator=(const InertEvents&) = delete;
+      InertEvents(InertEvents&&) = default;
+      InertEvents& operator=(InertEvents&&) = default;
+      ~InertEvents() = default;
+    };
+
+    PerfEventAttrSet _activeEventAttrs;
+
+    PerfEventSetMap _activeEvents;
+
+    std::vector<InertEvents> _inertEventsQueue;
+
+    mutable std::mutex _mutex;
+
+    uint64_t _generation;
+
+    bool _perfEventsEnabled;
+
     alignas(XPEDITE_CACHELINE_SIZE) uint8_t _genericPmcCount;
 
     FixedPmcSet _fixedPmcSet;
 
+    static const uint64_t DEFAULT_QUIESCE_DURATION {5 * 60 * 1000000 * 4};
+
+    static uint64_t _quiesceDuration;
+
     static PmuCtl _instance;
+
+    friend struct test::Override;
+
+    void publishEventAttrs(const PerfEventAttrSet& eventAttrs_) noexcept;
+
+    PerfEventAttrSet snapEventAttrs() const noexcept;
+
+    PerfEventSetPtr attachEventsUnsafe(framework::SamplesBuffer* samplesBuffer_, PerfEventSet&& perfEventSet_);
 
     public:
 
@@ -37,6 +97,7 @@ namespace xpedite { namespace pmu {
     FixedPmcSet fixedPmcSet() const noexcept { return _fixedPmcSet;                       }
     uint8_t fixedPmcCount()   const noexcept { return _fixedPmcSet.size();                }
     uint8_t pmcCount()        const noexcept { return _genericPmcCount + fixedPmcCount(); }
+    bool perfEventsEnabled()  const noexcept { return _perfEventsEnabled;                 }
 
     void enableGenericPmc(uint8_t genericPmcCount_) noexcept;
     void disableGenericPmc() noexcept;
@@ -44,7 +105,10 @@ namespace xpedite { namespace pmu {
     void enableFixedPmc(uint8_t index_) noexcept;
     void disableFixedPmc() noexcept;
 
-    void disable() noexcept;
+    bool enablePerfEvents(const PMUCtlRequest& request_);
+    void disablePerfEvents() noexcept;
+
+    bool attachPerfEvents(framework::SamplesBuffer* samplesBuffer_);
 
     void readPmc(uint64_t* buffer_) noexcept {
       int i {};
@@ -64,6 +128,8 @@ namespace xpedite { namespace pmu {
         buffer_[i++] = RDPMC(0x40000002);
       }
     }
+
+    void poll();
 
     static PmuCtl& get() {
       return _instance;

@@ -12,7 +12,7 @@ import re
 import time
 import logging
 from xpedite.profiler.environment import Environment, RemoteEnvironment
-from xpedite.transport.net        import isIpLocal
+from xpedite.transport.net import isIpLocal
 
 LOGGER = logging.getLogger(__name__)
 
@@ -78,8 +78,7 @@ class XpediteApp(object):
     """
     self.runId = int(time.time())
     self.sampleFilePath = '/dev/shm/xpedite-{}-{}-*.data'.format(self.name, self.runId)
-    self.env.client.send('beginProfile {} {}'.format(self.sampleFilePath, pollInterval))
-    rc = self.env.client.readFrame(timeout)
+    rc = self.env.admin('beginProfile {} {}'.format(self.sampleFilePath, pollInterval), timeout)
     if rc:
       errmsg = 'failed to begin profiling - {}'.format(rc)
       raise Exception(errmsg)
@@ -92,8 +91,7 @@ class XpediteApp(object):
     :param timeout: Maximum time to await a response from app (Default value = 10 seconds)
 
     """
-    self.env.client.send('endProfile')
-    return len(self.env.client.readFrame(timeout)) == 0
+    return len(self.env.admin('endProfile', timeout)) == 0
 
   def ping(self, keepAlive=False, timeout=10):
     """
@@ -105,8 +103,7 @@ class XpediteApp(object):
     """
     if keepAlive:
       self.keepAlive()
-    self.env.client.send('ping')
-    return self.env.client.readFrame(timeout) == 'hello'
+    return self.env.admin('ping', timeout) == 'hello'
 
   def start(self):
     """

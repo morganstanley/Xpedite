@@ -96,6 +96,22 @@ namespace xpedite { namespace framework {
       }
     }
 
+    bool enablePerfEvents(const PMUCtlRequest& request_) {
+      char buffer[4096];
+      pmuRequestToString(&request_, buffer, sizeof(buffer));
+      XpediteLogInfo << "xpedite Rx PMU for request \n" 
+        << "\n----------------------------------------------------------------------------------------------------------"
+        << buffer 
+        << "\n----------------------------------------------------------------------------------------------------------"
+        << XpediteLogEnd;
+      return pmu::pmuCtl().enablePerfEvents(request_);
+    }
+
+    void disablePerfEvents() {
+      XpediteLogInfo << "xpedite disabling perf events" << XpediteLogEnd;
+      return pmu::pmuCtl().disablePerfEvents();
+    }
+
     void start() noexcept {
     }
 
@@ -106,8 +122,14 @@ namespace xpedite { namespace framework {
           << " | file - " << probe.file() << " | line = " << probe.line() << " |" << XpediteLogEnd;
         probes::probeCtl(probes::Command::DISABLE, probe.file().c_str(), probe.line(), probe.name() != "" ? probe.name().c_str() : nullptr);
       }
-      disableGpPMC();
-      disableFixedPMC();
+
+      if(pmu::pmuCtl().perfEventsEnabled()) {
+        disablePerfEvents();
+      }
+      else {
+        disableGpPMC();
+        disableFixedPMC();
+      }
     }
   };
 

@@ -17,7 +17,7 @@
 #include <xpedite/framework/Framework.H>
 #include <xpedite/framework/Probes.H>
 #include <xpedite/util/Util.H>
-#include <random>
+#include <xpedite/util/RNG.H>
 #include <vector>
 #include <algorithm>
 #include <sys/mman.h>
@@ -25,18 +25,9 @@
 
 namespace xpedite { namespace demo {
 
-  constexpr uint64_t bufSize = 1 * 1024 * 1024 * 1024;
+  constexpr uint64_t bufSize = 1 * 1024 * 1024;
   constexpr uint64_t indexSize = 2048;
   using Indices = std::array<uint64_t, indexSize>;
-
-  struct RandomNumberGenerator
-  {
-    std::random_device _randomDevice;
-    std::mt19937 _generator;
-    std::uniform_int_distribution<> _distribution;
-    RandomNumberGenerator(int begin_, int end_) noexcept : _randomDevice {}, _generator{_randomDevice()}, _distribution {begin_, end_} { }
-    unsigned next() noexcept { return _distribution(_generator); }
-  };
 
   inline void initialize(size_t core_ = 0) {
     if(mlockall(MCL_CURRENT | MCL_FUTURE)) {
@@ -64,7 +55,7 @@ namespace xpedite { namespace demo {
     util::pinThisThread(cpu_);
     Indices indices;
     if(randomize_) {
-      RandomNumberGenerator rng {0, bufSize};
+      util::RandomNumberGenerator rng {0, bufSize};
       for(uint64_t i=0; i<indexSize; ++i) { indices[i] = rng.next(); }
     }
     else {

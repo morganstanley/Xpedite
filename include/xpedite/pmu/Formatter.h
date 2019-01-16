@@ -14,11 +14,9 @@
 extern "C" {
 #endif
 
-  void logRequest(unsigned ctrIndex_, const PMUGpEvent* e_, uint32_t b_);
+  void logEventSet(const PMUCtlRequest* request_, const EventSet* eventSet_);
 
-  void logOffcoreRequest(unsigned ctrIndex_, uint64_t e_);
-
-  int pmcrqToString(const PMUCtlRequest* request_, char* buffer_, int size_);
+  void pmuRequestToString(const PMUCtlRequest* request_, char* buffer_, int size_);
 
 #ifdef __cplusplus
 }

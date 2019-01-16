@@ -225,6 +225,15 @@ class Environment(object):
     :param events: A user supplied list of pmc events to be programmed
 
     """
+    if not self.isDriverLoaded():
+      (eventSet, request) = PMUCtrl.buildPerfEventsRequest(eventsDb, events)
+      if eventSet and request:
+        LOGGER.warn('xpedite device driver not loaded - falling back to perf events api')
+        LOGGER.debug('sending request (%d bytes) to xpedite [%s]', len(request), request)
+        rc = self.admin('probes pmu --request {}'.format(request))
+        if rc:
+          raise Exception(rc)
+        return eventSet
     return self.proxy.enablePMU(eventsDb, cpuSet, events)
 
   def disablePMU(self):

@@ -23,6 +23,7 @@
 #include <xpedite/pmu/EventSet.h>
 #include <xpedite/pmu/PMUArch.h>
 #include <xpedite/pmu/PCECtl.h>
+#include <xpedite/pmu/Formatter.h>
 
 #define  DEVICE_NAME "xpedite"
 #define  CLASS_NAME  "xpedite"
@@ -145,6 +146,8 @@ static ssize_t processRequest(PMUCtlRequest* request_) {
   if(buildEventSet(request_, &eventSet)) {
     return -EFAULT;
   }
+
+  logEventSet(request_, &eventSet);
 
   if(smp_call_function_single(request_->_cpu, __pmuEnableEventSet, &eventSet, 1)) {
     printk(KERN_INFO "Xpedite: failed to enable event counter in core %d", (unsigned)request_->_cpu);

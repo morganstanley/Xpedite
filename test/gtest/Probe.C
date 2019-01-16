@@ -65,7 +65,7 @@ namespace xpedite { namespace probes { namespace test {
     }
 
     ASSERT_TRUE(probe.isValid(callSite(buffer), callSite(buffer+5))) << "detected misvalidation of opcode at call site";
-    ASSERT_EQ(recorderCtl().activeXpediteRecorderType(), RecorderType::TRIVIAL_RECORDER) << "detected invalid initial recorder index";
+    ASSERT_EQ(recorderCtl().activeXpediteRecorderType(), RecorderType::EXPANDABLE_RECORDER) << "detected invalid initial recorder index";
 
     ASSERT_FALSE(probe.isActive()) << "detected failure to activate probe";
     ASSERT_FALSE(recorderCtl().activateRecorder(static_cast<RecorderType>(1024))) << "falied to detect invalid recorder";
