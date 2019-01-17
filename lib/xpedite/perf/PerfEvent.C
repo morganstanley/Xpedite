@@ -11,14 +11,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/pmu/PerfEvent.H>
-#include <xpedite/pmu/PerfEventAttrSet.H>
-#include <xpedite/pmu/PerfEventsApi.H>
+#include <xpedite/perf/PerfEvent.H>
+#include <xpedite/perf/PerfEventAttrSet.H>
+#include <xpedite/perf/PerfEventsApi.H>
 #include <xpedite/log/Log.H>
 #include <xpedite/util/Errno.H>
 #include <sys/mman.h>
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   const int PerfEvent::INVALID_FD = -1;
 

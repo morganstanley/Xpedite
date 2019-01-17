@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <linux/perf_event.h>
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   class PerfEvent
   {

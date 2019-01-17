@@ -10,13 +10,13 @@
 #include <xpedite/framework/Framework.H>
 #include <xpedite/framework/SamplesBuffer.H>
 #include <xpedite/pmu/PMUCtl.H>
-#include <xpedite/pmu/PerfEventsApi.H>
+#include <xpedite/perf/PerfEventsApi.H>
 #include <vector>
 #include <functional>
 #include <algorithm>
 #include <thread>
 
-namespace xpedite { namespace pmu { namespace test {
+namespace xpedite { namespace perf { namespace test {
 
   struct Override
   {
@@ -52,8 +52,8 @@ namespace xpedite { namespace pmu { namespace test {
     }
 
     static Guard quiesceDuration(uint64_t quiesceDuration_ = 1) {
-      PmuCtl::_quiesceDuration = quiesceDuration_;
-      return Guard {[]() {PmuCtl::_quiesceDuration = PmuCtl::DEFAULT_QUIESCE_DURATION;}};
+      pmu::PmuCtl::_quiesceDuration = quiesceDuration_;
+      return Guard {[]() {pmu::PmuCtl::_quiesceDuration = pmu::PmuCtl::DEFAULT_QUIESCE_DURATION;}};
     }
     
     static SamplesBuffer* resetBuffers(SamplesBuffer* buffer_) {

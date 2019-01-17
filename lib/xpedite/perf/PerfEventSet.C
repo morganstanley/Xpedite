@@ -11,13 +11,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/pmu/PerfEventSet.H>
-#include <xpedite/pmu/PerfEventsApi.H>
+#include <xpedite/perf/PerfEventSet.H>
+#include <xpedite/perf/PerfEventsApi.H>
 #include <xpedite/util/Errno.H>
 #include <xpedite/log/Log.H>
 #include <stdexcept>
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   bool PerfEventSet::activate() {
     if(!_active && size()) {

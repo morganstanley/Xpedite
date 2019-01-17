@@ -12,7 +12,7 @@
 struct perf_event_attr;
 struct perf_event_mmap_page;
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   namespace test {
     struct Override;

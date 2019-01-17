@@ -36,7 +36,7 @@
 extern __thread xpedite::probes::Sample* samplesBufferPtr;
 extern __thread xpedite::probes::Sample* samplesBufferEnd;
 
-namespace xpedite { namespace pmu { namespace test {
+namespace xpedite { namespace perf { namespace test {
   struct Override;
 }}}
 
@@ -177,11 +177,11 @@ namespace xpedite { namespace framework {
       _lastSampledTsc = lastSampledTsc_;
     }
 
-    const pmu::PerfEventSet* perfEvents() const noexcept {
+    const perf::PerfEventSet* perfEvents() const noexcept {
       return _perfEventSet.load(std::memory_order_acquire);
     }
 
-    void updatePerfEvents(pmu::PerfEventSet* perfEventSet_) noexcept {
+    void updatePerfEvents(perf::PerfEventSet* perfEventSet_) noexcept {
       return _perfEventSet.store(perfEventSet_, std::memory_order_release);
     }
 
@@ -219,7 +219,7 @@ namespace xpedite { namespace framework {
     }
 
     friend class pmu::PmuCtl;
-    friend struct pmu::test::Override;
+    friend struct perf::test::Override;
 
     static std::atomic<SamplesBuffer*> _head;
     static constexpr size_t bufferSize = 4 * 1024;
@@ -238,7 +238,7 @@ namespace xpedite { namespace framework {
     uint64_t _lastSampledTsc;
     uint64_t _lastOverflowCount;
 
-    alignas(common::ALIGNMENT) std::atomic<pmu::PerfEventSet*> _perfEventSet;
+    alignas(common::ALIGNMENT) std::atomic<perf::PerfEventSet*> _perfEventSet;
 
   };
 

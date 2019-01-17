@@ -15,6 +15,8 @@
 
 namespace xpedite { namespace pmu { namespace test {
 
+  using PerfEventsApi = perf::test::PerfEventsApi;
+
   struct PMUCtlTest : ::testing::Test
   {
   };
@@ -50,6 +52,7 @@ namespace xpedite { namespace pmu { namespace test {
   using TestCase = std::function<int(void)>;
 
   void exercisePerfEvents(PerfEventsApi& api, int threadCount_, int fixedEvtCount_, int gpEvtCount_, TestCase testCase_={}) {
+    using perf::test::Override;
     auto buffersGuard = Override::samplesBuffer(threadCount_);
     int beginEventsCount {api.eventsCount()};
     int eventsCount {beginEventsCount + threadCount_ * (fixedEvtCount_ + gpEvtCount_)};

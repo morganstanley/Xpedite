@@ -12,12 +12,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <xpedite/pmu/PerfEvent.H>
-#include <xpedite/pmu/PerfEventAttrSet.H>
+#include <xpedite/perf/PerfEvent.H>
+#include <xpedite/perf/PerfEventAttrSet.H>
 #include <unistd.h>
 #include <array>
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   class PerfEventSet
   {

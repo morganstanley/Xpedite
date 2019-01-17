@@ -8,16 +8,16 @@
 
 #include "Override.H"
 #include <xpedite/pmu/PMUCtl.H>
-#include <xpedite/pmu/PerfEvent.H>
-#include <xpedite/pmu/PerfEventAttrSet.H>
-#include <xpedite/pmu/PerfEventsApi.H>
+#include <xpedite/perf/PerfEvent.H>
+#include <xpedite/perf/PerfEventAttrSet.H>
+#include <xpedite/perf/PerfEventsApi.H>
 #include <stdexcept>
 #include <map>
 #include <functional>
 
-namespace xpedite { namespace pmu { namespace test {
+namespace xpedite { namespace perf { namespace test {
 
-  struct PerfEventsApi : public xpedite::pmu::PerfEventsApi
+  struct PerfEventsApi : public xpedite::perf::PerfEventsApi
   {
     using EventMap = perf_event_mmap_page;
 
@@ -108,7 +108,7 @@ namespace xpedite { namespace pmu { namespace test {
       return *iter->second;
     }
 
-    EventState& lookup(pmu::PerfEvent& event_) {
+    EventState& lookup(PerfEvent& event_) {
       return lookup(event_.fd());
     }
 
