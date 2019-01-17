@@ -78,8 +78,8 @@ xpediteDataProbeRecorderTrampoline:
 
   XPEDITE_ALIGN_STACK(r11)
 #ifdef XPEDITE_PIE
-  movq activeXpediteDataProbeRecorder@GOTPCREL(%rip), %rcx
-  callq *(%rcx)
+  movq activeXpediteDataProbeRecorder@GOTPCREL(%rip), %r11
+  callq *(%r11)
 #else 
   callq *activeXpediteDataProbeRecorder
 #endif
