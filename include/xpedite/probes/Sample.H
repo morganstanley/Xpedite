@@ -66,13 +66,13 @@ namespace xpedite { namespace probes {
       pmu::pmuCtl().readPmc(_data + 3);
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, const pmu::PerfEventSet* eventSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, const perf::PerfEventSet* eventSet_)
       : Sample {returnSite_, tsc_ | FLAG_PMC} {
       _data[0] = eventSet_->size();
       eventSet_->read(_data + 1);
     }
 
-    Sample(const void* returnSite_, uint64_t tsc_, Data data_, const pmu::PerfEventSet* eventSet_)
+    Sample(const void* returnSite_, uint64_t tsc_, Data data_, const perf::PerfEventSet* eventSet_)
       : Sample {returnSite_, tsc_ | FLAG_PMC, data_} {
       _data[2] = eventSet_->size();
       eventSet_->read(_data + 3);

@@ -19,7 +19,7 @@
 #pragma once
 
 #include <xpedite/pmu/FixedPmcSet.H>
-#include <xpedite/pmu/PerfEventSet.H>
+#include <xpedite/perf/PerfEventSet.H>
 #include <xpedite/util/Tsc.H>
 #include <mutex>
 #include <memory>
@@ -31,14 +31,16 @@ namespace xpedite { namespace framework {
   class SamplesBuffer;
 }}
 
-namespace xpedite { namespace pmu {
-
-  namespace test {
+namespace xpedite { namespace perf { namespace test {
     struct Override;
-  }
+}}}
+
+namespace xpedite { namespace pmu {
 
   class PmuCtl
   {
+    using PerfEventSet = perf::PerfEventSet;
+    using PerfEventAttrSet = perf::PerfEventAttrSet;
     using PerfEventSetPtr = std::unique_ptr<PerfEventSet>;
     using PerfEventSetMap = std::map<pid_t, PerfEventSetPtr>;
 
@@ -81,7 +83,7 @@ namespace xpedite { namespace pmu {
 
     static PmuCtl _instance;
 
-    friend struct test::Override;
+    friend struct perf::test::Override;
 
     void publishEventAttrs(const PerfEventAttrSet& eventAttrs_) noexcept;
 

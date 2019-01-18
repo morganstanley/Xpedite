@@ -65,12 +65,12 @@ namespace xpedite { namespace pmu {
     }
   }
 
-  void PmuCtl::publishEventAttrs(const PerfEventAttrSet& eventAttrs_) noexcept {
+  void PmuCtl::publishEventAttrs(const perf::PerfEventAttrSet& eventAttrs_) noexcept {
     std::lock_guard<std::mutex> guard {_mutex};
     _activeEventAttrs = eventAttrs_;
   }
 
-  PerfEventAttrSet PmuCtl::snapEventAttrs() const noexcept {
+  perf::PerfEventAttrSet PmuCtl::snapEventAttrs() const noexcept {
     PerfEventAttrSet eventAttrs;
     {
       std::lock_guard<std::mutex> guard {_mutex};
@@ -126,7 +126,7 @@ namespace xpedite { namespace pmu {
     }
 
     logEventSet(&request_, &eventSet);
-    PerfEventAttrSet eventAttrs {buildPerfEventAttrs(++_generation, eventSet)};
+    PerfEventAttrSet eventAttrs {perf::buildPerfEventAttrs(++_generation, eventSet)};
     if(!eventAttrs) {
       XpediteLogCritical << "failed to enable empty pmu request" << XpediteLogEnd;
       return {};
@@ -198,7 +198,7 @@ namespace xpedite { namespace pmu {
   }
 
   bool PmuCtl::attachPerfEvents(framework::SamplesBuffer* samplesBuffer_) {
-    pmu::PerfEventAttrSet eventAttrs {snapEventAttrs()};
+    PerfEventAttrSet eventAttrs {snapEventAttrs()};
     if(eventAttrs) {
       PerfEventSet perfEventSet { buildPerfEvents(eventAttrs, samplesBuffer_->tid()) };
       PerfEventSetPtr inertEventSetPtr {};

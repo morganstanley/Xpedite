@@ -15,12 +15,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/pmu/PerfEventAttrSet.H>
 #include <xpedite/pmu/EventSelect.h>
 #include <xpedite/pmu/FixedPmcSet.H>
+#include <xpedite/perf/PerfEventAttrSet.H>
 #include <xpedite/log/Log.H>
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   PerfEventAttrSet buildPerfEventAttrs(uint64_t generation_, const EventSet& eventSet_) noexcept {
     PerfEventAttrSet perfEventAttrSet {generation_};
@@ -35,6 +35,7 @@ namespace xpedite { namespace pmu {
     FixedEvtSelReg fixedEvtSelReg {};
     fixedEvtSelReg._value = eventSet_._fixedEvtSel;
 
+    using FixedPmcSet = pmu::FixedPmcSet;
     if(eventSet_._fixedEvtGlobalCtl & (0x1 << FixedPmcSet::INST_RETIRED_ANY)) {
       bool excludeUser = !maskEnabledInUserSpace(fixedEvtSelReg._f._enable0);
       bool excludeKernel = !maskEnabledInKernel(fixedEvtSelReg._f._enable0);
@@ -84,7 +85,7 @@ namespace xpedite { namespace pmu {
   std::string PerfEventAttrSet::toString() const {
     std::ostringstream os;
     for(int i=0; i < _size; ++i) {
-      os << xpedite::pmu::toString(_values[i]) << "\n";
+      os << xpedite::perf::toString(_values[i]) << "\n";
     }
     return os.str();
   }

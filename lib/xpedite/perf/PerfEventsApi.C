@@ -6,7 +6,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/pmu/PerfEventsApi.H>
+#include <xpedite/perf/PerfEventsApi.H>
 #include <linux/perf_event.h>
 #include <sys/syscall.h>
 #include <sys/mman.h>
@@ -18,7 +18,7 @@ extern "C" int perf_event_open(const struct perf_event_attr *hwEvent_, pid_t pid
   return syscall(__NR_perf_event_open, hwEvent_, pid_, cpu_, groupFd_, flags_);
 }
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   int PerfEventsApi::open(const perf_event_attr* attr_, pid_t pid_, int cpu_, int groupFd_, unsigned long flags_) {
     return perf_event_open(attr_, pid_, cpu_, groupFd_, flags_);

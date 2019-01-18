@@ -21,7 +21,7 @@
 #include <array>
 #include <stdexcept>
 
-namespace xpedite { namespace pmu {
+namespace xpedite { namespace perf {
 
   struct PerfEventAttrSet {
     std::array<perf_event_attr, XPEDITE_PMC_CTRL_CORE_EVENT_MAX> _values;

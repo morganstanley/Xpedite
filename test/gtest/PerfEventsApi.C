@@ -7,17 +7,17 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "PerfEventsApi.H"
-#include <xpedite/pmu/PerfEventSet.H>
+#include <xpedite/perf/PerfEventSet.H>
 #include <gtest/gtest.h>
 
-namespace xpedite { namespace pmu { namespace test {
+namespace xpedite { namespace perf { namespace test {
 
   struct PerfEventTest : ::testing::Test
   {
   };
 
   TEST_F(PerfEventTest, BuildAttributes) {
-    pmu::PerfEventAttrSet attrs {};
+    PerfEventAttrSet attrs {};
     ASSERT_FALSE(attrs) << "failed to detect empty perf event attributes";
     for(int i=0; i<XPEDITE_PMC_CTRL_CORE_EVENT_MAX; ++i) {
       attrs.add(PERF_TYPE_HARDWARE, {}, {}, {});
@@ -31,7 +31,7 @@ namespace xpedite { namespace pmu { namespace test {
     PerfEventsApi api {};
     ASSERT_EQ(api.eventsCount(), 0) << "detected perf events api in invalid state";
     {
-      pmu::PerfEvent event {{}, {}, -1};
+      PerfEvent event {{}, {}, -1};
       auto& state = api.lookup(event);
       ASSERT_TRUE(state.isOpen()) << "failed to open event";
       ASSERT_TRUE(static_cast<bool>(event)) << "failed to open event";
@@ -42,12 +42,12 @@ namespace xpedite { namespace pmu { namespace test {
     ASSERT_EQ(api.closedEventsCount(), 1) << "detected perf events api in invalid state";
   }
 
-  void buildEventSet(PerfEventsApi& api_, pmu::PerfEventSet& events_, int openEventsCount_) {
-    pmu::PerfEventSet events;
+  void buildEventSet(PerfEventsApi& api_, PerfEventSet& events_, int openEventsCount_) {
+    PerfEventSet events;
     ASSERT_FALSE(static_cast<bool>(events)) << "failed to detect empty perf event set";
     ASSERT_EQ(events.groupFd(), -1) << "detected event set with invalid group id";
     for(int i=0; i<XPEDITE_PMC_CTRL_CORE_EVENT_MAX; ++i) {
-      pmu::PerfEvent event {{}, {}, events.groupFd()};
+      PerfEvent event {{}, {}, events.groupFd()};
       auto& state = api_.lookup(event);
       ASSERT_TRUE(static_cast<bool>(event)) << "failed to open event";
       ASSERT_TRUE(state.isOpen()) << "failed to open event";
@@ -59,7 +59,7 @@ namespace xpedite { namespace pmu { namespace test {
       ASSERT_TRUE(static_cast<bool>(events)) << "detected mismatch of events state";
       ASSERT_EQ(api_.lookup(events.groupFd()).groupSize(), i+1) << "detected mismatch of events in group";
     }
-    ASSERT_THROW(events.add(pmu::PerfEvent {}), std::runtime_error);
+    ASSERT_THROW(events.add(PerfEvent {}), std::runtime_error);
     ASSERT_FALSE(events.isActive()) << "detected event set in invalid state (expected to INACTIVE)";
     auto* leaderStatePtr = &api_.lookup(events.groupFd());
     ASSERT_NE(leaderStatePtr, nullptr) << "detected invalid group fd";
@@ -80,7 +80,7 @@ namespace xpedite { namespace pmu { namespace test {
     PerfEventsApi::EventState* leaderStatePtr {};
     ASSERT_EQ(api.eventsCount(), 0) << "detected perf events api in invalid state";
     {
-      pmu::PerfEventSet events;
+      PerfEventSet events;
       buildEventSet(api, events, 0);
       leaderStatePtr = &api.lookup(events.groupFd());
     }
@@ -101,7 +101,7 @@ namespace xpedite { namespace pmu { namespace test {
       for(; i<EVENT_SET_COUNT; ++i) {
         PerfEventsApi::EventState* leaderStatePtr {};
         {
-          pmu::PerfEventSet events;
+          PerfEventSet events;
           buildEventSet(api, events, openEventsCount);
           openEventsCount += XPEDITE_PMC_CTRL_CORE_EVENT_MAX;
           leaderStatePtr = &api.lookup(events.groupFd());
