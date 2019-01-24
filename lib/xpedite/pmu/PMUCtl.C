@@ -24,7 +24,7 @@
 
 namespace xpedite { namespace pmu {
 
-  PmuCtl PmuCtl::_instance;
+  PmuCtl* PmuCtl::_instance {};
 
   uint64_t PmuCtl::_quiesceDuration {PmuCtl::DEFAULT_QUIESCE_DURATION};
 

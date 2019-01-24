@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <xpedite/util/Allocator.H>
 #include <xpedite/pmu/FixedPmcSet.H>
 #include <xpedite/perf/PerfEventSet.H>
 #include <xpedite/util/Tsc.H>
@@ -37,7 +38,7 @@ namespace xpedite { namespace perf { namespace test {
 
 namespace xpedite { namespace pmu {
 
-  class PmuCtl
+  class PmuCtl : public util::AlignedObject<XPEDITE_CACHELINE_SIZE>
   {
     using PerfEventSet = perf::PerfEventSet;
     using PerfEventAttrSet = perf::PerfEventAttrSet;
@@ -81,7 +82,7 @@ namespace xpedite { namespace pmu {
 
     static uint64_t _quiesceDuration;
 
-    static PmuCtl _instance;
+    static PmuCtl* _instance;
 
     friend struct perf::test::Override;
 
@@ -134,7 +135,10 @@ namespace xpedite { namespace pmu {
     void poll();
 
     static PmuCtl& get() {
-      return _instance;
+      if(!_instance) {
+        _instance = new PmuCtl {};
+      }
+      return *_instance;
     }
   };
 
