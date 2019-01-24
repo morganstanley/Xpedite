@@ -20,7 +20,7 @@ namespace xpedite { namespace perf {
 
   class PerfEventsApi {
 
-    static PerfEventsApi DEFAULT_INSTANCE;
+    static PerfEventsApi* DEFAULT_INSTANCE;
 
     static PerfEventsApi* _instance;
 

@@ -32,25 +32,25 @@ namespace xpedite { namespace perf {
       : _values {}, _size {}, _generation {} {
     }
 
-    explicit PerfEventAttrSet(uint64_t generation_)
-      : _values {}, _size {}, _generation {generation_} {
-    }
-
-    void add(uint32_t eventType_, uint16_t eventSelect_, bool excludeUser_, bool excludeKernel_) {
+    void add(perf_event_attr attr_) {
       if(static_cast<unsigned>(_size) >= _values.size()) {
         throw std::runtime_error {"Invariant violation - perf event set exceeded max supported events"};
       }
+      attr_.size = sizeof(attr_);
+      _values[_size++] = attr_;
+    }
+
+    void addPMUEvent(uint32_t eventType_, uint16_t eventSelect_, bool excludeUser_, bool excludeKernel_) {
       perf_event_attr attr {};
       attr.type = eventType_;
-      attr.size = sizeof(attr);
       attr.config = eventSelect_;
       attr.exclude_user = excludeUser_;
       attr.exclude_kernel = excludeKernel_;
       attr.disabled = (_size == 0);
-      _values[_size++] = attr;
+      add(attr);
     }
 
-    explicit operator bool() {
+    explicit operator bool() const {
       return _size;
     }
 
@@ -63,6 +63,6 @@ namespace xpedite { namespace perf {
 
   std::string toString(perf_event_attr attr_);
 
-  PerfEventAttrSet buildPerfEventAttrs(uint64_t generation_, const EventSet& eventSet_) noexcept;
+  PerfEventAttrSet buildPerfEventAttrs(const EventSet& eventSet_) noexcept;
 
 }}

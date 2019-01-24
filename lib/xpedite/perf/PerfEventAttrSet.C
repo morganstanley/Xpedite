@@ -22,14 +22,14 @@
 
 namespace xpedite { namespace perf {
 
-  PerfEventAttrSet buildPerfEventAttrs(uint64_t generation_, const EventSet& eventSet_) noexcept {
-    PerfEventAttrSet perfEventAttrSet {generation_};
+  PerfEventAttrSet buildPerfEventAttrs(const EventSet& eventSet_) noexcept {
+    PerfEventAttrSet perfEventAttrSet {};
 
     for(int i=0; i < eventSet_._gpEvtCount; ++i) {
       PerfEvtSelReg reg {};
       reg._value = eventSet_._gpEvtSel[i];
       uint16_t eventSelect (reg._f._unitMask << 8 | reg._f._eventSelect);
-      perfEventAttrSet.add(PERF_TYPE_RAW, eventSelect, !reg._f._user, !reg._f._kernel);
+      perfEventAttrSet.addPMUEvent(PERF_TYPE_RAW, eventSelect, !reg._f._user, !reg._f._kernel);
     }
 
     FixedEvtSelReg fixedEvtSelReg {};
@@ -39,20 +39,20 @@ namespace xpedite { namespace perf {
     if(eventSet_._fixedEvtGlobalCtl & (0x1 << FixedPmcSet::INST_RETIRED_ANY)) {
       bool excludeUser = !maskEnabledInUserSpace(fixedEvtSelReg._f._enable0);
       bool excludeKernel = !maskEnabledInKernel(fixedEvtSelReg._f._enable0);
-      perfEventAttrSet.add(PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS, excludeUser, excludeKernel);
+      perfEventAttrSet.addPMUEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS, excludeUser, excludeKernel);
     }
 
     if(eventSet_._fixedEvtGlobalCtl & (0x1 << FixedPmcSet::CPU_CLK_UNHALTED_CORE)) {
       bool excludeUser = !maskEnabledInUserSpace(fixedEvtSelReg._f._enable1);
       bool excludeKernel = !maskEnabledInKernel(fixedEvtSelReg._f._enable1);
-      perfEventAttrSet.add(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, excludeUser, excludeKernel);
+      perfEventAttrSet.addPMUEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, excludeUser, excludeKernel);
     }
 
     if(eventSet_._fixedEvtGlobalCtl & (0x1 << FixedPmcSet::CPU_CLK_UNHALTED_REF)) {
       // https://lwn.net/articles/373473
       bool excludeUser = !maskEnabledInUserSpace(fixedEvtSelReg._f._enable2);
       bool excludeKernel = !maskEnabledInKernel(fixedEvtSelReg._f._enable2);
-      perfEventAttrSet.add(PERF_TYPE_RAW, 0x13c, excludeUser, excludeKernel);
+      perfEventAttrSet.addPMUEvent(PERF_TYPE_RAW, 0x13c, excludeUser, excludeKernel);
     }
     return perfEventAttrSet;
   }

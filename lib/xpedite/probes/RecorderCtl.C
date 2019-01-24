@@ -23,7 +23,7 @@ xpedite::probes::Trampoline xpediteIdentityTrampolinePtr {xpediteIdentityTrampol
 
 namespace xpedite { namespace probes {
 
-  RecorderCtl RecorderCtl::_instance;
+  RecorderCtl* RecorderCtl::_instance {};
 
   RecorderType activeRecorderType {RecorderType::EXPANDABLE_RECORDER};
 

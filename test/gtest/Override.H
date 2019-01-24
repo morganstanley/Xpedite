@@ -48,7 +48,7 @@ namespace xpedite { namespace perf { namespace test {
 
     static Guard perfEventsApi(PerfEventsApi* instance_) {
       PerfEventsApi::_instance = instance_;
-      return Guard {[]() {PerfEventsApi::_instance = &PerfEventsApi::DEFAULT_INSTANCE;}};
+      return Guard {[]() {PerfEventsApi::_instance = PerfEventsApi::DEFAULT_INSTANCE;}};
     }
 
     static Guard quiesceDuration(uint64_t quiesceDuration_ = 1) {

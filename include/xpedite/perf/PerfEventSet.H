@@ -71,6 +71,10 @@ namespace xpedite { namespace perf {
       return _size > 0 ? _events[0].fd() : -1;
     }
 
+    perf_event_mmap_page* buffer() const noexcept {
+      return _size > 0 ? _events[0].buffer() : nullptr;
+    }
+
     pid_t tid() const noexcept {
       return _size > 0 ? _events[0].tid() : 0;
     }
@@ -98,5 +102,5 @@ namespace xpedite { namespace perf {
     }
   };
 
-  PerfEventSet buildPerfEvents(const PerfEventAttrSet& eventAttrs_, pid_t tid_);
+  PerfEventSet buildPerfEvents(const PerfEventAttrSet& eventAttrs_, uint64_t generation_, pid_t tid_);
 }}

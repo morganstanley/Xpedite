@@ -45,22 +45,26 @@ namespace xpedite { namespace util {
     }
   }
 
-  inline std::string buildStackTrace() {
+  inline std::string buildStackTrace(void** btList_, size_t size_) {
     // To capture trace, the statically lined symbols must be exported to dynsym
     // use -rdynamic flag to export all symbols to dynsym section
-    void* btList[128];
-    auto size = backtrace(btList, sizeof(btList)/sizeof(btList[0]));
-    auto btStrList = backtrace_symbols(btList, size);
+    auto btStrList = backtrace_symbols(btList_, size_);
     if(btStrList == nullptr) {
       return "failed to read backtrace.";
     }
 
     std::ostringstream stream;
-    for(decltype(size) i=0; i<size; ++i) {
+    for(decltype(size_) i=0; i<size_; ++i) {
       stream << btStrList[i] << std::endl;
     }
     free(btStrList);
     return stream.str();
+  }
+
+  inline std::string buildStackTrace() {
+    void* btList[128];
+    auto size = backtrace(btList, sizeof(btList)/sizeof(btList[0]));
+    return buildStackTrace(btList, size);
   }
 
   inline std::string getProcessName() {

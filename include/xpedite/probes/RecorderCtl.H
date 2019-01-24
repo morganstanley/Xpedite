@@ -43,7 +43,7 @@ namespace xpedite { namespace probes {
     Recorders _recorders;
     DataProbeRecorders _dataRecorders;
 
-    static RecorderCtl _instance;
+    static RecorderCtl* _instance;
 
     RecorderCtl();
 
@@ -59,7 +59,10 @@ namespace xpedite { namespace probes {
     Trampoline trampoline(bool canStoreData_, bool canSuspendTxn_, bool nonTrivial_) noexcept;
 
     static RecorderCtl& get() {
-      return _instance;
+      if(!_instance) {
+        _instance = new RecorderCtl {};
+      }
+      return *_instance;
     }
   };
 

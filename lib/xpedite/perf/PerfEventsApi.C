@@ -53,8 +53,8 @@ namespace xpedite { namespace perf {
   PerfEventsApi::~PerfEventsApi() {
   }
 
-  PerfEventsApi PerfEventsApi::DEFAULT_INSTANCE;
+  PerfEventsApi* PerfEventsApi::DEFAULT_INSTANCE = new PerfEventsApi {};
 
-  PerfEventsApi* PerfEventsApi::_instance {&PerfEventsApi::DEFAULT_INSTANCE};
+  PerfEventsApi* PerfEventsApi::_instance {PerfEventsApi::DEFAULT_INSTANCE};
 
 }}

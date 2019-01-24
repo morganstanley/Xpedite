@@ -20,9 +20,9 @@
 
 namespace xpedite { namespace perf {
 
-  const int PerfEvent::INVALID_FD = -1;
+  const int PerfEvent::INVALID_FD {-1};
 
-  perf_event_mmap_page* PerfEvent::INVALID_ADDR = reinterpret_cast<perf_event_mmap_page*>(MAP_FAILED);
+  perf_event_mmap_page* PerfEvent::INVALID_ADDR {reinterpret_cast<perf_event_mmap_page*>(MAP_FAILED)};
 
   PerfEvent::PerfEvent(perf_event_attr attr_, pid_t tid_, int gid_) noexcept 
     : _fd {INVALID_FD}, _handle {INVALID_ADDR}, _tid {tid_} {
