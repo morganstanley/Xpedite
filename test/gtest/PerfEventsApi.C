@@ -20,11 +20,11 @@ namespace xpedite { namespace perf { namespace test {
     PerfEventAttrSet attrs {};
     ASSERT_FALSE(attrs) << "failed to detect empty perf event attributes";
     for(int i=0; i<XPEDITE_PMC_CTRL_CORE_EVENT_MAX; ++i) {
-      attrs.add(PERF_TYPE_HARDWARE, {}, {}, {});
+      attrs.addPMUEvent(PERF_TYPE_HARDWARE, {}, {}, {});
       ASSERT_TRUE(static_cast<bool>(attrs)) << "failed to add attributes to set";
       ASSERT_EQ(attrs._size, i+1) << "detected mismatch in size of perf event attributes";
     }
-    ASSERT_THROW(attrs.add(PERF_TYPE_HARDWARE, {}, {}, {}), std::runtime_error);
+    ASSERT_THROW(attrs.addPMUEvent(PERF_TYPE_HARDWARE, {}, {}, {}), std::runtime_error);
   }
 
   TEST_F(PerfEventTest, BuildEvent) {

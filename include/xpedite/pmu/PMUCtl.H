@@ -19,18 +19,11 @@
 #pragma once
 
 #include <xpedite/util/Allocator.H>
+#include <xpedite/perf/PerfEventsCtl.H>
 #include <xpedite/pmu/FixedPmcSet.H>
-#include <xpedite/perf/PerfEventSet.H>
 #include <xpedite/util/Tsc.H>
-#include <mutex>
-#include <memory>
-#include <map>
 #include <vector>
 #include <sys/types.h>
-
-namespace xpedite { namespace framework {
-  class SamplesBuffer;
-}}
 
 namespace xpedite { namespace perf { namespace test {
     struct Override;
@@ -38,13 +31,8 @@ namespace xpedite { namespace perf { namespace test {
 
 namespace xpedite { namespace pmu {
 
-  class PmuCtl : public util::AlignedObject<XPEDITE_CACHELINE_SIZE>
+  class PmuCtl : public perf::PerfEventsCtl, public util::AlignedObject<XPEDITE_CACHELINE_SIZE>
   {
-    using PerfEventSet = perf::PerfEventSet;
-    using PerfEventAttrSet = perf::PerfEventAttrSet;
-    using PerfEventSetPtr = std::unique_ptr<PerfEventSet>;
-    using PerfEventSetMap = std::map<pid_t, PerfEventSetPtr>;
-
     struct InertEvents {
       PerfEventSetMap _events;
       uint64_t _generation;
@@ -62,18 +50,7 @@ namespace xpedite { namespace pmu {
       ~InertEvents() = default;
     };
 
-    PerfEventAttrSet _activeEventAttrs;
-
-    PerfEventSetMap _activeEvents;
-
     std::vector<InertEvents> _inertEventsQueue;
-
-    mutable std::mutex _mutex;
-
-    uint64_t _generation;
-
-    bool _perfEventsEnabled;
-
     alignas(XPEDITE_CACHELINE_SIZE) uint8_t _genericPmcCount;
 
     FixedPmcSet _fixedPmcSet;
@@ -86,12 +63,6 @@ namespace xpedite { namespace pmu {
 
     friend struct perf::test::Override;
 
-    void publishEventAttrs(const PerfEventAttrSet& eventAttrs_) noexcept;
-
-    PerfEventAttrSet snapEventAttrs() const noexcept;
-
-    PerfEventSetPtr attachEventsUnsafe(framework::SamplesBuffer* samplesBuffer_, PerfEventSet&& perfEventSet_);
-
     public:
 
     PmuCtl();
@@ -100,7 +71,7 @@ namespace xpedite { namespace pmu {
     FixedPmcSet fixedPmcSet() const noexcept { return _fixedPmcSet;                       }
     uint8_t fixedPmcCount()   const noexcept { return _fixedPmcSet.size();                }
     uint8_t pmcCount()        const noexcept { return _genericPmcCount + fixedPmcCount(); }
-    bool perfEventsEnabled()  const noexcept { return _perfEventsEnabled;                 }
+    bool perfEventsEnabled()  const noexcept { return PerfEventsCtl::isEnabled();         }
 
     void enableGenericPmc(uint8_t genericPmcCount_) noexcept;
     void disableGenericPmc() noexcept;

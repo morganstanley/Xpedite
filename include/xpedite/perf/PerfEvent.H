@@ -58,6 +58,10 @@ namespace xpedite { namespace perf {
       return _fd;
     }
 
+    perf_event_mmap_page* buffer() const noexcept {
+      return _handle;
+    }
+
     int tid() const noexcept {
       return _tid;
     }
