@@ -13,8 +13,8 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 project(xpedite C CXX ASM)
-if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-  message(FATAL_ERROR "Xpedite requires GCC 4.8 or later to build.")
+if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
+  message(FATAL_ERROR "Xpedite requires GCC 5.2 or later to build.")
 endif()
 
 set (CMAKE_CXX_STANDARD 14)

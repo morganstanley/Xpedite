@@ -80,8 +80,12 @@ class AppController(ArgparseController):
     cprofile = CProfile(self.app.pargs.selfProfile) if self.app.pargs.selfProfile else None
     from xpedite.profiler import Profiler
     profileInfo, report = Profiler.record(
-      self.app.pargs.profileInfo, benchmarkPath=self.app.pargs.createBenchmark, duration=self.app.pargs.duration,
-      heartbeatInterval=self.app.pargs.heartbeat, cprofile=cprofile, profileName=self.app.pargs.name,
+      self.app.pargs.profileInfo,
+      benchmarkPath=self.app.pargs.createBenchmark,
+      duration=self.app.pargs.duration,
+      heartbeatInterval=self.app.pargs.heartbeat,
+      cprofile=cprofile,
+      profileName=self.app.pargs.name,
       verbose=self.app.pargs.verbose
     )
     driver = _loadDriver(self.app.pargs.driver)
@@ -151,22 +155,34 @@ class FrameworkController(ArgparseController):
     arguments=[
       (['-p', '--profileInfo'], dict(action='store', required=True, help=profileInfoHelp)),
       (['-b', '--createBenchmark'], dict(action='store', help='store report at the given path, for future benchmarking')),
-      (['-D', '--driver'], dict(action='store', help='driver for report generation')),
-      (['-r', '--runId'], dict(action='store', required=True, help='run-id to generate the report for')),
+      (['-d', '--driver'], dict(action='store', help='driver for report generation')),
+      (['-r', '--runId'], dict(action='store', required=False, help='run-id to generate the report for')),
+      (['-l', '--loadBenchmark'], dict(action='store', required=False, help='load data at the given path')),
       (['-v', '--verbose'], dict(action='store_true', help='verbose mode, with tsc values in perf report')),
       (['-s', '--selfProfile'], dict(action='store', required=False, help='self profile xpedite - path to store the profile data')),
       (['-n', '--name'], dict(action='store', required=False, help='Name for the generated xpedite report. By default App Name with time stamp is used')),
-      (['-l', '--lean'], dict(action='store_true', help='create a lean report. This option will bypass attaching xpedite notebook to custom drivers')),
+      (['-L', '--lean'], dict(action='store_true', help='make reports lean by skipping details, that use lots of storage space')),
     ],
     help='Generate report for a previous run'
   )
   def report(self):
+    if not self.app.pargs.runId and not self.app.pargs.loadBenchmark:
+      LOGGER.error('Insufficient arguments - requires either a valid runId (-r | --runId) or a benchmark path (-l | --loadBenchmark)\n')
+      return
+    if self.app.pargs.runId and self.app.pargs.loadBenchmark:
+      LOGGER.error('Conflicting arguments - pick either a runId (-r | --runId) or benchmark path (-l | --loadBenchmark)\n')
+      return
     from xpedite.selfProfile import CProfile
     cprofile = CProfile(self.app.pargs.selfProfile) if self.app.pargs.selfProfile else None
     from xpedite.profiler import Profiler
     profileInfo, report = Profiler.report(
-      self.app.pargs.profileInfo, self.app.pargs.runId, benchmarkPath=self.app.pargs.createBenchmark,
-      cprofile=cprofile, profileName=self.app.pargs.name, verbose=self.app.pargs.verbose
+      self.app.pargs.profileInfo,
+      runId=self.app.pargs.runId,
+      dataSourcePath=self.app.pargs.loadBenchmark,
+      benchmarkPath=self.app.pargs.createBenchmark,
+      cprofile=cprofile,
+      profileName=self.app.pargs.name,
+      verbose=self.app.pargs.verbose
     )
     driver = _loadDriver(self.app.pargs.driver)
     driver.render(profileInfo, report, leanReports = self.app.pargs.lean, cprofile = cprofile)

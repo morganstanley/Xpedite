@@ -44,7 +44,7 @@ class TxnSubCollection(object):
 class TxnCollection(object):
   """A collection of transactions sharing a common route"""
 
-  def __init__(self, name, cpuInfo, txnMap, probes, topdownMetrics, events, dataSources):
+  def __init__(self, name, cpuInfo, txnMap, probes, topdownMetrics, events, dataSource):
     self.name = name
     self.cpuInfo = cpuInfo
     for txn in txnMap.values():
@@ -55,7 +55,7 @@ class TxnCollection(object):
     self.probes = probes
     self.topdownMetrics = topdownMetrics
     self.events = events
-    self.dataSources = dataSources
+    self.dataSource = dataSource
     self.repo = None
 
   def getSubCollection(self):
@@ -79,6 +79,6 @@ class TxnCollection(object):
     return rep
 
   def __eq__(self, other):
-    selfDict = dict((k, val) for k, val in self.__dict__.iteritems() if k != 'repo' and k != 'dataSources')
-    otherDict = dict((k, val) for k, val in other.__dict__.iteritems() if k != 'repo' and k != 'dataSources')
+    selfDict = dict((k, val) for k, val in self.__dict__.iteritems() if k != 'repo' and k != 'dataSource')
+    otherDict = dict((k, val) for k, val in other.__dict__.iteritems() if k != 'repo' and k != 'dataSource')
     return selfDict == otherDict

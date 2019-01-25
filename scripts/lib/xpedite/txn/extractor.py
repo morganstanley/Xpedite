@@ -38,26 +38,22 @@ class Extractor(object):
     self.counterFilter = counterFilter
     self.orphanedRecords = []
 
-  def gatherCounters(self, app, loader, inflate=True):
+  def gatherCounters(self, app, loader):
     """
     Gathers time and pmu counters from sample files for the current profile session
 
     :param app: Handle to the instance of the xpedite app
     :type app: xpedite.profiler.environment.XpediteApp
     :param loader: Loader to build transactions out of the counters
-    :param inflate: Flag to persist profile data in csv format (Default value = True)
 
     """
     pattern = app.sampleFilePattern()
     LOGGER.info('scanning for samples files matching - %s', pattern)
     filePaths = app.gatherFiles(pattern)
 
-    dataSourcePath = None
-    dataSources = []
-    if inflate:
-      dataSourcePath = makeLogPath('{}/{}'.format(app.name, app.runId))
-      dataSources.append(DataSource(app.appInfoPath, dataSourcePath))
-    loader.beginCollection(dataSources)
+    samplePath = makeLogPath('{}/{}'.format(app.name, app.runId))
+    dataSource = DataSource(app.appInfoPath, samplePath)
+    loader.beginCollection(dataSource)
 
     for filePath in filePaths:
       (threadId, tlsAddr) = self.extractThreadInfo(filePath)
@@ -67,7 +63,7 @@ class Extractor(object):
 
       iterBegin = begin = time.time()
       loader.beginLoad(threadId, tlsAddr)
-      inflateFd = self.openInflateFile(dataSourcePath, threadId, tlsAddr) if inflate else None
+      inflateFd = self.openInflateFile(samplePath, threadId, tlsAddr)
       extractor = subprocess.Popen([self.samplesLoader, filePath],
         bufsize=2*1024*1024, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
       recordCount = 0
