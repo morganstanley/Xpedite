@@ -160,7 +160,8 @@ class Profiler(object):
     return profileInfo, report
 
   @staticmethod
-  def report(profileInfoPath, runId, benchmarkPath=None, cprofile=None, profileName=None, verbose=None):
+  def report(profileInfoPath, runId=None, dataSourcePath=None, benchmarkPath=None, cprofile=None,
+      profileName=None, verbose=None):
     """
     Generates report for a previous profiling runs
 
@@ -168,6 +169,7 @@ class Profiler(object):
     :type profileInfoPath: str
     :param runId: Unique identifier for a previous run
     :type runId: str
+    :param dataSourcePath: Path to load txn data for reporting
     :param benchmarkPath: Path to persist profile data for benchmarking
     :type benchmarkPath: str
     :param cprofile: Handle to capture self profile Xpedite report generation code (Default value = None)
@@ -181,7 +183,8 @@ class Profiler(object):
       enableVerboseLogging()
     profileInfo = loadProfileInfo(profileInfoPath)
     validateBenchmarkPath(benchmarkPath)
-    app = XpediteDormantApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo, runId)
+    app = XpediteDormantApp(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo,
+        runId=runId, dataSourcePath=dataSourcePath)
     with app:
       reportName = buildReportName(profileInfo.appName, profileName)
       report = Profiler.profile(app, profileInfo, reportName, benchmarkPath, True, cprofile=cprofile)

@@ -121,7 +121,7 @@ def buildReportCells(nb, result, dataFilePath):
       reportCount += 1
       xpdKey = 'report{}'.format(reportCount)
       linksCode += '<li><a href={} target="_blank">{}</a></li>'.format(
-        buildReportLink(xpdKey, Action.Load), report.name
+        buildReportLink(xpdKey, Action.Load), report.description
       )
       xpdf.appendRecord(xpdKey, 'htmlReport', report.zContent)
 
