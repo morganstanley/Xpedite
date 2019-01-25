@@ -34,7 +34,7 @@ class AbstractTxnLoader(object):
     self.events = events
     self.probeMap = ProbeMap(probes)
     self.reset()
-    self.dataSources = []
+    self.dataSource = None
     self.currentTxn = None
     self.threadId = None
     self.tlsAddr = None
@@ -83,7 +83,7 @@ class AbstractTxnLoader(object):
       report += '.'
     return report
 
-  def beginCollection(self, dataSources):
+  def beginCollection(self, dataSource):
     """
     Begins loading of samples from multiple threads of a target process
 
@@ -92,7 +92,7 @@ class AbstractTxnLoader(object):
     :param dataSource: Handle to source of loaded profile data
 
     """
-    self.dataSources = dataSources
+    self.dataSource = dataSource
 
   def endCollection(self):
     """Ends loading of samples from multiple threads of a target process"""
@@ -112,7 +112,7 @@ class AbstractTxnLoader(object):
   def getData(self):
     """Returns a collection of all the loaded transactions"""
     return TxnCollection(
-      self.name, self.cpuInfo, self.txns, self.probes, self.topdownMetrics, self.events, self.dataSources
+      self.name, self.cpuInfo, self.txns, self.probes, self.topdownMetrics, self.events, self.dataSource
     )
 
   def getCount(self):

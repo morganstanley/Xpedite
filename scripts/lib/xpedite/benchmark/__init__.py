@@ -14,15 +14,14 @@ import shutil
 import logging
 import ConfigParser
 from datetime               import date
-from xpedite.txn.collector  import Collector
-from xpedite.types          import DataSource, CpuInfo
+from xpedite.txn.collector  import Collector, APPINFO_FILE_NAME
+from xpedite.types          import CpuInfo
 from xpedite.pmu.event      import Event
 from xpedite.benchmark.info import makeBenchmarkInfo, loadBenchmarkInfo
 
 LOGGER = logging.getLogger(__name__)
 
 BENCHMARK_DIR_NAME = 'benchmark'
-BENCHMARK_APPINFO_FILE_NAME = 'appinfo.txt'
 
 def makeBenchmark(profiles, path):
   """
@@ -37,24 +36,24 @@ def makeBenchmark(profiles, path):
   if os.path.exists(path):
     raise Exception('Failed to make benchmark - path {} already exists'.format(path))
   txnCollection = profiles.transactionRepo.getCurrent()
-  for dataSource in txnCollection.dataSources:
-    shutil.copytree(dataSource.path, os.path.join(path, os.path.basename(dataSource.path)))
-    shutil.copyfile(dataSource.appInfoPath, os.path.join(path, BENCHMARK_APPINFO_FILE_NAME))
+  samplePath = txnCollection.dataSource.samplePath
+  shutil.copytree(samplePath, os.path.join(path, os.path.basename(samplePath)))
+  shutil.copyfile(txnCollection.dataSource.appInfoPath, os.path.join(path, APPINFO_FILE_NAME))
   makeBenchmarkInfo(benchmarkName, profiles, path)
 
 class Benchmark(object):
   """Class to load and store benchmark data"""
 
-  def __init__(self, name, cpuInfo, path, legend, events, dataSources=None):
+  def __init__(self, name, cpuInfo, path, legend, events, dataSource=None):
     self.name = name
     self.cpuInfo = cpuInfo
     self.path = path
     self.legend = legend
-    self.dataSources = dataSources
+    self.dataSource = dataSource
     self.events = events
 
   def __repr__(self):
-    return 'Benchmark {}: {}'.format(self.name, self.dataSources)
+    return 'Benchmark {}: {}'.format(self.name, self.dataSource)
 
 class BenchmarksCollector(object):
   """Collector to scan filesystem for gathering benchmarks"""
@@ -80,9 +79,9 @@ class BenchmarksCollector(object):
         if info:
           (benchmarkName, cpuInfo, path, legend, events) = info
           benchmark = Benchmark(benchmarkName, cpuInfo, path, legend, events)
-          dataSources = self.gatherDataSources(benchmarkPath)
-          if dataSources:
-            benchmark.dataSources = dataSources
+          dataSource = Collector.gatherDataSource(benchmarkPath)
+          if dataSource:
+            benchmark.dataSource = dataSource
             benchmarks.append(benchmark)
         else:
           LOGGER.warn('skip processing benchmark %s. failed to load benchmark info', path)
@@ -94,22 +93,6 @@ class BenchmarksCollector(object):
       else:
         LOGGER.warn('skip processing benchmark %s. failed to locate benchmark files', path)
     return benchmarks
-
-  @staticmethod
-  def gatherDataSources(path):
-    """
-    Gathers the list of profile data files for a benchmark
-
-    :param path: path to benchmark directory
-
-    """
-    dataSources = []
-    for runId in os.listdir(path):
-      reportPath = os.path.join(path, runId)
-      appInfoPath = os.path.join(path, BENCHMARK_APPINFO_FILE_NAME)
-      if os.path.isdir(reportPath) and os.path.isfile(appInfoPath):
-        dataSources.append(DataSource(appInfoPath, reportPath))
-    return dataSources
 
   @staticmethod
   def loadTxns(repo, counterFilter, benchmarks, loaderFactory):
@@ -125,5 +108,5 @@ class BenchmarksCollector(object):
     for benchmark in benchmarks:
       loader = loaderFactory(benchmark)
       collector = Collector(counterFilter)
-      collector.loadDataSources(benchmark.dataSources, loader)
+      collector.loadDataSource(benchmark.dataSource, loader)
       repo.addBenchmark(loader.getData())

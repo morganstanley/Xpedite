@@ -13,6 +13,7 @@ import time
 import logging
 from xpedite.profiler.environment import Environment, RemoteEnvironment
 from xpedite.transport.net import isIpLocal
+from xpedite.txn.collector import Collector
 
 LOGGER = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ class XpediteApp(object):
     self.runId = None
     self.sampleFilePath = None
     self.workspace = workspace
+    self.dataSource = None
 
   def __getattr__(self, name):
     if self.env:
@@ -182,9 +184,14 @@ class XpediteDormantApp(XpediteApp):
 
   """
 
-  def __init__(self, name, ip, appInfoPath, runId, workspace=None):
+  def __init__(self, name, ip, appInfoPath, runId=None, dataSourcePath=None, workspace=None):
     """Constructs an instance of XpediteDormantApp"""
+    dataSource = Collector.gatherDataSource(dataSourcePath) if dataSourcePath else None
+    if dataSource:
+      LOGGER.warn('Data source detected. overriding appinfo to %s', dataSource.appInfoPath)
+      appInfoPath = dataSource.appInfoPath
     XpediteApp.__init__(self, name, ip, appInfoPath, dryRun=True, workspace=workspace)
+    self.dataSource = dataSource
     self.runId = runId
 
   def beginProfile(self, pollInterval, timeout=10):

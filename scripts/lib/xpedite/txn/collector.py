@@ -11,9 +11,11 @@ import time
 import fnmatch
 import logging
 from xpedite.profiler.appInfo   import AppInfo
-from xpedite.txn.extractor          import Extractor
+from xpedite.txn.extractor      import Extractor
+from xpedite.types              import DataSource
 
 LOGGER = logging.getLogger(__name__)
+APPINFO_FILE_NAME = 'appinfo.txt'
 
 class Collector(Extractor):
   """Parses sample files to gather time and pmu counters"""
@@ -66,45 +68,75 @@ class Collector(Extractor):
     filePaths = (os.path.join(path, fileName) for fileName in fileNames)
     return filePaths
 
-  def loadDataSources(self, dataSources, loader):
+  @staticmethod
+  def gatherDataSource(path):
     """
-    Loads counters for the given dataSources
+    Gathers appinfo and samples dir to build a data source
 
+    :param path: path to directory with txn data
+
+    """
+    appInfoPath = os.path.join(path, APPINFO_FILE_NAME)
+    if not os.path.isfile(appInfoPath):
+      LOGGER.error('skipping data source %s - detected missing appinfo file %s', path, APPINFO_FILE_NAME)
+      return None
+
+    directories = next(os.walk(path))[1]
+    if len(directories) > 1:
+      LOGGER.error('skipping data source %s - detected more than one (%d) directories', path, len(directories))
+      return None
+    return DataSource(appInfoPath, os.path.join(path, directories[0]))
+
+  def loadDataSource(self, dataSource, loader):
+    """
+    Loads counters for the given dataSource
+
+    :param dataSource: List of data sources with profile data
     :param loader: Loader implementation to build transactions from counters
-    :param dataSources: List of data sources with profile data
 
     """
-    loader.beginCollection(dataSources)
-    for dataSource in dataSources:
-      self.loadDataSource(loader, dataSource)
+    loader.beginCollection(dataSource)
+    appInfo = AppInfo(dataSource.appInfoPath)
+    appInfo.load()
+    self.loadSamples(loader, appInfo.probes, dataSource.samplePath)
     loader.endCollection()
 
-  def loadDataSource(self, loader, dataSource):
+  def loadSamples(self, loader, probes, path):
     """
     Loads counters for a profile session from csv sample files
 
     :param loader: Loader to build transactions out of the counters
-    :param dataSource: Sample files for a thread with counter data in csv format
-    :type dataSource: xpedite.types.DataSource
+    :param probes: A list of probes associated with samples in a file
+    :param path: Path to sample file for a thread with counter data in csv format
 
     """
-    appInfo = AppInfo(dataSource.appInfoPath)
-    appInfo.load()
     recordCount = 0
-    reportDirs = list(sorted(os.listdir(dataSource.path)))
+    reportDirs = list(sorted(os.listdir(path)))
     for threadInfo in reportDirs:
       fields = threadInfo.split('-')
       if len(fields) < 2:
         raise Exception('Datasource {} missing tls storage info {}\n'.format(reportDirs, threadInfo))
       threadId = fields[0]
-      dirPath = os.path.join(dataSource.path, threadInfo)
+      dirPath = os.path.join(path, threadInfo)
       if os.path.isdir(dirPath):
         loader.beginLoad(threadId, fields[1])
         for filePath in self.listSampleFiles(dirPath):
-          recordCount += self.loadCounters(threadId, loader, appInfo.probes, filePath)
+          recordCount += self.loadCounters(threadId, loader, probes, filePath)
         loader.endLoad()
     self.logCounterFilterReport()
     return recordCount
+
+  def gatherCounters(self, app, loader):
+    """
+    Gathers time and pmu counters from sample files for a profile session
+
+    :param app: Handle to the instance of the xpedite app
+    :param loader: Loader to build transactions out of the counters
+
+    """
+    if app.dataSource:
+      return self.loadDataSource(app.dataSource, loader)
+    return Extractor.gatherCounters(self, app, loader)
 
   def loadCounters(self, threadId, loader, probes, path):
     """
