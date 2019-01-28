@@ -2,10 +2,10 @@ file name, size, lines
 multiThreadedAppRegular/__init__.py,0,0
 multiThreadedAppRegular/expectedResults/generateCmdBaseline.py,4657,100
 multiThreadedAppRegular/expectedResults/probeCmdBaseline.pkl,1088,164
-multiThreadedAppRegular/expectedResults/reportCmdBaseline.xpd,6046184,12154
+multiThreadedAppRegular/expectedResults/reportCmdBaseline.xpd,6068216,4651
 multiThreadedAppRegular/parameters/__init__.py,0,0
-multiThreadedAppRegular/parameters/baselineCpuInfo.json,1271,0
-multiThreadedAppRegular/parameters/data/xpedite-multiThreadedApp-1544799021-28317-00002b7d5abcd000.data,192,0
-multiThreadedAppRegular/parameters/data/xpedite-multiThreadedApp-1544799021-28371-00002b7d5bfd1700.data,98544,79
+multiThreadedAppRegular/parameters/baselineCpuInfo.json,1299,0
+multiThreadedAppRegular/parameters/data/xpedite-multiThreadedApp-1548694539-124866-00002b410b046000.data,192,1
+multiThreadedAppRegular/parameters/data/xpedite-multiThreadedApp-1548694539-124870-00002b4110a00700.data,98544,4097
 multiThreadedAppRegular/parameters/profileInfo.py,1280,32
-multiThreadedAppRegular/parameters/xpedite-appinfo.txt,2180,13
+multiThreadedAppRegular/parameters/xpedite-appinfo.txt,2181,13

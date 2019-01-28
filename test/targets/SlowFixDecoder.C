@@ -15,7 +15,6 @@
 #include <cstdlib>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <thread>
 #include "../util/Args.H"
 
 int cpu {0};
@@ -139,18 +138,12 @@ inline void parseFix(uint32_t txnCount) {
 int main(int argc_, char** argv_) {
   auto args = parseArgs(argc_, argv_);
   int txnCount = args.txnCount;
-  int numThreads = args.threadCount;
 
   if(!xpedite::framework::initialize("xpedite-appinfo.txt", true)) {
     throw std::runtime_error {"failed to init xpedite"};
   }
-  std::thread threads[numThreads];
 
-  for (int i=0; i < numThreads; ++i)
-    threads[i] = std::thread(parseFix, txnCount);
-
-  for (int i=0; i<args.threadCount; ++i)
-    threads[i].join();
+  parseFix(txnCount);
 
   return 0;
 }

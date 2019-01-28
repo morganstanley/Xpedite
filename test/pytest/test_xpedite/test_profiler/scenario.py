@@ -41,6 +41,7 @@ class ScenarioType(Enum):
   """Scenarios used in testing"""
   Benchmark = 'Benchmark'
   Regular = 'Regular'
+  PMC = 'PMC'
 
   def __str__(self):
     """
@@ -256,13 +257,14 @@ class ScenarioLoader(object):
     Load benchmark / regular scenarios for a list of applications
     """
     if not scenarioTypes:
-      scenarioTypes = [ScenarioType.Regular, ScenarioType.Benchmark]
+      scenarioTypes = [ScenarioType.Regular, ScenarioType.Benchmark, ScenarioType.PMC]
     for app in apps:
       for scenarioType in scenarioTypes:
         scenario = Scenario(
           runPath, app, '{}{}'.format(app, scenarioType), scenarioType, remote
         )
         self._scenarios[scenario.name] = scenario
+    return self
 
   def __getitem__(self, scenario):
     """Support indexing for scenario loader object"""

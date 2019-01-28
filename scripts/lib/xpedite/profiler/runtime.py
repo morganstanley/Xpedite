@@ -145,7 +145,7 @@ class AbstractRuntime(object):
         events.update({counter:0})
     return events.keys()
 
-  def initTopdown(self, pmc):
+  def resolveTopdownMetrics(self, pmc):
     """
     Resolves pmu events for given topdown metrics.
 
@@ -154,8 +154,10 @@ class AbstractRuntime(object):
     :param pmc: PMU events to be enabled for the current profile session
 
     """
+    import copy
     from xpedite.pmu.event import TopdownMetrics
     from xpedite.pmu.event import Event, TopdownNode, Metric
+    pmc = copy.copy(pmc)
     topdownNodes = [i for i, counter in enumerate(pmc) if isinstance(counter, (TopdownNode, Metric))]
     if topdownNodes:
       topdown = self.topdownCache.get(self.cpuInfo.cpuId)
@@ -166,6 +168,7 @@ class AbstractRuntime(object):
         pmc[index] = [Event(
           event.name.title().replace('_', '').replace(' ', ''), event.name
         ) for event in topdownNode.events]
+    return pmc
 
 class Runtime(AbstractRuntime):
   """Xpedite suite runtime to orchestrate profile session"""
@@ -208,7 +211,7 @@ class Runtime(AbstractRuntime):
       eventsDb = self.eventsDbCache.get(self.cpuInfo.cpuId) if pmc else None
       if pmc:
         LOGGER.debug('detected %s', eventsDb.uarchSpec)
-        self.initTopdown(pmc)
+        pmc = self.resolveTopdownMetrics(pmc)
         pmc = self.aggregatePmc(pmc)
       if not self.app.dryRun:
         if pmc:

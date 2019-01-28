@@ -9,10 +9,10 @@
 
 TEST_DIR=`dirname $0`
 PYTEST_DIR=${TEST_DIR}/pytest
-SAMPLES_LOADER=`readlink ${TESTDIR}/../install/bin/xpediteSamplesLoader`
 
-declare -a APPS=("allocatorApp" "dataTxnApp" "multiThreadedApp" "slowFixDecoderApp")
-declare -a SCENARIOS=("Regular" "Benchmark")
+source ${TEST_DIR}/.testrc
+
+SAMPLES_LOADER=`fullPath ${TEST_DIR}/../install/bin/xpediteSamplesLoader`
 
 function usage() {
 cat << EOM
@@ -45,8 +45,8 @@ function unzipFiles() {
 }
 
 function zipFiles() {
-  FILE_PATH=`readlink -f ${PYTEST_DIR}`
-  TEST_DIR_PATH=`readlink -f ${TEST_DIR}`
+  FILE_PATH=`fullPath ${PYTEST_DIR}`
+  TEST_DIR_PATH=`fullPath ${TEST_DIR}`
   
   cd $1
   find . -name "*.pyc" -type f -delete
@@ -55,22 +55,22 @@ function zipFiles() {
     for s in "${SCENARIOS[@]}"; do
       MANIFEST_PATH=${TEST_DIR_PATH}/pytest/test_xpedite/data/${a}${s}Manifest.csv
       rm ${MANIFEST_PATH}
-    
+
       echo "file name, size, lines" >> ${MANIFEST_PATH}
       for FILE in `find ${a}${s} -type f | sort`; do
         FULL_PATH=$1/${FILE}
         echo -n "${FILE}," >> ${MANIFEST_PATH}
         echo -n "`wc -c < ${FULL_PATH}`," >> ${MANIFEST_PATH}
-      
-        if [[ ${FILE: -4} == "*.data" ]]; then
-          echo "`${SAMPLES_LOADER} ${FILES} | wc -l`" >> ${MANIFEST_PATH}
+        if [[ ${FULL_PATH: -5} == ".data" ]]; then
+          echo "`${SAMPLES_LOADER} ${FULL_PATH} | wc -l`" >> ${MANIFEST_PATH}
         else
           echo "`wc -l < ${FULL_PATH}`" >> ${MANIFEST_PATH}
         fi
       done
-      tar -czf ${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz ${a}${s} --files-from=${a}${s}/parameters --files-from=${a}${s}/expectedResults
+      ARCHIVE_FILE=${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz
+      tar -czf ${ARCHIVE_FILE} ${a}${s} --files-from=${a}${s}/parameters --files-from=${a}${s}/expectedResults
       if [ "${s}" == "Benchmark" ]; then
-        tar -czf ${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz ${a}${s} --files-from=${a}${s}/benchmark
+        tar -czf ${ARCHIVE_FILE} ${a}${s} --files-from=${a}${s}/benchmark
       fi
     done
   done
