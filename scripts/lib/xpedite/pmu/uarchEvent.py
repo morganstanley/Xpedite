@@ -87,6 +87,9 @@ class GenericCoreEvent(object):
     counterMaskRepr = ' [CMask-{}]'.format(self.counterMask) if self.counterMask else ''
     return '{:60s} [0x{:08X}]      - {}{}'.format(self.name, self.rawValue(), self.briefDescription, counterMaskRepr)
 
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
 class FixedCoreEvent(GenericCoreEvent):
   """Fixed PMU Core Event"""
 

@@ -82,3 +82,4 @@ for a in "${APPS[@]}"; do
     validate ${a}${s}
   done
 done
+validate ${PMU_DATA}

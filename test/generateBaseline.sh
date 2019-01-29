@@ -47,6 +47,7 @@ rm -rf ${RUN_DIR}/*
 ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -e -x
 
 python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py --rundir ${RUN_DIR}
+python ${PYTEST_DIR}/test_xpedite/test_pmu/generateBaseline.py --rundir ${RUN_DIR}
 
 ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -z
 

@@ -7,11 +7,13 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 import os
 import pytest
+from test_xpedite.test_pmu               import CPU_IDS
 from test_xpedite.test_profiler.scenario import ScenarioType
 
-PARAMETER_NAME = 'scenarioName'
 APPS_ARG = 'apps'
 SCENARIOS_ARG = 'scenarioTypes'
+PARAMETER_SCENARIO = 'scenarioName'
+PARAMETER_CPU_ID = 'cpuId'
 
 def pytest_addoption(parser):
   """
@@ -31,12 +33,14 @@ def pytest_generate_tests(metafunc):
   """
   Parametrize pytests by scenario name
   """
-  if PARAMETER_NAME in metafunc.fixturenames:
+  if PARAMETER_SCENARIO in metafunc.fixturenames:
     scenarioNames = []
     for app in metafunc.config.getoption(APPS_ARG).split(','):
       for scenario in metafunc.config.getoption(SCENARIOS_ARG).split(','):
         scenarioNames.append('{}{}'.format(app, scenario))
-    metafunc.parametrize(PARAMETER_NAME, scenarioNames)
+    metafunc.parametrize(PARAMETER_SCENARIO, scenarioNames)
+  if PARAMETER_CPU_ID in metafunc.fixturenames:
+    metafunc.parametrize(PARAMETER_CPU_ID, CPU_IDS)
 
 @pytest.fixture(scope='module')
 def hostname(request):
