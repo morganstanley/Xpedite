@@ -1,0 +1,61 @@
+///////////////////////////////////////////////////////////////////////////////////////////////
+//
+// ProfileInfo - a type used to configure parameters of a profiling session.
+//
+// The profile info contains the following
+//   1. Set of probes to be enabled for a profiling session
+//   2. A list of pmc counters to be programmed
+//   3. Max capacity of files used for storing sample data
+//
+// Author: Manikandan Dhamodharan, Morgan Stanley
+//
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+#include <xpedite/probes/ProbeKey.H>
+#include <xpedite/pmu/EventSet.h>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+namespace xpedite { namespace framework {
+
+  class ProfileInfo
+  {
+    using ProbeKey = probes::ProbeKey;
+    std::vector<ProbeKey> _probes;
+    PMUCtlRequest _pmuRequest;
+    int _samplesDataCapacity;
+
+    public:
+
+    ProfileInfo(std::vector<std::string> probes_, const PMUCtlRequest& pmuRequest_, int samplesDataCapacity_ = -1)
+      : _probes {}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_} {
+      _probes.reserve(probes_.size());
+      std::for_each(probes_.begin(), probes_.end(), [this](std::string& name_) {
+        _probes.emplace_back(ProbeKey {std::move(name_)});
+      });
+    }
+
+    ProfileInfo(std::vector<ProbeKey> probes_, const PMUCtlRequest& pmuRequest_, int samplesDataCapacity_ = -1)
+      : _probes {std::move(probes_)}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_} {
+    }
+
+    const std::vector<ProbeKey>& probes() const {
+      return _probes;
+    }
+
+    void addProbe(std::string name_) {
+      _probes.emplace_back(ProbeKey {std::move(name_)});
+    }
+
+    const PMUCtlRequest& pmuRequest() const {
+      return _pmuRequest;
+    }
+
+    int samplesDataCapacity() const {
+      return _samplesDataCapacity;
+    }
+  };
+
+}}

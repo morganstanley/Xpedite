@@ -20,6 +20,7 @@ from xpedite.pmu              import pmuctrl
 from xpedite.pmu.pmuctrl      import PMUCtrl
 from xpedite.transport        import DatagramClient
 from xpedite.profiler.appInfo import AppInfo
+from xpedite.types            import InvariantViloation
 
 LOGGER = logging.getLogger(__name__)
 
@@ -230,7 +231,7 @@ class Environment(object):
       if eventSet and request:
         LOGGER.warn('xpedite device driver not loaded - falling back to perf events api')
         LOGGER.debug('sending request (%d bytes) to xpedite [%s]', len(request), request)
-        rc = self.admin('probes pmu --request {}'.format(request))
+        rc = self.admin('ActivatePerfEvents --data {}'.format(request))
         if rc:
           raise Exception(rc)
         return eventSet
@@ -262,16 +263,24 @@ class Environment(object):
 
     """
     self.client.send(cmd)
-    return self.client.readFrame(timeout)
+    pdu = self.client.readFrame(timeout)
+    if len(pdu) < 5 or pdu[4] != '|':
+      raise InvariantViloation('Invalid response - pdu not in expected format \n{}\n'.format(pdu))
+    status = pdu[3]
+    if not str.isdigit(status):
+      raise InvariantViloation('Invalid response - status code not in expected format \n{}\n'.format(pdu))
+    result = pdu[5:] if len(pdu) > 5 else ''
+    if int(status):
+      raise Exception('Failed to execute request - {}'.format(result))
+    return result
 
   def estimateTscHz(self, timeout=10):
     """Sends request to estimate frequency of cpu time stamp counter"""
-    return self.admin('tscHz', timeout)
+    return self.admin('TscHz', timeout)
 
   def __enter__(self):
     """Instantiates a tcp client and connects to the target application"""
     if self.client:
-      from xpedite.types import InvariantViloation
       raise InvariantViloation('environment already in use')
 
     self.loadAppInfo()

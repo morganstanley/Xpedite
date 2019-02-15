@@ -32,6 +32,12 @@ struct Buffer {
     ::free(_buffer);
   }
 
+  void reset() {
+    _in = {};
+    _out = {};
+    ::bzero(_buffer, _capacity);
+  }
+
   uint32_t capacity() const {
     return _capacity;
   }

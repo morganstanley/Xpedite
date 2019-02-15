@@ -18,77 +18,53 @@
 #include <xpedite/pmu/Formatter.h>
 #include <xpedite/log/Log.H>
 #include <xpedite/pmu/PMUCtl.H>
+#include <xpedite/probes/ProbeKey.H>
 #include <set>
 #include <string>
 
 namespace xpedite { namespace framework {
 
-  class ProbeKey
-  {
-    std::string _name;
-    std::string _file;
-    uint32_t _line;
-
-    friend bool operator<(const ProbeKey& lhs_, const ProbeKey& rhs_) noexcept;
-
-    public:
-
-    template<typename F, typename N>
-    ProbeKey(N&& name_, F&& file_, uint32_t line_)
-      : _name {std::forward<N>(name_)}, _file {std::forward<F>(file_)}, _line {line_} {
-    }
-
-    const std::string name()  const noexcept { return _name; }
-    const std::string& file() const noexcept { return _file; }
-    uint32_t line()           const noexcept { return _line; }
-  };
-
-  inline bool operator<(const ProbeKey& lhs_, const ProbeKey& rhs_) noexcept {
-    if(lhs_._file == rhs_._file) {
-      return lhs_._line == rhs_._line ? lhs_._name < rhs_._name : lhs_._line < rhs_._line;
-    }
-    return lhs_._file < rhs_._file;
-  }
-
   class Profile
   {
-    std::set<ProbeKey> _activeProbes;
+    std::set<probes::ProbeKey> _activeProbes;
 
     public:
 
-    void enableProbe(const std::string& name_, const std::string& file_, uint32_t line_) {
-      XpediteLogInfo << "xpedite enabling probe | name - " << name_
-        << " | file - " << file_ << " | line = " << line_ << " |" << XpediteLogEnd;
-      probes::probeCtl(probes::Command::ENABLE, file_.c_str(), line_, name_ != "" ? name_.c_str() : nullptr);
-      _activeProbes.emplace(name_, file_, line_);
+    void activateProbe(const probes::ProbeKey& key_) {
+      XpediteLogInfo << "xpedite enabling probe | name - " << key_.name()
+        << " | file - " << key_.file() << " | line = " << key_.line() << " |" << XpediteLogEnd;
+      const auto* probeName = key_.name().empty() ? nullptr : key_.name().c_str();
+      probes::probeCtl(probes::Command::ENABLE, key_.file().c_str(), key_.line(), probeName);
+      _activeProbes.emplace(key_);
     }
 
-    void disableProbe(const std::string& name_, const std::string& file_, uint32_t line_) {
-      _activeProbes.erase({name_, file_, line_});
-      XpediteLogInfo << "xpedite disabling probe | name - " << name_ 
-        << " | file - " << file_ << " | line = " << line_ << " |" << XpediteLogEnd;
-      probes::probeCtl(probes::Command::DISABLE, file_.c_str(), line_, name_ != "" ? name_.c_str() : nullptr);
+    void deactivateProbe(const probes::ProbeKey& key_) {
+      _activeProbes.erase(key_);
+      XpediteLogInfo << "xpedite disabling probe | name - " << key_.name() 
+        << " | file - " << key_.file() << " | line = " << key_.line() << " |" << XpediteLogEnd;
+      const auto* probeName = key_.name().empty() ? nullptr : key_.name().c_str();
+      probes::probeCtl(probes::Command::DISABLE, key_.file().c_str(), key_.line(), probeName);
     }
 
-    void enableGpPMC(int pmcCount_) {
-      XpediteLogInfo << "xpedite enabling collection for " << pmcCount_ << " general purpose PMU counters" << XpediteLogEnd;
-      pmu::pmuCtl().enableGenericPmc(pmcCount_);
+    void enableGpPMU(int count_) {
+      XpediteLogInfo << "xpedite enabling collection for " << count_ << " general purpose PMU counters" << XpediteLogEnd;
+      pmu::pmuCtl().enableGenericPmc(count_);
     }
 
-    void disableGpPMC() {
+    void disableGpPMU() {
       if(pmu::pmuCtl().genericPmcCount()) {
         XpediteLogInfo << "xpedite disabling collection for general purpose PMU counters" << XpediteLogEnd;
         pmu::pmuCtl().disableGenericPmc();
       }
     }
 
-    void enableFixedPMC(uint8_t index_) {
+    void enableFixedPMU(uint8_t index_) {
       pmu::pmuCtl().enableFixedPmc(index_);
       XpediteLogInfo << "xpedite enabled fixed PMU counter (" << static_cast<int>(index_) << ") -> " 
         << pmu::pmuCtl().fixedPmcSet().toString() << XpediteLogEnd;
     }
 
-    void disableFixedPMC() {
+    void disableFixedPMU() {
       if(pmu::pmuCtl().fixedPmcCount()) {
         XpediteLogInfo << "xpedite disabling collection of " << static_cast<int>(pmu::pmuCtl().fixedPmcCount())
           << " fixed architectural PMU counters" << XpediteLogEnd;
@@ -112,6 +88,16 @@ namespace xpedite { namespace framework {
       return pmu::pmuCtl().disablePerfEvents();
     }
 
+    void disablePMU() {
+      if(pmu::pmuCtl().perfEventsEnabled()) {
+        disablePerfEvents();
+      }
+      else {
+        disableGpPMU();
+        disableFixedPMU();
+      }
+    }
+
     void start() noexcept {
     }
 
@@ -122,14 +108,7 @@ namespace xpedite { namespace framework {
           << " | file - " << probe.file() << " | line = " << probe.line() << " |" << XpediteLogEnd;
         probes::probeCtl(probes::Command::DISABLE, probe.file().c_str(), probe.line(), probe.name() != "" ? probe.name().c_str() : nullptr);
       }
-
-      if(pmu::pmuCtl().perfEventsEnabled()) {
-        disablePerfEvents();
-      }
-      else {
-        disableGpPMC();
-        disableFixedPMC();
-      }
+      disablePMU();
     }
   };
 

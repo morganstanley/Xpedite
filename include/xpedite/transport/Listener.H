@@ -25,7 +25,7 @@ namespace xpedite { namespace transport { namespace tcp {
   {
     public:
 
-      Listener(std::string name_, bool blocking_, in_port_t port_ = {}, std::string address_ = {});
+      Listener(std::string name_, bool blocking_, std::string address_ = {}, in_port_t port_ = {});
       Listener(const Listener&) = delete;             // cannot be copied
       Listener& operator=(const Listener&) = delete;  // cannot be copied
       Listener& operator=(Listener&&) = delete;       // prevent active sockets from being mutated

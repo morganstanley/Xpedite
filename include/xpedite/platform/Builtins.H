@@ -33,7 +33,14 @@
 #endif
 
 namespace xpedite { namespace common {
+
   inline __attribute__((always_inline)) void compilerBarrier() noexcept {
     asm volatile("": : :"memory");
   }
+
+  inline __attribute__((always_inline)) void cpuRelax() noexcept
+  {
+    asm volatile("rep; nop" ::: "memory");
+  }
+
 }}

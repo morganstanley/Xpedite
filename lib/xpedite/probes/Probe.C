@@ -110,7 +110,7 @@ namespace xpedite { namespace probes {
       return true;
     }
 
-    if(file_ && strstr(_file, file_) && (!line_ || _line == line_)) {
+    if(file_ && strlen(file_) && strstr(_file, file_) && (!line_ || _line == line_)) {
       return true;
     }
     return {};

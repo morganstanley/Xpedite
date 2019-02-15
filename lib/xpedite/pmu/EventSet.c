@@ -46,6 +46,10 @@ static const PMUFixedEvent* findFixedEvtForCtr(unsigned char ctrIndex_, const PM
   return NULL;
 }
 
+int eventCount(const PMUCtlRequest* request_) {
+  return request_->_fixedEvtCount + request_->_gpEvtCount;
+}
+
 unsigned char maskEnabledInUserSpace(unsigned char mask_) {
   return mask_ & 2;
 }

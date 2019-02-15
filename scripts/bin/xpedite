@@ -68,10 +68,11 @@ class AppController(ArgparseController):
       (['-D', '--driver'], dict(action='store', help='driver for report generation')),
       (['-d', '--duration'], dict(action='store', help='capture samples for duration (in seconds)')),
       (['-v', '--verbose'], dict(action='store_true', help='verbose mode, with tsc values in perf report')),
-      (['-s', '--selfProfile'], dict(action='store', required=False, help='self profile xpedite - path to store the profile data')),
+      (['-S', '--selfProfile'], dict(action='store', required=False, help='self profile xpedite - path to store the profile data')),
       (['-n', '--name'], dict(action='store', required=False, help='Name for the generated xpedite report. By default App Name with time stamp is used')),
       (['-l', '--lean'], dict(action='store_true', help='create a lean report. This option will bypass attaching xpedite notebook to custom drivers')),
       (['-H', '--heartbeat'], dict(action='store', type=int, help='configures heartbeat interval (in seconds) for profiler')),
+      (['-s', '--samplesFileSize'], dict(action='store', type=int, help='max size of data files used to store samples')),
     ],
     help='Attach to a live process and begin profiling'
   )
@@ -84,6 +85,7 @@ class AppController(ArgparseController):
       benchmarkPath=self.app.pargs.createBenchmark,
       duration=self.app.pargs.duration,
       heartbeatInterval=self.app.pargs.heartbeat,
+      samplesFileSize=self.app.pargs.samplesFileSize,
       cprofile=cprofile,
       profileName=self.app.pargs.name,
       verbose=self.app.pargs.verbose

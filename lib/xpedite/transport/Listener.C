@@ -18,7 +18,7 @@
 
 namespace xpedite { namespace transport { namespace tcp {
 
-  Listener::Listener(std::string name_, bool blocking_, in_port_t port_, std::string address_)
+  Listener::Listener(std::string name_, bool blocking_, std::string address_, in_port_t port_)
     : _name {std::move(name_)}, _fd {platform::invalidFileDescriptor}, _addrStr {std::move(address_)},
       _addr {AF_INET, htons(port_), {INADDR_ANY}, {}}, _errno {}, _blocking {blocking_} {
     if(_addrStr.size()) {

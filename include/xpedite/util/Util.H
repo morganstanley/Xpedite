@@ -2,10 +2,9 @@
 //
 // A collection of utility methods to
 //
-//  1. capture and build stack trace of the calling thread
-//  2. Pin threads to a cpu
-//  3. Methods to build file system paths for different data files
-//  4. Method to convert hex ascii byte pairs to 8 bit numbers
+//  1. Pin threads to a cpu
+//  2. Capture and build stack trace of the calling thread
+//  3. Functionality to convert hex ascii byte pairs to 8 bit numbers
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
@@ -24,6 +23,8 @@
 #include <sys/prctl.h>
 #include <cstdio>
 #include <iostream>
+#include <thread>
+#include <vector>
 #include <fcntl.h>
 #include <pthread.h>
 #include <execinfo.h>
@@ -31,6 +32,10 @@
 #include <tuple>
 
 namespace xpedite { namespace util {
+
+  std::vector<std::string> listFiles(const char* path_);
+
+  void pinThread(std::thread::native_handle_type handle_, unsigned core_);
 
   inline pid_t gettid() {
     return syscall(__NR_gettid);
@@ -82,16 +87,6 @@ namespace xpedite { namespace util {
       return "unknown";
     }  
     return buf;
-  }
-
-  inline std::string buildSamplesFilePath(const char* prefix_, bool suffixPid_, bool suffixTid_) {
-    auto processName = getProcessName();
-    std::ostringstream stream;
-    stream << "/dev/shm/" << prefix_ << "-" << processName;
-    if(suffixPid_) stream << "-" << getpid();
-    if(suffixTid_) stream << "-" << gettid();
-    stream << ".data";
-    return stream.str();
   }
 
   inline int openSamplesFile(const std::string& fname_) {

@@ -52,7 +52,7 @@ class Profiler(object):
 
   @staticmethod
   def profile(app, profileInfo, reportName, reportPath, dryRun, # pylint: disable=too-many-locals
-    heartbeatInterval=120, interactive=True, duration=None, cprofile=None):
+    heartbeatInterval=120, samplesFileSize=None, interactive=True, duration=None, cprofile=None):
     """
     Orchestrates a Xpedite profile session
 
@@ -75,6 +75,8 @@ class Profiler(object):
     :type dryRun: bool
     :param heartbeatInterval: Heartbeat interval for profiler's tcp connection
     :type heartbeatInterval: int
+    :param samplesFileSize: Max size of data files used to store samples
+    :type samplesFileSize: int
     :param interactive: Flag to enable, an interactive profiling session (Default value = True)
     :type interactive: bool
     :param duration: Profile duration - The session is automatically terminated after elapse
@@ -90,7 +92,8 @@ class Profiler(object):
     from xpedite.txn.classifier import DefaultClassifier
 
     runtime = Runtime(
-      app=app, probes=profileInfo.probes, pmc=profileInfo.pmc, cpuSet=profileInfo.cpuSet, pollInterval=1,
+      app=app, probes=profileInfo.probes, pmc=profileInfo.pmc, cpuSet=profileInfo.cpuSet,
+      pollInterval=1, samplesFileSize=samplesFileSize,
     )
     if not dryRun:
       begin = time.time()
@@ -129,7 +132,7 @@ class Profiler(object):
 
   @staticmethod
   def record(profileInfoPath, benchmarkPath=None, duration=None, heartbeatInterval=None,
-      cprofile=None, profileName=None, verbose=None):
+      samplesFileSize=None, cprofile=None, profileName=None, verbose=None):
     """
     Records an xpedite profile using the supplied parameters
 
@@ -142,6 +145,8 @@ class Profiler(object):
     :type duration: int
     :param heartbeatInterval: Heartbeat interval for profiler's tcp connection
     :type heartbeatInterval: int
+    :param samplesFileSize: Max size of data files used to store samples
+    :type samplesFileSize: int
     :param cprofile: Handle to capture self profile Xpedite report generation code (Default value = None)
     :type cprofile: C{xpedite.selfProfile.CProfile}
     :param profileName: Name of the profile report
@@ -158,7 +163,7 @@ class Profiler(object):
       reportName = buildReportName(profileInfo.appName, profileName)
       report = Profiler.profile(
         app, profileInfo, reportName, benchmarkPath, False, heartbeatInterval=heartbeatInterval,
-        duration=duration, cprofile=cprofile
+        samplesFileSize=samplesFileSize, duration=duration, cprofile=cprofile
       )
     return profileInfo, report
 

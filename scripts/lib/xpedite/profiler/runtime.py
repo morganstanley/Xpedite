@@ -173,7 +173,7 @@ class AbstractRuntime(object):
 class Runtime(AbstractRuntime):
   """Xpedite suite runtime to orchestrate profile session"""
 
-  def __init__(self, app, probes, pmc=None, cpuSet=None, pollInterval=4, benchmarkProbes=None):
+  def __init__(self, app, probes, pmc=None, cpuSet=None, pollInterval=4, samplesFileSize=None, benchmarkProbes=None):
     """
     Creates a new profiler runtime
 
@@ -193,6 +193,8 @@ class Runtime(AbstractRuntime):
     :type cpuSet: int
     :param pollInterval: Sample collection period in milli seconds
     :type pollInterval: int
+    :param samplesFileSize: Max size of data files used to store samples
+    :type samplesFileSize: int
     :param benchmarkProbes: optional map to override probes used for benchmarks,
                             defaults to active probes of the current profile session
     """
@@ -218,7 +220,7 @@ class Runtime(AbstractRuntime):
           self.eventSet = self.app.enablePMU(eventsDb, cpuSet, pmc)
         anchoredProbes = self.resolveProbes(probes)
         self.enableProbes(anchoredProbes)
-        self.app.beginProfile(pollInterval)
+        self.app.beginProfile(pollInterval, samplesFileSize)
       else:
         if pmc:
           self.eventSet = self.resolveEvents(eventsDb, cpuSet, pmc)

@@ -66,7 +66,7 @@ namespace xpedite { namespace perf {
       return _tid;
     }
 
-    operator bool() const noexcept {
+    explicit operator bool() const noexcept {
       return (_fd != INVALID_FD) && (_handle != INVALID_ADDR);
     }
 

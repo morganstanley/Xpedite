@@ -29,7 +29,7 @@ class ProbeAdmin(object):
     :type app: xpedite.profiler.app.XpediteApp
 
     """
-    cmd = 'probes show'
+    cmd = 'ListProbes'
     result = app.admin(cmd, timeout=10)
     if result:
       result = result.strip()
@@ -51,8 +51,8 @@ class ProbeAdmin(object):
 
     """
     probeFilePath = os.path.basename(anchoredProbe.filePath)
-    cmd = 'probes {} --file {} --line {}'.format(ProbeAdmin.targetStateStr(targetState),
-        probeFilePath, anchoredProbe.lineNo)
+    cmd = 'ActivateProbe' if targetState else 'DeactivateProbe'
+    cmd += ' --file {} --line {}'.format(probeFilePath, anchoredProbe.lineNo)
     return app.admin(cmd, timeout=10)
 
   @staticmethod
@@ -108,7 +108,7 @@ class ProbeAdmin(object):
     fixedPmcOption = ''
     if eventSet.fixedRequestCount():
       fixedPmcOption = '--fixedCtrList {}'.format(','.join([str(event.ctrIndex) for event in eventSet.fixedRequests]))
-    cmd = 'probes pmu  {} {}'.format(gpPmcOption, fixedPmcOption)
+    cmd = 'ActivatePmu {} {}'.format(gpPmcOption, fixedPmcOption)
     return app.admin(cmd, timeout=10)
 
   @staticmethod
