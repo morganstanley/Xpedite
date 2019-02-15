@@ -24,6 +24,8 @@ namespace xpedite { namespace transport { namespace tcp {
   {
     static constexpr size_t headerLen = 8;
 
+    static constexpr size_t bufferCapacity = 8 * 1024;
+
     enum class CursorLocation
     {
       PDU_META, PDU_BODY, DISCONNECTED
@@ -36,11 +38,27 @@ namespace xpedite { namespace transport { namespace tcp {
 
     public:
 
-    Framer(Socket* socket_) noexcept
-      : _socket {socket_}, _buffer {8 * 1024}, _cursorLocation {CursorLocation::PDU_META}, _frameLength {headerLen} {
+    Framer()
+      : _socket {}, _buffer {bufferCapacity}, _cursorLocation {CursorLocation::DISCONNECTED}, _frameLength {} {
+    }
+
+    explicit Framer(Socket* socket_) noexcept
+      : _socket {socket_}, _buffer {bufferCapacity}, _cursorLocation {CursorLocation::PDU_META}, _frameLength {headerLen} {
     }
 
     Frame readFrame();
+
+    void reset(Socket* socket_ = nullptr) {
+      _socket = socket_;
+      if(_socket) {
+        _buffer.reset();
+        _cursorLocation = CursorLocation::PDU_META;
+        _frameLength = headerLen;
+      } else {
+        _cursorLocation = CursorLocation::DISCONNECTED;
+        _frameLength = 0;
+      }
+    }
 
     private:
 

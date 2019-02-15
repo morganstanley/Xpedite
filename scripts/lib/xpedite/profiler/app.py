@@ -70,7 +70,7 @@ class XpediteApp(object):
       return self.sampleFilePath
     return '/dev/shm/xpedite-*-{}-[0-9]*.data'.format(self.env.pid)
 
-  def beginProfile(self, pollInterval, timeout=10):
+  def beginProfile(self, pollInterval, samplesFileSize, timeout=10):
     """
     Sends command to begin sample collection in the target application
 
@@ -80,7 +80,9 @@ class XpediteApp(object):
     """
     self.runId = int(time.time())
     self.sampleFilePath = '/dev/shm/xpedite-{}-{}-*.data'.format(self.name, self.runId)
-    rc = self.env.admin('beginProfile {} {}'.format(self.sampleFilePath, pollInterval), timeout)
+    rc = self.env.admin(
+      'BeginProfile --samplesFilePattern {} --pollInterval {} --samplesDataCapacity {}'.format(
+      self.sampleFilePath, pollInterval, samplesFileSize if samplesFileSize else -1), timeout)
     if rc:
       errmsg = 'failed to begin profiling - {}'.format(rc)
       raise Exception(errmsg)
@@ -93,7 +95,7 @@ class XpediteApp(object):
     :param timeout: Maximum time to await a response from app (Default value = 10 seconds)
 
     """
-    return len(self.env.admin('endProfile', timeout)) == 0
+    return len(self.env.admin('EndProfile', timeout)) == 0
 
   def ping(self, keepAlive=False, timeout=10):
     """
@@ -105,7 +107,7 @@ class XpediteApp(object):
     """
     if keepAlive:
       self.keepAlive()
-    return self.env.admin('ping', timeout) == 'hello'
+    return self.env.admin('Ping', timeout) == 'hello'
 
   def start(self):
     """
@@ -194,7 +196,7 @@ class XpediteDormantApp(XpediteApp):
     self.dataSource = dataSource
     self.runId = runId
 
-  def beginProfile(self, pollInterval, timeout=10):
+  def beginProfile(self, pollInterval, samplesFileSize, timeout=10):
     """
     Override for simulation of begin profile
 

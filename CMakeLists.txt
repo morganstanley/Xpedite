@@ -94,6 +94,10 @@ set_property(TARGET allocatorApp APPEND_STRING PROPERTY LINK_FLAGS " ${ALLOCATOR
 target_link_libraries(allocatorApp xpedite)
 install(TARGETS allocatorApp DESTINATION "test")
 
+add_executable(embeddedApp test/targets/EmbeddedApp.C)
+target_link_libraries(embeddedApp xpedite)
+install(TARGETS embeddedApp DESTINATION "test")
+
 add_executable(multiThreadedApp test/targets/MultiThreadedApp.C)
 target_link_libraries(multiThreadedApp xpedite)
 install(TARGETS multiThreadedApp DESTINATION "test")

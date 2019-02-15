@@ -15,38 +15,47 @@
 #include "Handler.H"
 #include <xpedite/util/Tsc.H>
 #include <xpedite/pmu/PMUCtl.H>
+#include <xpedite/probes/ProbeList.H>
 #include <xpedite/log/Log.H>
-#include <cstring>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
-#include <thread>
 #include <string>
 
 namespace xpedite { namespace framework {
 
-  std::string ping(Profile&, const std::vector<const char*>&) {
+  std::string Handler::ping() const noexcept {
     return "hello";
   }
 
-  std::string tscHz(Profile&, const std::vector<const char*>&) {
-    auto tscHz = util::estimateTscHz();
-    return std::to_string(tscHz);
+  uint64_t Handler::tscHz() const noexcept {
+    return util::estimateTscHz();
   }
 
-  std::string Handler::beginProfile(Profile& profile_, const std::vector<const char*>& args_) {
-    if(args_.size() < 2) {
-      std::ostringstream stream;
-      stream << "xpedite - failed to begin profile - command \"BeginProfile\" missing arguments expected 2, got only " << args_.size();
-      auto errMsg = stream.str();
+  std::string Handler::beginProfile(std::string samplesFilePattern_, MilliSeconds pollInterval_, int samplesDataCapacity_) {
+    if(isProfileActive()) {
+      auto errMsg = "xpedite failed to begin profile - session already active";
       XpediteLogError << errMsg << XpediteLogEnd;
       return errMsg;
     }
 
-    _pollInterval = std::chrono::duration<unsigned, std::milli> {std::stoi(args_[1])};
-    XpediteLogInfo << "xpedite - starting collecter sample file - " << args_[0]
-       << " | poll interval - every " << _pollInterval.count() << " milli seconds." << XpediteLogEnd;
-    _collector.reset(new Collector {args_[0]});
+    if(samplesFilePattern_.empty()) {
+      auto errMsg = "xpedite failed to begin profile - samples file pattern not specified";
+      XpediteLogError << errMsg << XpediteLogEnd;
+      return errMsg;
+    }
+
+    if(!_pollInterval.count()) {
+      auto errMsg = "xpedite failed to begin profile - poll interval must be a valid number of milli seconds";
+      XpediteLogError << errMsg << XpediteLogEnd;
+      return errMsg;
+    }
+
+    _pollInterval = pollInterval_;
+    XpediteLogInfo << "xpedite starting collecter - sample file - " << samplesFilePattern_
+       << " | poll interval - every " << _pollInterval.count() << " milli seconds | samplesDataCapacity - "
+       << samplesDataCapacity_ << " bytes" << XpediteLogEnd;
+    _collector.reset(new Collector {std::move(samplesFilePattern_), samplesDataCapacity_});
 
     if(!_collector->beginSamplesCollection()) {
       std::ostringstream stream;
@@ -56,32 +65,58 @@ namespace xpedite { namespace framework {
       _collector.reset();
       return errMsg;
     }
-    profile_.start();
+    _profile.start();
     return {};
   }
 
-  std::string Handler::endProfile(Profile& profile_, const std::vector<const char*>&) {
+  std::string Handler::endProfile() {
+    _profile.stop();
     if(!_collector) {
       return "profiling not active - can't end something that's not started";
     }
-
     _collector->endSamplesCollection();
     _collector.reset();
-    profile_.stop();
     return {};
   }
 
+  std::string Handler::listProbes() {
+    std::ostringstream stream;
+    log::logProbes(stream, probes::probeList());
+    return stream.str();
+  }
+
+  void Handler::activateProbe(const probes::ProbeKey& key_) {
+    _profile.activateProbe(key_);
+  }
+
+  void Handler::deactivateProbe(const probes::ProbeKey& key_) {
+    _profile.deactivateProbe(key_);
+  }
+
+  void Handler::enableGpPMU(int count_) {
+    _profile.enableGpPMU(count_);
+  }
+
+  void Handler::enableFixedPMU(uint8_t index_) {
+    _profile.enableFixedPMU(index_);
+  }
+
+  bool Handler::enablePerfEvents(const PMUCtlRequest& request_) {
+    return _profile.enablePerfEvents(request_);
+  }
+
+  void Handler::disablePMU() {
+    _profile.disablePMU();
+  }
+
   Handler::Handler()
-    : _cmdMap {
-        {"ping", ping}
-       ,{"tscHz", tscHz}
-       ,{"beginProfile", [this](Profile& profile_, const std::vector<const char*>& args_){return beginProfile(profile_, args_);}}
-       ,{"endProfile", [this](Profile& profile_, const std::vector<const char*>& args_){return endProfile(profile_, args_);}}
-      }
-    , _pollInterval {10} /*10 milli second*/ {
+    : _pollInterval {10} /*10 milli second*/ {
   }
 
   void Handler::shutdown() {
+    if(isProfileActive()) {
+      endProfile();
+    }
     _collector.reset();
   }
 
@@ -90,33 +125,6 @@ namespace xpedite { namespace framework {
       _collector->poll();
     }
     pmu::pmuCtl().poll();
-    std::this_thread::sleep_for(_pollInterval);
-  }
-
-  bool Handler::registerCommand(std::string cmdName_, CmdProcessor processor_) {
-    return _cmdMap.emplace(cmdName_, processor_).second;
-  }
-
-  std::string Handler::handle(const char* data_, size_t len_) {
-    std::string argStr {data_, len_};
-    XpediteLogInfo << "xpedite - handle command |" << argStr << "|" << XpediteLogEnd;
-    const char* delimiter = " ";
-    char *ptr;
-    char *token = strtok_r(const_cast<char*>(argStr.c_str()), delimiter, &ptr);
-    std::vector<const char*> args;
-    if(token) {
-      std::string cmd {token};
-      auto iter = _cmdMap.find(cmd);
-      if(iter == _cmdMap.end()) {
-        return "unknown Command: " + cmd;
-      }
-
-      while((token = strtok_r(nullptr, delimiter, &ptr))) {
-        args.emplace_back(token);
-      }
-      return (iter->second)(_profile, args);
-    }
-    return {};
   }
 
 }}

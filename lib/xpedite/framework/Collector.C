@@ -36,6 +36,18 @@ namespace xpedite { namespace framework {
     return false;
   }
 
+  void Collector::persistSamples(int fd_, const probes::Sample* begin_, const probes::Sample* end_) {
+    unsigned size = reinterpret_cast<const char*>(end_) - reinterpret_cast<const char*>(begin_);
+    if(_storageMgr.consume(size)) {
+      persistData(fd_, begin_, end_);
+    } else if(!_capacityBreached) {
+      // capacity breached - dropping all samples from now on
+      _capacityBreached = true;
+      XpediteLogInfo << "Dropping this and future samples - max samples data capacity (" << _storageMgr.consumption() << " out of "
+        << _storageMgr.capacity() << ") consumed." << XpediteLogEnd;
+    }
+  }
+
   void checkOverflow(pid_t tid_, const probes::Sample* cursor_, const probes::Sample* end_) {
     auto overflow = reinterpret_cast<const char*>(cursor_) - reinterpret_cast<const char*>(end_);
     if(overflow >= probes::Sample::maxSize()) {
@@ -48,7 +60,7 @@ namespace xpedite { namespace framework {
     }
   }
 
-  std::tuple<int, int, int> collectSamples(SamplesBuffer* buffer_) {
+  std::tuple<int, int, int> Collector::collectSamples(SamplesBuffer* buffer_) {
     int bufferCount {}, sampleCount {}, staleSampleCount {};
 
     while(true) {
@@ -75,7 +87,7 @@ namespace xpedite { namespace framework {
 
       if(begin < cursor) {
         checkOverflow(buffer_->tid(), cursor, end);
-        persistData(buffer_->fd(), begin, cursor);
+        persistSamples(buffer_->fd(), begin, cursor);
         sampleCount += perBufferSampleCount;
         ++bufferCount;
       }
@@ -83,7 +95,7 @@ namespace xpedite { namespace framework {
     return std::make_tuple(bufferCount, sampleCount, staleSampleCount);
   }
 
-  std::tuple<int, int> flush(SamplesBuffer* buffer_) {
+  std::tuple<int, int> Collector::flush(SamplesBuffer* buffer_) {
     uint64_t minTsc {}, maxTsc = RDTSC();
     const probes::Sample *begin, *end;
     std::tie(begin, end) = buffer_->peekWithDataRace();
@@ -116,7 +128,7 @@ namespace xpedite { namespace framework {
     if(begin < cursor) {
       checkOverflow(buffer_->tid(), cursor, end);
       XpediteLogInfo << "xpedite - collector flushed samples - [valid - " << sampleCount << ", stale - " << staleSampleCount << "]" << XpediteLogEnd;
-      persistData(buffer_->fd(), begin, cursor);
+      persistSamples(buffer_->fd(), begin, cursor);
     }
     return std::make_tuple(sampleCount, staleSampleCount);
   }

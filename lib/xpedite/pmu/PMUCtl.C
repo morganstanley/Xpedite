@@ -32,6 +32,9 @@ namespace xpedite { namespace pmu {
   }
 
   void PmuCtl::enableGenericPmc(uint8_t genericPmcCount_) noexcept {
+    if(!genericPmcCount_) {
+      return;
+    }
     if(pmcCount() == 0) {
       probes::recorderCtl().activateRecorder(probes::RecorderType::PMC_RECORDER);
     }

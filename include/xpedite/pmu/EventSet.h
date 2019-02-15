@@ -74,6 +74,8 @@ extern "C" {
 #endif
   int buildEventSet(const PMUCtlRequest* r_, EventSet* eventSet_);
 
+  int eventCount(const PMUCtlRequest* request_);
+
   unsigned char maskEnabledInUserSpace(unsigned char mask_);
 
   unsigned char maskEnabledInKernel(unsigned char mask_);

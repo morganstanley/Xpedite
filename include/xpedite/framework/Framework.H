@@ -18,6 +18,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/framework/ProfileInfo.H>
+#include <algorithm>
+#include <string>
 
 namespace xpedite { namespace framework {
 
@@ -32,5 +35,55 @@ namespace xpedite { namespace framework {
   void pinThread(unsigned core_);
 
   bool halt() noexcept;
+
+  class Framework;
+  class SessionGuard
+  {
+    bool _isAlive;
+    std::string _errors;
+
+    friend class Framework;
+
+    explicit SessionGuard(bool isAlive_) 
+      : _isAlive {isAlive_}, _errors {} {
+    }
+
+    explicit SessionGuard(std::string errors_) 
+      : _isAlive {}, _errors {errors_} {
+    }
+
+    public:
+
+    SessionGuard()
+      : SessionGuard {std::string {"Invalid Session"}} {
+    }
+
+    SessionGuard(const SessionGuard&)            = delete;
+    SessionGuard& operator=(const SessionGuard&) = delete;
+
+    SessionGuard(SessionGuard&& other_)
+      : _isAlive  {other_._isAlive}, _errors {std::move(other_._errors)} {
+      other_._isAlive = {};
+      other_._errors = "Invalid Session";
+    }
+
+    SessionGuard& operator=(SessionGuard&& other_) {
+      std::swap(_isAlive, other_._isAlive);
+      std::swap(_errors, other_._errors);
+      return *this;
+    }
+
+    explicit operator bool() const noexcept {
+      return _isAlive;
+    }
+
+    const std::string& errors() const noexcept {
+      return _errors;
+    }
+
+    ~SessionGuard();
+  };
+
+  SessionGuard profile(const ProfileInfo& profileInfo_);
 
 }}

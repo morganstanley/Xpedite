@@ -3,27 +3,28 @@
 // Xpedite frameork control api
 //
 // Framework initializaion creates a background thread to provide the following functionalities
-//   1. Creates a non-blocking listener socket to accept tcp connections from profiler
-//   2. Awaits for connections from the profiler
+//   1. Creates a session manager to listen for remote tcp sessions
+//   2. Awaits session establishment from local or remote profiler
 //   3. Timeshares between, handling of profiler connection and polling for new samples
-//   4. The polling is terminated on socket disconnect
+//   4. Clean up on session disconnect and process shutdown
 //
 // Author: Manikandan Dhamodharan, Morgan Stanley
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/transport/Listener.H>
+#include <xpedite/framework/Framework.H>
+#include "session/SessionManager.H"
 #include <xpedite/transport/Framer.H>
 #include <xpedite/framework/SamplesBuffer.H>
 #include <xpedite/log/Log.H>
 #include <xpedite/probes/ProbeList.H>
-#include <xpedite/probes/ProbeCtl.H>
 #include <xpedite/util/Tsc.H>
 #include <xpedite/common/PromiseKeeper.H>
-#include "Admin.H"
-#include "Handler.H"
+#include "StorageMgr.H"
+#include "request/RequestParser.H"
+#include "request/ProbeRequest.H"
+#include "request/ProfileRequest.H"
 #include <thread>
-#include <mutex>
 #include <memory>
 #include <stdexcept>
 #include <sstream>
@@ -32,10 +33,7 @@
 #include <fstream>
 #include <chrono>
 #include <unistd.h>
-#include <vector>
 #include <atomic>
-#include <sched.h>
-#include <pthread.h>
 
 namespace xpedite { namespace framework {
 
@@ -43,13 +41,13 @@ namespace xpedite { namespace framework {
 
   static std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept;
 
-  constexpr bool isListenerBlocking = false;
-
   class Framework
   {
     public:
       bool isActive();
-      void run(std::promise<bool>& listenerInitPromise_, bool awaitProfileBegin_);
+      void run(std::promise<bool>& sessionInitPromise_, bool awaitProfileBegin_);
+      SessionGuard beginProfile(const ProfileInfo& profileInfo_);
+      void endProfile();
       bool isRunning() noexcept;
       bool halt() noexcept;
 
@@ -69,18 +67,16 @@ namespace xpedite { namespace framework {
 
       void log();
 
-      xpedite::transport::tcp::Listener _listener;
       const char* _appInfoPath;
       std::ofstream _appInfoStream;
-      Handler _handler;
+      session::SessionManager _sessionManager;
       volatile std::atomic<bool> _canRun;
 
       friend std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept;
   };
 
   Framework::Framework(const char* appInfoPath_, const char* listenerIp_)
-    : _listener {"xpedite", isListenerBlocking, 0, listenerIp_}, _appInfoPath {appInfoPath_},
-      _appInfoStream {}, _handler {}, _canRun {true} {
+    : _appInfoPath {appInfoPath_}, _appInfoStream {}, _sessionManager {listenerIp_, 0}, _canRun {true} {
     try {
       _appInfoStream.open(appInfoPath_, std::ios_base::out);
     }
@@ -94,7 +90,7 @@ namespace xpedite { namespace framework {
   void Framework::log() {
     static auto tscHz = util::estimateTscHz();
     _appInfoStream << "pid: " << getpid() << std::endl;
-    _appInfoStream << "port: " << _listener.port() << std::endl;
+    _appInfoStream << "port: " << _sessionManager.listenerPort() << std::endl;
      _appInfoStream<< "binary: " << xpedite::util::getExecutablePath() << std::endl;
      _appInfoStream<< "tscHz: " << tscHz << std::endl;
     log::logProbes(_appInfoStream, probes::probeList());
@@ -106,27 +102,10 @@ namespace xpedite { namespace framework {
     return std::unique_ptr<Framework> {new Framework {appInfoFile_, listenerIp_}};
   }
 
-  static std::string encode(const std::string& payload) {
-    std::ostringstream stream;
-    stream << std::setfill('0') << std::setw(8) << payload.size() << std::setfill(' ') 
-      << payload;
-    return stream.str();
-  }
+  void Framework::run(std::promise<bool>& sessionInitPromise_, bool awaitProfileBegin_) {
+    common::PromiseKeeper<bool> promiseKeeper {&sessionInitPromise_};
 
-  void Framework::run(std::promise<bool>& listenerInitPromise_, bool awaitProfileBegin_) {
-    common::PromiseKeeper<bool> promiseKeeper {&listenerInitPromise_};
-
-    if(!_handler.registerCommand("probes", admin)) {
-      std::ostringstream stream;
-      stream << "xpedite framework init error - Failed to register processor for probes admin";
-      throw std::runtime_error {stream.str()};
-    }
-
-    if(!_listener.start()) {
-      std::ostringstream stream;
-      stream << "xpedite framework init error - Failed to start listener " << _listener.toString();
-      throw std::runtime_error {stream.str()};
-    }
+    _sessionManager.start();
 
     log();
 
@@ -135,68 +114,58 @@ namespace xpedite { namespace framework {
     }
 
     while(_canRun.load(std::memory_order_relaxed)) {
-      std::unique_ptr<xpedite::transport::tcp::Socket> clientSocket = _listener.accept();
-      if(clientSocket) {
-        handleClient(std::move(clientSocket), promiseKeeper);
+      _sessionManager.poll();
+      if(promiseKeeper.isPending() && _sessionManager.isProfileActive()) {
+        promiseKeeper.deliver(true);
       }
-      else {
-        std::this_thread::sleep_for(std::chrono::duration<unsigned, std::milli> {500});
-      }
+      std::this_thread::sleep_for(_sessionManager.pollInterval());
     }
 
     if(!_canRun.load(std::memory_order_relaxed)) {
       XpediteLogCritical << "xpedite - shutting down handler/thread" << XpediteLogEnd;
-      _handler.shutdown();
+      _sessionManager.shutdown();
     }
   }
 
-  void Framework::handleClient(std::unique_ptr<xpedite::transport::tcp::Socket> clientSocket_, common::PromiseKeeper<bool>& promiseKeeper_) noexcept {
-    XpediteLogInfo << "xpedite - accepted incoming connection from " << clientSocket_->toString() << XpediteLogEnd;
+  SessionGuard Framework::beginProfile(const ProfileInfo& profileInfo_) {
+    using namespace xpedite::framework::request;
+    ProbeActivationRequest probeActivationRequest {profileInfo_.probes()};
+    if(!_sessionManager.execute(&probeActivationRequest)) {
+      std::ostringstream stream;
+      stream << "xpedite failed to enable probes - " << probeActivationRequest.response().errors();
+      XpediteLogCritical <<  stream.str() << XpediteLogEnd;
+      return SessionGuard {stream.str()};
+    }
 
-    struct SessionGuard
-    {
-      Handler* _handler;
-      explicit SessionGuard(Handler* handler_) : _handler {handler_} {_handler->beginSession();}
-      ~SessionGuard() {_handler->endSession();}
-    } sessionGuard {&_handler};
-
-    try {
-      xpedite::transport::tcp::Framer clientFramer {clientSocket_.get()};
-      while(_canRun.load(std::memory_order_relaxed)) {
-        auto frame = clientFramer.readFrame();
-        if(frame) {
-          std::string result = handleFrame(frame);
-          std::string pdu = encode(result);
-          if(clientSocket_->write(pdu.data(), pdu.size()) != static_cast<int>(pdu.size())) {
-            XpediteLogCritical << "xpedite - handler error, failed to send result " 
-              << result << " to client " << clientSocket_->toString() << XpediteLogEnd;
-            return;
-          }
-        }
-        if(promiseKeeper_.isPending() && _handler.isProfileActive()) {
-          promiseKeeper_.deliver(true);
-        }
-        _handler.poll();
-      }
-
-      if(!_canRun.load(std::memory_order_relaxed)) {
-        XpediteLogCritical << "xpedite - closing client connection - framework is going down." << XpediteLogEnd;
+    SessionGuard guard {true};
+    if(eventCount(&profileInfo_.pmuRequest())) {
+      PerfEventsActivationRequest perfEventsRequest {profileInfo_.pmuRequest()};
+      if(!_sessionManager.execute(&perfEventsRequest)) {
+        std::ostringstream stream;
+        stream << "xpedite failed to enable perf events - " << perfEventsRequest.response().errors();
+        XpediteLogCritical <<  stream.str() << XpediteLogEnd;
+        return SessionGuard {stream.str()};
       }
     }
-    catch(std::runtime_error& e_) {
-      XpediteLogCritical << "xpedite - closing client connection - error " << e_.what() << XpediteLogEnd;
-      return;
+
+    ProfileActivationRequest profileActivationRequest {
+      StorageMgr::buildSamplesFileTemplate(), MilliSeconds {1}, profileInfo_.samplesDataCapacity()
+    };
+    if(!_sessionManager.execute(&profileActivationRequest)) {
+      std::ostringstream stream;
+      stream << "xpedite failed to activate profile - " << profileActivationRequest.response().errors();
+      XpediteLogCritical <<  stream.str() << XpediteLogEnd;
+      return SessionGuard {stream.str()};
     }
-    catch(...) {
-      XpediteLogCritical << "xpedite - closing client connection - unknown error" << XpediteLogEnd;
-      return;
-    }
+    return std::move(guard);
   }
 
-  std::string Framework::handleFrame(xpedite::transport::tcp::Frame frame_) noexcept {
-    XpediteLogDebug << "rx frame (" << frame_.size() << " bytes) - " 
-      <<  std::string {frame_.data(), static_cast<std::size_t>(frame_.size())} << XpediteLogEnd;
-    return _handler.handle(frame_.data(), frame_.size());
+  void Framework::endProfile() {
+    request::ProfileDeactivationRequest profileDeactivationRequest {};
+    if(!_sessionManager.execute(&profileDeactivationRequest)) {
+      XpediteLogCritical << "xpedite - failed to deactivate profile - " << profileDeactivationRequest.response().errors()
+        << XpediteLogEnd;
+    }
   }
 
   Framework::~Framework() {
@@ -238,13 +207,13 @@ namespace xpedite { namespace framework {
   }
 
   static void initializeOnce(const char* appInfoFile_, const char* listenerIp_, bool awaitProfileBegin_, bool* rc_) noexcept {
-    std::promise<bool> listenerInitPromise;
-    std::future<bool> listenerInitFuture = listenerInitPromise.get_future();
+    std::promise<bool> sessionInitPromise;
+    std::future<bool> listenerInitFuture = sessionInitPromise.get_future();
     std::thread thread {
-      [&listenerInitPromise, appInfoFile_, listenerIp_, awaitProfileBegin_] {
+      [&sessionInitPromise, appInfoFile_, listenerIp_, awaitProfileBegin_] {
         try {
           framework = instantiateFramework(appInfoFile_, listenerIp_);
-          framework->run(listenerInitPromise, awaitProfileBegin_);
+          framework->run(sessionInitPromise, awaitProfileBegin_);
         }
         catch(const std::exception& e) {
           XpediteLogCritical << "xpedite - init failed - " << e.what() << XpediteLogEnd;
@@ -277,6 +246,21 @@ namespace xpedite { namespace framework {
     return initialize(appInfoFile_, "", awaitProfileBegin_);
   }
 
+  SessionGuard profile(const ProfileInfo& profileInfo_) {
+    if(framework) {
+      return framework->beginProfile(profileInfo_);
+    }
+    return {};
+  }
+
+  SessionGuard::~SessionGuard() {
+    if(_isAlive && framework) {
+      XpediteLogInfo << "Live session guard being destroyed - end active profile session" << XpediteLogEnd;
+      _isAlive = {};
+      framework->endProfile();
+    }
+  }
+
   bool isRunning() noexcept {
     if(framework) {
       return framework->isRunning();
@@ -286,31 +270,7 @@ namespace xpedite { namespace framework {
 
   void pinThread(unsigned core_) {
     if(isRunning()) {
-      cpu_set_t cpuset;
-      CPU_ZERO(&cpuset);
-      CPU_SET(core_, &cpuset);
-      int rc = pthread_setaffinity_np(frameworkThread.native_handle(), sizeof(cpu_set_t), &cpuset);
-      if(rc != 0) {
-        std::string errMsg;
-        switch (rc) {
-          case EFAULT:
-            errMsg = "A supplied memory address was invalid";
-            break;
-          case EINVAL:
-            errMsg = "supplied core was invalid";
-            break;
-          case ESRCH:
-            errMsg = "thread not alive";
-            break;
-          default:
-            errMsg = "unknown error";
-            break;
-        }
-        std::ostringstream stream;
-        stream << "xpedite - failed to pin thread [pthread_setaffinity_np error - " << rc << " | " << errMsg << "]";
-        XpediteLogInfo << stream.str()<< XpediteLogEnd;
-        throw std::runtime_error {stream.str()};
-      }
+      util::pinThread(frameworkThread.native_handle(), core_);
       return;
     }
     throw std::runtime_error {"xpedite framework not initialized - no thread to pin"};
@@ -322,6 +282,5 @@ namespace xpedite { namespace framework {
     }
     return false;
   }
-
 
 }}
