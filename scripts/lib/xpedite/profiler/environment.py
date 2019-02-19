@@ -64,7 +64,7 @@ class ProxyEnvironment(object):
     """Discovers and caches cpu model"""
     if not self.cpuId:
       from xpedite.util import getCpuId
-      self.cpuId = getCpuId()
+      self.cpuId = getCpuId(self.getFullCpuInfo())
     return self.cpuId
 
   def getOsUname(self):

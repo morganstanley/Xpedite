@@ -26,7 +26,7 @@
 #include <sys/types.h>
 
 namespace xpedite { namespace perf { namespace test {
-    struct Override;
+  struct Override;
 }}}
 
 namespace xpedite { namespace pmu {
