@@ -32,7 +32,6 @@ exit 1
 
 function unzipFiles() {
   rm -rf $1/*
-
   for a in "${APPS[@]}"; do
     for s in "${SCENARIOS[@]}"; do
       if [ "${EXCLUDE_RESULTS}" == false ]; then
@@ -42,37 +41,46 @@ function unzipFiles() {
       fi
     done
   done
+  tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/${PMU_DATA}.tar.gz
 }
 
-function zipFiles() {
+function zipProfilerFiles() {
   FILE_PATH=`fullPath ${PYTEST_DIR}`
   TEST_DIR_PATH=`fullPath ${TEST_DIR}`
-  
-  cd $1
   find . -name "*.pyc" -type f -delete
-  
   for a in "${APPS[@]}"; do
     for s in "${SCENARIOS[@]}"; do
-      MANIFEST_PATH=${TEST_DIR_PATH}/pytest/test_xpedite/data/${a}${s}Manifest.csv
-      rm ${MANIFEST_PATH}
-
-      echo "file name, size, lines" >> ${MANIFEST_PATH}
-      for FILE in `find ${a}${s} -type f | sort`; do
-        FULL_PATH=$1/${FILE}
-        echo -n "${FILE}," >> ${MANIFEST_PATH}
-        echo -n "`wc -c < ${FULL_PATH}`," >> ${MANIFEST_PATH}
-        if [[ ${FULL_PATH: -5} == ".data" ]]; then
-          echo "`${SAMPLES_LOADER} ${FULL_PATH} | wc -l`" >> ${MANIFEST_PATH}
-        else
-          echo "`wc -l < ${FULL_PATH}`" >> ${MANIFEST_PATH}
-        fi
-      done
+      createManifest $1 ${a}${s}
       ARCHIVE_FILE=${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz
       tar -czf ${ARCHIVE_FILE} ${a}${s} --files-from=${a}${s}/parameters --files-from=${a}${s}/expectedResults
       if [ "${s}" == "Benchmark" ]; then
         tar -czf ${ARCHIVE_FILE} ${a}${s} --files-from=${a}${s}/benchmark
       fi
     done
+  done
+}
+
+function zipPMUFiles() {
+  cd $1
+  find . -name "*.pyc" -type f -delete
+  tar -czf ${TEST_DIR_PATH}/pytest/test_xpedite/data/${PMU_DATA}.tar.gz ${PMU_DATA}
+  createManifest $1 ${PMU_DATA}
+}
+
+function createManifest() {
+  cd $1
+  MANIFEST_PATH=${TEST_DIR_PATH}/pytest/test_xpedite/data/${2}Manifest.csv
+  rm ${MANIFEST_PATH}
+  echo "file name, size, lines" >> ${MANIFEST_PATH}
+  for FILE in `find ${2} -type f | sort`; do
+    FULL_PATH=$1/${FILE}
+    echo -n "${FILE}," >> ${MANIFEST_PATH}
+    echo -n "`wc -c < ${FULL_PATH}`," >> ${MANIFEST_PATH}
+    if [[ ${FULL_PATH: -5} == ".data" ]]; then
+      echo "`${SAMPLES_LOADER} ${FULL_PATH} | wc -l`" >> ${MANIFEST_PATH}
+    else
+      echo "`wc -l < ${FULL_PATH}`" >> ${MANIFEST_PATH}
+    fi
   done
 }
 
@@ -92,7 +100,8 @@ while true ; do
       shift 2
       ;;
     -z|--zip)
-      zipFiles ${DIR_NAME}
+      zipProfilerFiles ${DIR_NAME}
+      zipPMUFiles ${DIR_NAME}
       shift
       ;;
     -e|--excludeResults)
