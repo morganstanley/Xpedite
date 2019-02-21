@@ -81,12 +81,12 @@ namespace xpedite { namespace util {
 
   inline std::string getExecutablePath() {
     char buf[4096]; 
-    ssize_t len = readlink("/proc/self/exe", buf, 4095);
+    auto len = readlink("/proc/self/exe", buf, sizeof(buf));
     if(len == -1) {
       XpediteLogCritical << "xpedite - error getting binary path" << XpediteLogEnd;
       return "unknown";
     }  
-    return buf;
+    return {buf, static_cast<size_t>(len)};
   }
 
   inline int openSamplesFile(const std::string& fname_) {

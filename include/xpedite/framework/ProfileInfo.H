@@ -25,11 +25,11 @@ namespace xpedite { namespace framework {
     using ProbeKey = probes::ProbeKey;
     std::vector<ProbeKey> _probes;
     PMUCtlRequest _pmuRequest;
-    int _samplesDataCapacity;
+    uint64_t _samplesDataCapacity;
 
     public:
 
-    ProfileInfo(std::vector<std::string> probes_, const PMUCtlRequest& pmuRequest_, int samplesDataCapacity_ = -1)
+    ProfileInfo(std::vector<std::string> probes_, const PMUCtlRequest& pmuRequest_, uint64_t samplesDataCapacity_ = {})
       : _probes {}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_} {
       _probes.reserve(probes_.size());
       std::for_each(probes_.begin(), probes_.end(), [this](std::string& name_) {
@@ -37,7 +37,7 @@ namespace xpedite { namespace framework {
       });
     }
 
-    ProfileInfo(std::vector<ProbeKey> probes_, const PMUCtlRequest& pmuRequest_, int samplesDataCapacity_ = -1)
+    ProfileInfo(std::vector<ProbeKey> probes_, const PMUCtlRequest& pmuRequest_, uint64_t samplesDataCapacity_ = {})
       : _probes {std::move(probes_)}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_} {
     }
 
@@ -53,7 +53,7 @@ namespace xpedite { namespace framework {
       return _pmuRequest;
     }
 
-    int samplesDataCapacity() const {
+    uint64_t samplesDataCapacity() const {
       return _samplesDataCapacity;
     }
   };

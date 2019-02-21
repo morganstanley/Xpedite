@@ -32,7 +32,7 @@ namespace xpedite { namespace framework {
     return util::estimateTscHz();
   }
 
-  std::string Handler::beginProfile(std::string samplesFilePattern_, MilliSeconds pollInterval_, int samplesDataCapacity_) {
+  std::string Handler::beginProfile(std::string samplesFilePattern_, MilliSeconds pollInterval_, uint64_t samplesDataCapacity_) {
     if(isProfileActive()) {
       auto errMsg = "xpedite failed to begin profile - session already active";
       XpediteLogError << errMsg << XpediteLogEnd;

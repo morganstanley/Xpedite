@@ -19,11 +19,11 @@ namespace xpedite { namespace framework { namespace request {
 
     std::string _samplesFilePattern;
     MilliSeconds _pollInterval;
-    int _samplesDataCapacity;
+    uint64_t _samplesDataCapacity;
 
     public:
 
-    ProfileActivationRequest(std::string samplesFilePattern_, MilliSeconds pollInterval_, int samplesDataCapacity_)
+    ProfileActivationRequest(std::string samplesFilePattern_, MilliSeconds pollInterval_, uint64_t samplesDataCapacity_)
       : _samplesFilePattern {std::move(samplesFilePattern_)}, _pollInterval {pollInterval_},
         _samplesDataCapacity {samplesDataCapacity_} {
     }
