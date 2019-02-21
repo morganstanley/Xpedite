@@ -28,7 +28,7 @@ namespace xpedite { namespace framework {
   {
     public:
 
-    Collector(std::string fileNamePattern_, int samplesDataCapacity_)
+    Collector(std::string fileNamePattern_, uint64_t samplesDataCapacity_)
       : _storageMgr {samplesDataCapacity_}, _fileNamePattern {std::move(fileNamePattern_)},
         _isCollecting {}, _capacityBreached {} {
     }

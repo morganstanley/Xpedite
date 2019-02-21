@@ -37,7 +37,7 @@ namespace xpedite { namespace framework {
   }
 
   void Collector::persistSamples(int fd_, const probes::Sample* begin_, const probes::Sample* end_) {
-    unsigned size = reinterpret_cast<const char*>(end_) - reinterpret_cast<const char*>(begin_);
+    auto size = reinterpret_cast<const char*>(end_) - reinterpret_cast<const char*>(begin_);
     if(_storageMgr.consume(size)) {
       persistData(fd_, begin_, end_);
     } else if(!_capacityBreached) {

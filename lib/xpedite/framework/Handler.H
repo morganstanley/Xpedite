@@ -28,7 +28,7 @@ namespace xpedite { namespace framework {
 
       Handler();
 
-      std::string beginProfile(std::string samplesFilePattern_, MilliSeconds pollInterval_, int samplesDataCapacity_);
+      std::string beginProfile(std::string samplesFilePattern_, MilliSeconds pollInterval_, uint64_t samplesDataCapacity_);
       std::string endProfile();
 
       bool isProfileActive() const noexcept {
