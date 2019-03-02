@@ -246,5 +246,6 @@ class XpediteClient(CementApp):
     base_controller = 'base'
     handlers = [AppController, FrameworkController]
 
-with XpediteClient() as app:
-    app.run()
+if __name__ == '__main__':
+  with XpediteClient() as app:
+      app.run()

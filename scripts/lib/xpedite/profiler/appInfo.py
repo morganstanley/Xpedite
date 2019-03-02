@@ -57,7 +57,7 @@ class AppInfo(object):
     """
     records = None
     with open(self.path) as fileHandle:
-      records = fileHandle.readlines()
+      records = fileHandle.read().splitlines()
 
     if records and len(records) >= self.MIN_RECORD_COUNT:
       pidInfo = records[self.INDEX_PID].split()

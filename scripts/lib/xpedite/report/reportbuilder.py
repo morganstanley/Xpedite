@@ -91,7 +91,7 @@ class ReportBuilder(object):
           heading.th('duration (us)')
 
   @staticmethod
-  def buildPmcRow(body, names, values):
+  def buildPmcRows(body, names, values):
     """
     Builds html table rows for each of the pmu events in a transaction
 
@@ -107,11 +107,12 @@ class ReportBuilder(object):
       row.newline # pylint: disable=pointless-statement
 
   @staticmethod
-  def buildBottleneckRow(body, topdownValues):
+  def buildTopdownRows(body, topdownValues):
     """
     Builds html table rows for topdown metrics computed for a transaction
 
     :param body: Handle to html table object
+    :param topdownValues: Values of computed topdown metrics
 
     """
     for bottleneck in topdownValues:
@@ -119,6 +120,27 @@ class ReportBuilder(object):
       row.td(bottleneck.name, klass=TD_PMU_NAME)
       row.td(DURATION_FORMAT.format(bottleneck.value), klass=TD_PMU_VALUE)
       row.newline # pylint: disable=pointless-statement
+
+  @staticmethod
+  def buildPmcTable(pmcNames, pmcValues, topdownValues):
+    """
+    Builds html table rows for topdown metrics and pmc values for a transaction
+
+    :param pmcNames: List of pmu event names
+    :param pmcValues: List of pmu event values
+    :param topdownValues: Values of computed topdown metrics
+
+    """
+    table = HTML().table(border='0', klass=TABLE_PMU)
+    heading = table.thead.tr
+    heading.th('pmc')
+    heading.th('value')
+    body = table.tbody
+    if topdownValues:
+      ReportBuilder.buildTopdownRows(body, topdownValues)
+    if pmcValues:
+      ReportBuilder.buildPmcRows(body, pmcNames, pmcValues)
+    return table
 
   def buildTimepointCell(self, tr, uid, xAxis, yAxis, timepoint, klass=None):
     """
@@ -132,14 +154,7 @@ class ReportBuilder(object):
 
     """
     if timepoint.pmcNames:
-      title = HTML().table(border='0', klass=TABLE_PMU)
-      heading = title.thead.tr
-      heading.th('pmc')
-      heading.th('value')
-      body = title.tbody
-      if timepoint.topdownValues:
-        self.buildBottleneckRow(body, timepoint.topdownValues)
-      self.buildPmcRow(body, timepoint.pmcNames, timepoint.deltaPmcs)
+      title = self.buildPmcTable(timepoint.pmcNames, timepoint.deltaPmcs, timepoint.topdownValues)
       cellId = 'tp-{}-{}-{}'.format(uid, xAxis, yAxis)
       if klass:
         tr.td().a(DURATION_FORMAT.format(

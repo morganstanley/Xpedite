@@ -70,6 +70,15 @@ class Transaction(object):
         return False
     return True
 
+  def hitCount(self, probe):
+    """
+    Returns the number of times a probe got hit in a txn
+
+    :param probe: Probe to looup
+
+    """
+    return len(self.probeMap.get(probe, []))
+
   def getCounterForProbe(self, probe, index=0):
     """
     Returns the Nth counter for the given probe
