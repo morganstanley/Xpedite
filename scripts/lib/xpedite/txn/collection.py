@@ -69,7 +69,7 @@ class TxnCollection(object):
     return self.repo.getCurrent() is self if self.repo else False
 
   def __iter__(self):
-    for txn in self.transactionsMap.values():
+    for txn in self.txnMap.values():
       yield txn
 
   def __repr__(self):
