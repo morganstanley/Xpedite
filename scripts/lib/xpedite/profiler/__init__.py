@@ -227,6 +227,6 @@ class Profiler(object):
       from xpedite.profiler.profileInfoGenerator import ProfileInfoGenerator
       appInfoAbsolutePath = os.path.abspath(appInfoPath)
       profilerPath = os.path.abspath(os.path.join(__file__, '../../../../bin/xpedite'))
-      ProfileInfoGenerator(app.executableName, hostname, appInfoAbsolutePath, probes, profilerPath).generate()
+      return ProfileInfoGenerator(app.executableName, hostname, appInfoAbsolutePath, probes, profilerPath).generate()
     else:
       LOGGER.error('failed to generate profile_info.py. cannot locate probes in app. Have you instrumented any ?\n')

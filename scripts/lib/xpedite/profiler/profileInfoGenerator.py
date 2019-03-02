@@ -33,7 +33,6 @@ class ProfileInfoGenerator(object):
   def generate(self):
     """Generates the profile info module for the target process"""
     hasTempFile = False
-
     if os.path.isfile(self.filePath):
       _, self.filePath = mkstemp()
       hasTempFile = True
@@ -68,6 +67,7 @@ enable/disable probes or fine tune profile parameters.
 To record a profile run "{} record -p {}"
 """.format(self.appName, self.profilerPath, self.filePath)
     LOGGER.info(generateMessage)
+    return self.filePath
 
   def generateNames(self, probe):
     """Generates human friendly name for a probe from it's sys name"""
