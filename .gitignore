@@ -17,3 +17,4 @@ ko/modules.order
 ko/xpedite.mod.c
 ko/xpedite.ko.unsigned
 .tmp_versions
+scripts/bin/xpeditec

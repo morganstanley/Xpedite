@@ -39,7 +39,7 @@ probes = [
 #   3. Raw hardware perforance counter for a micro architectural event
 # To see topdown hierarchy run        - "xpedite topdown"
 # To see available metrics run        - "xpedite metrics"
-# To see available raw counters run   - "xpedite evlist"
+# To see available raw counters run   - "xpedite list"
 #pmc = [
 #  TopdownNode('Root'),         # top down analysis for Root node of the hierarchy
 #  Metric('IPC'),               # computer instructions retired per cycle mertric
