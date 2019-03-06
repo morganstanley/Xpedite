@@ -13,6 +13,7 @@ import os
 import sys
 import time
 import logging
+from six.moves            import urllib
 from xpedite.dependencies import CONFIG
 
 LOGGER = logging.getLogger(__name__)
@@ -62,16 +63,15 @@ def downloadFile(url, path):
 
   """
   import six
-  from six.moves.urllib.request import urlopen # pylint: disable=import-error
-  from six.moves.urllib.error import URLError # pylint: disable=relative-import
   try:
-    response = urlopen(url)
-    data = response.read()
+    connection = urllib.request.urlopen(urllib.request.Request(url), context=CONFIG.sslContext)
+    data = connection.read()
     with open(path, 'w') as fileHandle:
       fileHandle.write(six.ensure_str(data))
     return True
-  except URLError:
+  except urllib.error.HTTPError as ex:
     LOGGER.exception('failed to retrieve file "%s" from url - %s', os.path.basename(path), url)
+    raise Exception(ex)
   except IOError:
     LOGGER.exception('failed to open file - %s', path)
 
@@ -84,18 +84,16 @@ def downloadUarchSpec(uarchSpec):
   Downloads specifications and topdown metrics for a cpu micro architecture
 
   :param uarchSpec: Name of the cpu micro architecture
-
   """
-  LOGGER.info('\tdownloading uarch spec for %s -> ', uarchSpec.name)
   from xpedite.util import mkdir
   begin = time.time()
+  LOGGER.info('\tdownloading uarch spec for %s -> ', uarchSpec.name)
   path = os.path.join(uarchSpecPath(), uarchSpec.name)
   mkdir(path)
   url = '{}{}/{}'.format(CONFIG.uarchSpecRepoUrl, uarchSpec.name, os.path.basename(uarchSpec.coreEventsDbFile))
   rc = downloadFile(url, os.path.join(path, uarchSpec.coreEventsDbFile))
   elapsed = time.time() - begin
   LOGGER.completed('completed in %0.2f sec.', elapsed)
-
   if rc:
     ratiosModuleName = TOPDOWN_RATIOS_MODULES.get(uarchSpec.name)
     if ratiosModuleName:
@@ -138,6 +136,10 @@ def loadUarchSpecDb():
 def main():
   """Displays list of pmu events supported by localhost"""
   import argparse
+  import logger
+  global LOGGER # pylint: disable=global-statement
+  LOGGER = logging.getLogger('xpedite')
+  logger.init()
   parser = argparse.ArgumentParser(description='Uarch Spec Loader')
   parser.add_argument('--all', type=str, help='load uarch spec for all available architectures')
   parser.add_argument('--dest', type=str, help='load uarch spec for all available architectures')
