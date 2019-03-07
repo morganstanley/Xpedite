@@ -2,9 +2,9 @@ file name, size, lines
 dataTxnAppRegular/__init__.py,0,0
 dataTxnAppRegular/expectedResults/generateCmdBaseline.py,5834,118
 dataTxnAppRegular/expectedResults/probeCmdBaseline.pkl,4462,808
-dataTxnAppRegular/expectedResults/reportCmdBaseline.xpd,4534038,3907
+dataTxnAppRegular/expectedResults/reportCmdBaseline.xpd,4550418,3486
 dataTxnAppRegular/parameters/__init__.py,0,0
 dataTxnAppRegular/parameters/baselineCpuInfo.json,1299,0
-dataTxnAppRegular/parameters/data/xpedite-dataTxnApp-1553269239-153925-00002ad28d649f60.data,656240,22529
+dataTxnAppRegular/parameters/data/xpedite-dataTxnApp-1553627817-193942-00002ae247604f60.data,656240,22529
 dataTxnAppRegular/parameters/profileInfo.py,2505,52
 dataTxnAppRegular/parameters/xpedite-appinfo.txt,8209,34

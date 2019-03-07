@@ -34,6 +34,7 @@ class ConsoleFormatter(logging.Formatter):
   }
 
   lineCount = 0
+  completionLogCount = 0
 
   def format(self, record):
     """Format log messages with level name and color"""
@@ -42,11 +43,17 @@ class ConsoleFormatter(logging.Formatter):
     from termcolor import colored
 
     msg = super(ConsoleFormatter, self).format(record)
-    prefix = '\n' if ConsoleFormatter.lineCount > 0 else ''
-    if record.levelname == 'ERROR' or record.levelname == 'WARNING':
-      msg = '{}[{}]: {}'.format(prefix, record.levelname, msg)
-    elif record.levelname != 'COMPLETED':
+    if record.levelname == 'COMPLETED':
+      prefix = '\n' if ConsoleFormatter.completionLineCount > 0 else ''
       msg = prefix + msg
+      ConsoleFormatter.completionLineCount += 1
+    else:
+      prefix = '\n' if ConsoleFormatter.lineCount > 0 else ''
+      if record.levelname == 'ERROR' or record.levelname == 'WARNING':
+        msg = '{}[{}]: {}'.format(prefix, record.levelname, msg)
+      else:
+        msg = prefix + msg
+      ConsoleFormatter.completionLineCount = 0
 
     ConsoleFormatter.lineCount += 1
     if record.levelname in self.textColor:

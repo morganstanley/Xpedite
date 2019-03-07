@@ -1,11 +1,11 @@
 file name, size, lines
 slowFixDecoderAppBenchmark/benchmark/.benchmark,153,8
-slowFixDecoderAppBenchmark/benchmark/1553269368/154511-00002b1a26eecf60/samples-0000.csv,460820,18433
+slowFixDecoderAppBenchmark/benchmark/1553627948/195293-00002b1e99d66f60/samples-0000.csv,460820,18433
 slowFixDecoderAppBenchmark/benchmark/appinfo.txt,4605,23
 slowFixDecoderAppBenchmark/expectedResults/generateCmdBaseline.py,5447,114
 slowFixDecoderAppBenchmark/expectedResults/probeCmdBaseline.pkl,3532,668
-slowFixDecoderAppBenchmark/expectedResults/reportCmdBaseline.xpd,6975410,6426
+slowFixDecoderAppBenchmark/expectedResults/reportCmdBaseline.xpd,6974150,5874
 slowFixDecoderAppBenchmark/parameters/baselineCpuInfo.json,1299,0
-slowFixDecoderAppBenchmark/parameters/data/xpedite-slowFixDecoderApp-1553269372-154515-00002b2419cf1f60.data,295424,18433
+slowFixDecoderAppBenchmark/parameters/data/xpedite-slowFixDecoderApp-1553627952-195297-00002b72a791ef60.data,295424,18433
 slowFixDecoderAppBenchmark/parameters/profileInfo.py,948,22
 slowFixDecoderAppBenchmark/parameters/xpedite-appinfo.txt,4605,23
