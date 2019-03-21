@@ -1,13 +1,11 @@
 file name, size, lines
 allocatorAppBenchmark/benchmark/.benchmark,143,8
-allocatorAppBenchmark/benchmark/1550172700/54214-00002b520b5e3fa0/samples-0000.csv,614420,24577
-allocatorAppBenchmark/benchmark/1550172700/54215-00002b520bfe7700/samples-0000.csv,420,17
-allocatorAppBenchmark/benchmark/appinfo.txt,8138,34
-allocatorAppBenchmark/expectedResults/generateCmdBaseline.py,5552,118
+allocatorAppBenchmark/benchmark/1553269190/153353-00002b1044ce4fa0/samples-0000.csv,614420,24577
+allocatorAppBenchmark/benchmark/appinfo.txt,8139,34
+allocatorAppBenchmark/expectedResults/generateCmdBaseline.py,5550,118
 allocatorAppBenchmark/expectedResults/probeCmdBaseline.pkl,4287,815
-allocatorAppBenchmark/expectedResults/reportCmdBaseline.xpd,9043385,5287
+allocatorAppBenchmark/expectedResults/reportCmdBaseline.xpd,8996238,4488
 allocatorAppBenchmark/parameters/baselineCpuInfo.json,1299,0
-allocatorAppBenchmark/parameters/data/xpedite-allocatorApp-1550172705-54220-00002b3e7a82afa0.data,393968,24577
-allocatorAppBenchmark/parameters/data/xpedite-allocatorApp-1550172705-54221-00002b3e7b22e700.data,816,17
+allocatorAppBenchmark/parameters/data/xpedite-allocatorApp-1553269195-153357-00002b4bb522efa0.data,393968,24577
 allocatorAppBenchmark/parameters/profileInfo.py,943,22
-allocatorAppBenchmark/parameters/xpedite-appinfo.txt,8138,34
+allocatorAppBenchmark/parameters/xpedite-appinfo.txt,8139,34

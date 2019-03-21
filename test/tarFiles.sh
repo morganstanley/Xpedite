@@ -47,7 +47,7 @@ function unzipFiles() {
 function zipProfilerFiles() {
   FILE_PATH=`fullPath ${PYTEST_DIR}`
   TEST_DIR_PATH=`fullPath ${TEST_DIR}`
-  find . -name "*.pyc" -type f -delete
+  find $1 -name "*.pyc" -type f -delete
   for a in "${APPS[@]}"; do
     for s in "${SCENARIOS[@]}"; do
       createManifest $1 ${a}${s}
