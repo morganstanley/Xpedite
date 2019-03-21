@@ -31,7 +31,8 @@ void baz() {
 int main(int argc_, char** argv_) {
   auto args = parseArgs(argc_, argv_);
 
-  if(!xpedite::framework::initialize("xpedite-appinfo.txt")) { 
+  using namespace xpedite::framework;
+  if(!xpedite::framework::initialize("xpedite-appinfo.txt", {DISABLE_REMOTE_PROFILING})) { 
     throw std::runtime_error {"failed to init xpedite"}; 
   }
 

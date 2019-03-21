@@ -34,18 +34,24 @@
 #include <chrono>
 #include <unistd.h>
 #include <atomic>
+#include <algorithm>
 
 namespace xpedite { namespace framework {
 
   class Framework;
 
-  static std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept;
+  static std::unique_ptr<Framework> instantiateFramework(const char*, std::vector<Option>&&, const char*, in_port_t) noexcept;
+
+  template<typename Options>
+  inline bool isEnabled(const Options& options_, Option option_) {
+    return std::find(options_.begin(), options_.end(), option_) != options_.end();
+  }
 
   class Framework
   {
     public:
       bool isActive();
-      void run(std::promise<bool>& sessionInitPromise_, bool awaitProfileBegin_);
+      void run(std::promise<bool>& sessionInitPromise_);
       SessionGuard beginProfile(const ProfileInfo& profileInfo_);
       void endProfile();
       bool isRunning() noexcept;
@@ -55,7 +61,7 @@ namespace xpedite { namespace framework {
 
     private:
 
-      Framework(const char* appInfoFile_, const char* listenerIp_);
+      Framework(const char* appInfoFile_, std::vector<Option>&& options_, const char* listenerIp_, in_port_t port_);
 
       void handleClient(std::unique_ptr<xpedite::transport::tcp::Socket> clientSocket_, common::PromiseKeeper<bool>& promiseKeeper_) noexcept;
       std::string handleFrame(xpedite::transport::tcp::Frame frame_) noexcept;
@@ -68,16 +74,21 @@ namespace xpedite { namespace framework {
       void log();
 
       const char* _appInfoPath;
+      std::vector<Option> _options;
       std::ofstream _appInfoStream;
       session::SessionManager _sessionManager;
       volatile std::atomic<bool> _canRun;
 
-      friend std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept;
+      friend std::unique_ptr<Framework> instantiateFramework(const char*, std::vector<Option>&&, const char*, in_port_t) noexcept;
   };
 
-  Framework::Framework(const char* appInfoPath_, const char* listenerIp_)
-    : _appInfoPath {appInfoPath_}, _appInfoStream {}, _sessionManager {listenerIp_, 0}, _canRun {true} {
+  Framework::Framework(const char* appInfoPath_, std::vector<Option>&& options_, const char* listenerIp_, in_port_t port_)
+    : _appInfoPath {appInfoPath_}, _options {std::move(options_)}, _appInfoStream {}, _sessionManager {}, _canRun {true} {
     try {
+
+      if(!isEnabled(options_, Option::DISABLE_REMOTE_PROFILING)) {
+        _sessionManager.enableRemoteSession(listenerIp_, port_);
+      }
       _appInfoStream.open(appInfoPath_, std::ios_base::out);
     }
     catch(std::ios_base::failure& e) {
@@ -98,18 +109,19 @@ namespace xpedite { namespace framework {
     XpediteLogInfo << "Xpedite app info stored at - " << _appInfoPath << XpediteLogEnd;
   }
 
-  static std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, const char* listenerIp_) noexcept {
-    return std::unique_ptr<Framework> {new Framework {appInfoFile_, listenerIp_}};
+  static std::unique_ptr<Framework> instantiateFramework(const char* appInfoFile_, std::vector<Option>&& options_, const char* listenerIp_,
+      in_port_t port_) noexcept {
+    return std::unique_ptr<Framework> {new Framework {appInfoFile_, std::move(options_), listenerIp_, port_}};
   }
 
-  void Framework::run(std::promise<bool>& sessionInitPromise_, bool awaitProfileBegin_) {
+  void Framework::run(std::promise<bool>& sessionInitPromise_) {
     common::PromiseKeeper<bool> promiseKeeper {&sessionInitPromise_};
 
     _sessionManager.start();
 
     log();
 
-    if(!awaitProfileBegin_) {
+    if(!isEnabled(_options, Option::AWAIT_PROFILE_BEGIN)) {
       promiseKeeper.deliver(true);
     }
 
@@ -206,14 +218,15 @@ namespace xpedite { namespace framework {
     return false;
   }
 
-  static void initializeOnce(const char* appInfoFile_, const char* listenerIp_, bool awaitProfileBegin_, bool* rc_) noexcept {
+  static void initializeOnce(const char* appInfoFile_, Options options_, const char* listenerIp_, in_port_t port_, bool* rc_) noexcept {
     std::promise<bool> sessionInitPromise;
     std::future<bool> listenerInitFuture = sessionInitPromise.get_future();
+    static std::vector<Option> options {options_};
     std::thread thread {
-      [&sessionInitPromise, appInfoFile_, listenerIp_, awaitProfileBegin_] {
+      [&sessionInitPromise, appInfoFile_, listenerIp_, port_] {
         try {
-          framework = instantiateFramework(appInfoFile_, listenerIp_);
-          framework->run(sessionInitPromise, awaitProfileBegin_);
+          framework = instantiateFramework(appInfoFile_, std::move(options), listenerIp_, port_);
+          framework->run(sessionInitPromise);
         }
         catch(const std::exception& e) {
           XpediteLogCritical << "xpedite - init failed - " << e.what() << XpediteLogEnd;
@@ -226,7 +239,7 @@ namespace xpedite { namespace framework {
     frameworkThread = std::move(thread);
 
     // longer timeout, if the framework is awaiting perf client to begin profile
-    auto timeout = awaitProfileBegin_ ? 120 : 5;
+    auto timeout = isEnabled(options_, Option::AWAIT_PROFILE_BEGIN) ? 120 : 5;
     if(listenerInitFuture.wait_until(std::chrono::system_clock::now() + std::chrono::seconds(timeout)) != std::future_status::ready) {
       XpediteLogCritical << "xpedite - init failure - failed to start listener (timedout)" << XpediteLogEnd;
       *rc_ = false;
@@ -235,15 +248,15 @@ namespace xpedite { namespace framework {
     *rc_ = true; 
   }
 
-  bool initialize(const char* appInfoFile_, const char* listenerIp_, bool awaitProfileBegin_) {
+  bool initialize(const char* appInfoFile_, const char* listenerIp_, int port_, Options options_) {
     initializeThread();
     bool rc {};
-    std::call_once(initFlag, initializeOnce, appInfoFile_, listenerIp_, awaitProfileBegin_, &rc);
+    std::call_once(initFlag, initializeOnce, appInfoFile_, options_, listenerIp_, static_cast<in_port_t>(port_), &rc);
     return rc;
   }
 
-  bool initialize(const char* appInfoFile_, bool awaitProfileBegin_) {
-    return initialize(appInfoFile_, "", awaitProfileBegin_);
+  bool initialize(const char* appInfoFile_, Options options_) {
+    return initialize(appInfoFile_, "", {}, options_);
   }
 
   SessionGuard profile(const ProfileInfo& profileInfo_) {

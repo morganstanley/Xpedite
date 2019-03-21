@@ -131,3 +131,7 @@ class ProbeIndexFactory(object):
       index = ProbeIndexFactory.Index(route, probeMap)
       ProbeIndexFactory.cache.update({route : index})
     return index
+
+  @staticmethod
+  def reset():
+    ProbeIndexFactory.cache = {}
