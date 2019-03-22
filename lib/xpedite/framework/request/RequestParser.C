@@ -40,6 +40,7 @@
 #include <xpedite/util/Util.H>
 #include <xpedite/log/Log.H>
 #include <cstring>
+#include <string>
 
 namespace xpedite { namespace framework { namespace request {
 
@@ -179,7 +180,7 @@ namespace xpedite { namespace framework { namespace request {
     else if(args_.size() > 0 && req_ == REQ_PROFILE_ACTIVATION) {
       std::string samplesFilePattern;
       MilliSeconds pollInterval {};
-      int samplesDataCapacity {-1};
+      uint64_t samplesDataCapacity {};
       extractArguments([&](const char* name_, const char* value_) {
         if(name_ == ARG_PROFILE_SAMPLES_FILE_PATTERN) {
           samplesFilePattern = value_;
@@ -188,7 +189,7 @@ namespace xpedite { namespace framework { namespace request {
           pollInterval = MilliSeconds {std::stoi(value_)};
         }
         else if(name_ == ARG_PROFILE_SAMPLES_DATA_CAPACITY) {
-          samplesDataCapacity = atoi(value_);
+          samplesDataCapacity = static_cast<uint64_t>(std::stol(value_));
         }
       }, args_);
       return RequestPtr {new ProfileActivationRequest {samplesFilePattern, pollInterval, samplesDataCapacity}};

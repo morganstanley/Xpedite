@@ -48,8 +48,10 @@ def setTestParameters(hostname, transactions, multithreaded, workspace, rundir, 
   from xpedite.util              import makeLogPath
   from xpedite.transport.net     import isIpLocal
   from xpedite.transport.remote  import Remote
+  from xpedite.util.probeFactory import ProbeIndexFactory
   remote = None
   global CONTEXT, CAN_RECORD_PMC # pylint: disable=global-statement
+  ProbeIndexFactory.reset()
   if not isIpLocal(hostname):
     remote = Remote(hostname, makeLogPath('remote'))
     remote.__enter__()

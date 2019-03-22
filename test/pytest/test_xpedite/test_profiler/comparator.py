@@ -21,11 +21,11 @@ def findDiff(dict1, dict2, path=''):
     return
 
   for key in dict1.keys():
-    if dict1[key] == dict2[key]:
-      continue
     if not dict2.has_key(key):
       LOGGER.info('---------------- DIFF ----------------\n')
       LOGGER.info('Object 1 key %s does not eixst in Object 2', key)
+      continue
+    if dict1[key] == dict2[key]:
       continue
 
     formatKey = dict1[key].__class__.__name__

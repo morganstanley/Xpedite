@@ -18,6 +18,7 @@
 #include "LocalSession.H"
 #include <memory>
 #include <cassert>
+#include <stdexcept>
 
 namespace xpedite { namespace framework { namespace session {
 
@@ -31,23 +32,42 @@ namespace xpedite { namespace framework { namespace session {
 
     Handler _handler;
     std::unique_ptr<LocalSession> _localSession;
-    RemoteSession _remoteSession;
+    std::unique_ptr<RemoteSession> _remoteSession;
     SessionType _sessionType;
+    bool _isAlive;
 
     public:
 
+    SessionManager()
+      : _handler {}, _localSession {new LocalSession {_handler}}, _remoteSession {},
+        _sessionType {DORMANT}, _isAlive {} {
+    }
+
     SessionManager(std::string listenerIp_, in_port_t port_)
-      : _handler {}, _localSession {new LocalSession {_handler}},
-        _remoteSession {_handler, listenerIp_, port_}, _sessionType {DORMANT} {
+      : SessionManager{} {
+      enableRemoteSession(std::move(listenerIp_), port_);
+    }
+
+    void enableRemoteSession(std::string listenerIp_, in_port_t port_) {
+      if(_remoteSession) {
+        throw std::runtime_error {"Remote sessions already supported"};
+      }
+      _remoteSession.reset(new RemoteSession {_handler, std::move(listenerIp_), port_});
+      if(_isAlive) {
+        _remoteSession->start();
+      }
     }
 
     void start() {
       _localSession->start();
-      _remoteSession.start();
+      if(_remoteSession) {
+        _remoteSession->start();
+      }
+      _isAlive = true;
     }
 
     in_port_t listenerPort() const noexcept {
-      return _remoteSession.listenerPort();
+      return _remoteSession ? _remoteSession->listenerPort() : 0;
     }
 
     bool isProfileActive() const noexcept {
@@ -66,7 +86,7 @@ namespace xpedite { namespace framework { namespace session {
         _sessionType = DORMANT;
       }
 
-      if(_remoteSession.poll(_sessionType == DORMANT || _sessionType == REMOTE)) {
+      if(_remoteSession && _remoteSession->poll(_sessionType == DORMANT || _sessionType == REMOTE)) {
         assert(_sessionType == DORMANT || _sessionType == REMOTE);
         _sessionType = REMOTE;
       } else if(_sessionType == REMOTE) {
@@ -85,9 +105,12 @@ namespace xpedite { namespace framework { namespace session {
     }
 
     void shutdown() {
-      _remoteSession.shutdown();
+      if(_remoteSession) {
+        _remoteSession->shutdown();
+      }
       _localSession->shutdown();
       _handler.shutdown();
+      _isAlive = {};
     }
   };
 

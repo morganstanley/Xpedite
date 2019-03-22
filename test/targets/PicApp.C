@@ -17,7 +17,8 @@ int main(int argc_, char** argv_) {
 
   auto args = parseArgs(argc_, argv_);
 
-  if(!xpedite::framework::initialize("xpedite-appinfo.txt", true)) { 
+  using namespace xpedite::framework;
+  if(!xpedite::framework::initialize("xpedite-appinfo.txt", {AWAIT_PROFILE_BEGIN})) { 
     throw std::runtime_error {"failed to init xpedite"}; 
   }
 

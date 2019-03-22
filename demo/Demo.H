@@ -33,7 +33,8 @@ namespace xpedite { namespace demo {
     if(mlockall(MCL_CURRENT | MCL_FUTURE)) {
       std::cerr << "failed to mlock all pages" << std::endl;
     }
-    if(!xpedite::framework::initialize("xpedite-appinfo.txt", true)) { 
+    using namespace xpedite::framework;
+    if(!xpedite::framework::initialize("xpedite-appinfo.txt", {AWAIT_PROFILE_BEGIN})) { 
       throw std::runtime_error {"failed to init xpedite"}; 
     }
     framework::pinThread(core_);
