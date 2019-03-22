@@ -21,12 +21,20 @@
 #include <xpedite/framework/ProfileInfo.H>
 #include <algorithm>
 #include <string>
+#include <initializer_list>
 
 namespace xpedite { namespace framework {
 
-  bool initialize(const char* appInfoFile_, bool awaitProfileBegin_ = {});
+  enum Option {
+    AWAIT_PROFILE_BEGIN,
+    DISABLE_REMOTE_PROFILING 
+  };
 
-  bool initialize(const char* appInfoFile_, const char* listenerIp_, bool awaitProfileBegin_ = {});
+  using Options = std::initializer_list<Option>;
+
+  bool initialize(const char* appInfoFile_, Options options_ = {});
+
+  bool initialize(const char* appInfoFile_, const char* listenerIp_, int port_ = {}, Options options_ = {});
 
   bool initializeThread();
 

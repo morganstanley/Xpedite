@@ -50,6 +50,7 @@ class ProfileInfo(object):
 
   def __repr__(self):
     strRepr = 'app name = {}, appHost = {}, appInfo = {}\n'.format(self.appName, self.appHost, self.appInfo)
+    strRepr += 'probes = {}\n'.format(self.probes)
     strRepr += 'pmc = {}, cpuSet = {}\n'.format(self.pmc, self.cpuSet)
     return strRepr
 

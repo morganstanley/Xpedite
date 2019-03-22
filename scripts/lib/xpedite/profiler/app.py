@@ -82,7 +82,7 @@ class XpediteApp(object):
     self.sampleFilePath = '/dev/shm/xpedite-{}-{}-*.data'.format(self.name, self.runId)
     rc = self.env.admin(
       'BeginProfile --samplesFilePattern {} --pollInterval {} --samplesDataCapacity {}'.format(
-      self.sampleFilePath, pollInterval, samplesFileSize if samplesFileSize else -1), timeout)
+      self.sampleFilePath, pollInterval, samplesFileSize if samplesFileSize else 0), timeout)
     if rc:
       errmsg = 'failed to begin profiling - {}'.format(rc)
       raise Exception(errmsg)
