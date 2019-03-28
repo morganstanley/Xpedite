@@ -139,6 +139,18 @@ namespace xpedite { namespace framework {
     }
   }
 
+  std::vector<probes::Probe*> findProbesByName(const char* name_) {
+    return probes::probeList().findByName(name_);
+  }
+
+  std::vector<probes::Probe*> findProbesByLocation(const char* file_, uint32_t line_) noexcept {
+    return probes::probeList().findByLocation(file_, line_);
+  }
+
+  probes::Probe* findProbeByReturnSite(const void* returnSite_) noexcept {
+    return probes::probeList().findByReturnSite(returnSite_);
+  }
+
   SessionGuard Framework::beginProfile(const ProfileInfo& profileInfo_) {
     using namespace xpedite::framework::request;
     ProbeActivationRequest probeActivationRequest {profileInfo_.probes()};
@@ -163,6 +175,7 @@ namespace xpedite { namespace framework {
     ProfileActivationRequest profileActivationRequest {
       StorageMgr::buildSamplesFileTemplate(), MilliSeconds {1}, profileInfo_.samplesDataCapacity()
     };
+    profileActivationRequest.overrideRecorder(profileInfo_.recorder(), profileInfo_.dataProbeRecorder());
     if(!_sessionManager.execute(&profileActivationRequest)) {
       std::ostringstream stream;
       stream << "xpedite failed to activate profile - " << profileActivationRequest.response().errors();

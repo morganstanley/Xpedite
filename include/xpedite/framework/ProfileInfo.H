@@ -13,6 +13,7 @@
 
 #pragma once
 #include <xpedite/probes/ProbeKey.H>
+#include <xpedite/probes/RecorderCtl.H>
 #include <xpedite/pmu/EventSet.h>
 #include <vector>
 #include <string>
@@ -27,10 +28,14 @@ namespace xpedite { namespace framework {
     PMUCtlRequest _pmuRequest;
     uint64_t _samplesDataCapacity;
 
+    XpediteRecorder _recorder;
+    XpediteDataProbeRecorder _dataProbeRecorder;
+
     public:
 
     ProfileInfo(std::vector<std::string> probes_, const PMUCtlRequest& pmuRequest_, uint64_t samplesDataCapacity_ = {})
-      : _probes {}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_} {
+      : _probes {}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_},
+        _recorder {}, _dataProbeRecorder {} {
       _probes.reserve(probes_.size());
       std::for_each(probes_.begin(), probes_.end(), [this](std::string& name_) {
         _probes.emplace_back(ProbeKey {std::move(name_)});
@@ -38,7 +43,8 @@ namespace xpedite { namespace framework {
     }
 
     ProfileInfo(std::vector<ProbeKey> probes_, const PMUCtlRequest& pmuRequest_, uint64_t samplesDataCapacity_ = {})
-      : _probes {std::move(probes_)}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_} {
+      : _probes {std::move(probes_)}, _pmuRequest {pmuRequest_}, _samplesDataCapacity {samplesDataCapacity_},
+        _recorder {}, _dataProbeRecorder {} {
     }
 
     const std::vector<ProbeKey>& probes() const {
@@ -55,6 +61,19 @@ namespace xpedite { namespace framework {
 
     uint64_t samplesDataCapacity() const {
       return _samplesDataCapacity;
+    }
+
+    void overrideRecorder(XpediteRecorder recorder_, XpediteDataProbeRecorder dataProbeRecorder_) noexcept {
+      _recorder = recorder_;
+      _dataProbeRecorder = dataProbeRecorder_;
+    }
+
+    XpediteRecorder recorder() const noexcept {
+      return _recorder;
+    }
+
+    XpediteDataProbeRecorder dataProbeRecorder() const noexcept {
+      return _dataProbeRecorder;
     }
   };
 

@@ -98,6 +98,10 @@ add_executable(embeddedApp test/targets/EmbeddedApp.C)
 target_link_libraries(embeddedApp xpedite)
 install(TARGETS embeddedApp DESTINATION "test")
 
+add_executable(customRecorderApp test/targets/CustomRecorderApp.C)
+target_link_libraries(customRecorderApp xpedite)
+install(TARGETS customRecorderApp DESTINATION "test")
+
 add_executable(multiThreadedApp test/targets/MultiThreadedApp.C)
 target_link_libraries(multiThreadedApp xpedite)
 install(TARGETS multiThreadedApp DESTINATION "test")

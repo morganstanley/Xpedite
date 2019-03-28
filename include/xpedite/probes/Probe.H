@@ -85,6 +85,8 @@ namespace xpedite { namespace probes {
 
     bool isValid(CallSite callSite_, CallSite returnSite_) const noexcept;
 
+    bool matchName(const char* name_) const noexcept;
+    bool matchLocation(const char* file_, uint32_t line_) const noexcept;
     bool match(const char* file_, uint32_t line_, const char* name_) const noexcept;
 
     std::string toString() const;

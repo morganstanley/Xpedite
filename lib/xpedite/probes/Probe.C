@@ -105,15 +105,16 @@ namespace xpedite { namespace probes {
     return true;
   }
 
-  bool Probe::match(const char* file_, uint32_t line_, const char* name_) const noexcept {
-    if(name_ == _name || (name_ && !strcmp(_name, name_))) {
-      return true;
-    }
+  bool Probe::matchName(const char* name_) const noexcept {
+    return name_ == _name || (name_ && !strcmp(_name, name_));
+  }
 
-    if(file_ && strlen(file_) && strstr(_file, file_) && (!line_ || _line == line_)) {
-      return true;
-    }
-    return {};
+  bool Probe::matchLocation(const char* file_, uint32_t line_) const noexcept {
+    return file_ && strlen(file_) && strstr(_file, file_) && (!line_ || _line == line_);
+  }
+
+  bool Probe::match(const char* file_, uint32_t line_, const char* name_) const noexcept {
+    return matchName(name_) || matchLocation(file_, line_);
   }
 
   std::string Probe::toString() const {
