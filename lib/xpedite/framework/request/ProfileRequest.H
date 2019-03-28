@@ -12,6 +12,7 @@
 #pragma once
 #include "Request.H"
 #include <xpedite/pmu/EventSet.h>
+#include <xpedite/probes/RecorderCtl.H>
 
 namespace xpedite { namespace framework { namespace request {
 
@@ -21,14 +22,29 @@ namespace xpedite { namespace framework { namespace request {
     MilliSeconds _pollInterval;
     uint64_t _samplesDataCapacity;
 
+    XpediteRecorder _recorder;
+    XpediteDataProbeRecorder _dataProbeRecorder;
+
     public:
 
     ProfileActivationRequest(std::string samplesFilePattern_, MilliSeconds pollInterval_, uint64_t samplesDataCapacity_)
       : _samplesFilePattern {std::move(samplesFilePattern_)}, _pollInterval {pollInterval_},
-        _samplesDataCapacity {samplesDataCapacity_} {
+        _samplesDataCapacity {samplesDataCapacity_}, _recorder {}, _dataProbeRecorder {} {
+    }
+
+    void overrideRecorder(XpediteRecorder recorder_, XpediteDataProbeRecorder dataProbeRecorder_) noexcept {
+      _recorder = recorder_;
+      _dataProbeRecorder = dataProbeRecorder_;
     }
 
     void execute(Handler& handler_) override {
+      if(_recorder || _dataProbeRecorder) {
+        if(!probes::recorderCtl().activateRecorder(_recorder, _dataProbeRecorder)) {
+          _response.setErrors("Failed to activate custom recorder");
+          return;
+        }
+      }
+
       auto rc = handler_.beginProfile(_samplesFilePattern, _pollInterval, _samplesDataCapacity);
       if(rc.empty()) {
         _response.setValue("");

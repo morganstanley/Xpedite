@@ -108,7 +108,12 @@ namespace xpedite { namespace framework {
           << " | file - " << probe.file() << " | line = " << probe.line() << " |" << XpediteLogEnd;
         probes::probeCtl(probes::Command::DISABLE, probe.file().c_str(), probe.line(), probe.name() != "" ? probe.name().c_str() : nullptr);
       }
+
       disablePMU();
+
+      if(probes::recorderCtl().activeXpediteRecorderType() == probes::RecorderType::CUSTOM_RECORDER) {
+        probes::recorderCtl().activateRecorder(probes::RecorderType::EXPANDABLE_RECORDER);
+      }
     }
   };
 

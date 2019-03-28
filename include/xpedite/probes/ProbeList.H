@@ -12,6 +12,7 @@
 
 #pragma once
 #include <iterator>
+#include <vector>
 #include <xpedite/probes/Probe.H>
 
 namespace xpedite { namespace probes {
@@ -78,7 +79,27 @@ namespace xpedite { namespace probes {
       return true;
     }
 
-    Probe* find(const void* returnSite_) const noexcept {
+    std::vector<Probe*> findByName(const char* name_) const noexcept {
+      std::vector<Probe*> probes {};
+      for(auto& probe : *this) {
+        if(probe.matchName(name_)) {
+          probes.emplace_back(&probe);
+        }
+      }
+      return probes;
+    }
+
+    std::vector<Probe*> findByLocation(const char* file_, uint32_t line_) const noexcept {
+      std::vector<Probe*> probes {};
+      for(auto& probe : *this) {
+        if(probe.matchLocation(file_, line_)) {
+          probes.emplace_back(&probe);
+        }
+      }
+      return probes;
+    }
+
+    Probe* findByReturnSite(const void* returnSite_) const noexcept {
       for(auto& probe : *this) {
         if(probe.recorderReturnSite() == returnSite_) {
           return &probe;

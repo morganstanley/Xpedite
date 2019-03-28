@@ -41,8 +41,10 @@ namespace xpedite { namespace probes {
         return "PMC";
       case (RecorderType::PERF_EVENTS_RECORDER):
         return "Perf Events";
-      case (RecorderType::lOGGING_RECORDER):
+      case (RecorderType::LOGGING_RECORDER):
         return "Logging";
+      case (RecorderType::CUSTOM_RECORDER):
+        return "Custom";
     }
     return "Unknown";
   }
@@ -54,13 +56,15 @@ namespace xpedite { namespace probes {
     _recorders[recorderIndex(RecorderType::EXPANDABLE_RECORDER  )] = xpediteExpandAndRecord;
     _recorders[recorderIndex(RecorderType::PMC_RECORDER         )] = xpediteRecordPmc;
     _recorders[recorderIndex(RecorderType::PERF_EVENTS_RECORDER )] = xpediteRecordPerfEvents;
-    _recorders[recorderIndex(RecorderType::lOGGING_RECORDER     )] = xpediteRecordAndLog;
+    _recorders[recorderIndex(RecorderType::LOGGING_RECORDER     )] = xpediteRecordAndLog;
+    _recorders[recorderIndex(RecorderType::CUSTOM_RECORDER      )] = xpediteExpandAndRecord;
 
     _dataRecorders[recorderIndex(RecorderType::TRIVIAL_RECORDER     )] = xpediteRecordWithData;
     _dataRecorders[recorderIndex(RecorderType::EXPANDABLE_RECORDER  )] = xpediteExpandAndRecordWithData;
     _dataRecorders[recorderIndex(RecorderType::PMC_RECORDER         )] = xpediteRecordPmcWithData;
     _dataRecorders[recorderIndex(RecorderType::PERF_EVENTS_RECORDER )] = xpediteRecordPerfEventsWithData;
-    _dataRecorders[recorderIndex(RecorderType::lOGGING_RECORDER     )] = xpediteRecordWithDataAndLog;
+    _dataRecorders[recorderIndex(RecorderType::LOGGING_RECORDER     )] = xpediteRecordWithDataAndLog;
+    _dataRecorders[recorderIndex(RecorderType::CUSTOM_RECORDER      )] = xpediteExpandAndRecordWithData;
   }
 
   RecorderType RecorderCtl::activeXpediteRecorderType() noexcept {
@@ -89,6 +93,22 @@ namespace xpedite { namespace probes {
       return true;
     }
     return {};
+  }
+
+  bool RecorderCtl::activateRecorder(XpediteRecorder recorder_, XpediteDataProbeRecorder dataProbeRecorder_) noexcept {
+    if(!recorder_ || !dataProbeRecorder_) {
+      XpediteLogError << "Failed to active custom recorder - detected null recorder callback(s)" << XpediteLogEnd;
+      return {};
+    }
+    activeRecorderType = RecorderType::CUSTOM_RECORDER;
+    activeXpediteRecorder = recorder_;
+    activeXpediteDataProbeRecorder = dataProbeRecorder_;
+    xpediteTrampolinePtr = trampoline(false, false, true);
+    xpediteDataProbeTrampolinePtr = trampoline(true, false, true);
+    xpediteIdentityTrampolinePtr = trampoline(false, true, true);
+    XpediteLogInfo << "Activated custom recorder [" << std::hex << recorder_ << " | " << dataProbeRecorder_ 
+      << std::dec << "]" << XpediteLogEnd;
+    return true;
   }
 
   Trampoline RecorderCtl::trampoline(bool canStoreData_, bool canSuspendTxn_, bool nonTrivial_) noexcept {

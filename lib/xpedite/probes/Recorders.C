@@ -48,7 +48,7 @@ extern "C" {
     // Not for use in crit path, for troubleshooting only
     using namespace xpedite::probes;
     xpediteExpandAndRecord(returnSite_, tsc_);
-    if(auto probe = probeList().find(getcallSite(returnSite_))) {
+    if(auto probe = probeList().findByReturnSite(getcallSite(returnSite_))) {
       XpediteLogInfo << "Recording " << probe->toString() << " | timestamp - " << tsc_<< XpediteLogEnd;
     }
     else {
@@ -61,7 +61,7 @@ extern "C" {
     // Not for use in crit path, for troubleshooting only
     using namespace xpedite::probes;
     xpediteExpandAndRecordWithData(returnSite_, data_, tsc_);
-    if(auto probe = probeList().find(getcallSite(returnSite_))) {
+    if(auto probe = probeList().findByReturnSite(getcallSite(returnSite_))) {
       XpediteLogInfo << "Recording (with data*) " << probe->toString() << " | timestamp - " << tsc_<< XpediteLogEnd;
     }
     else {

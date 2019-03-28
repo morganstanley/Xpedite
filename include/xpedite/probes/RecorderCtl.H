@@ -30,7 +30,8 @@ namespace xpedite { namespace probes {
     EXPANDABLE_RECORDER,
     PMC_RECORDER,
     PERF_EVENTS_RECORDER,
-    lOGGING_RECORDER
+    LOGGING_RECORDER,
+    CUSTOM_RECORDER
   };
 
   class RecorderCtl
@@ -53,6 +54,7 @@ namespace xpedite { namespace probes {
 
     bool canActivateRecorder(RecorderType type_) noexcept;
     bool activateRecorder(RecorderType type_) noexcept;
+    bool activateRecorder(XpediteRecorder recorder_, XpediteDataProbeRecorder dataProbeRecorder_) noexcept;
 
     Trampoline trampoline(bool canStoreData_, bool canSuspendTxn_) noexcept;
 

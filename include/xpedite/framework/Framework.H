@@ -19,8 +19,10 @@
 
 #pragma once
 #include <xpedite/framework/ProfileInfo.H>
+#include <xpedite/probes/Probe.H>
 #include <algorithm>
 #include <string>
+#include <vector>
 #include <initializer_list>
 
 namespace xpedite { namespace framework {
@@ -43,6 +45,12 @@ namespace xpedite { namespace framework {
   void pinThread(unsigned core_);
 
   bool halt() noexcept;
+
+  std::vector<probes::Probe*> findProbesByName(const char* name_);
+
+  std::vector<probes::Probe*> findProbesByLocation(const char* file_, uint32_t line_) noexcept;
+
+  probes::Probe* findProbeByReturnSite(const void* returnSite_) noexcept;
 
   class Framework;
   class SessionGuard
