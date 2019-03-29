@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/framework/Options.H>
 #include <xpedite/framework/ProfileInfo.H>
 #include <xpedite/probes/Probe.H>
 #include <algorithm>
@@ -26,13 +27,6 @@
 #include <initializer_list>
 
 namespace xpedite { namespace framework {
-
-  enum Option {
-    AWAIT_PROFILE_BEGIN,
-    DISABLE_REMOTE_PROFILING 
-  };
-
-  using Options = std::initializer_list<Option>;
 
   bool initialize(const char* appInfoFile_, Options options_ = {});
 

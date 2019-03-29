@@ -85,8 +85,8 @@ namespace xpedite { namespace framework {
   Framework::Framework(const char* appInfoPath_, std::vector<Option>&& options_, const char* listenerIp_, in_port_t port_)
     : _appInfoPath {appInfoPath_}, _options {std::move(options_)}, _appInfoStream {}, _sessionManager {}, _canRun {true} {
     try {
-
-      if(!isEnabled(options_, Option::DISABLE_REMOTE_PROFILING)) {
+      XpediteLogInfo << "Initializing framework with options - " << toString(options_) << XpediteLogEnd;
+      if(!isEnabled(_options, Option::DISABLE_REMOTE_PROFILING)) {
         _sessionManager.enableRemoteSession(listenerIp_, port_);
       }
       _appInfoStream.open(appInfoPath_, std::ios_base::out);
