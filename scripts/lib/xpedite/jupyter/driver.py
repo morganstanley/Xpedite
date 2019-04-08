@@ -12,8 +12,6 @@ Author: Dhruv Shekhawat, Morgan Stanley
 import os
 import time
 import socket
-import base64
-import zlib
 import copy
 import logging
 import tempfile
@@ -21,6 +19,7 @@ import nbformat
 from enum                         import Enum
 from nbformat                     import v4 as nbf
 from xpedite.util                 import formatHumanReadable
+from xpedite.util                 import compressText
 from xpedite.types                import InvariantViloation
 from xpedite.jupyter.context      import Context
 from xpedite.jupyter              import PROFILES_KEY
@@ -106,8 +105,7 @@ def buildReportCells(nb, result, dataFilePath):
 
   # create and compress snippets
   snippetData = buildSnippets(xpdProfiles)
-  zSnippetData = zlib.compress(snippetData)
-  zSnippetData = base64.b64encode(zSnippetData)
+  zSnippetData = compressText(snippetData)
   xpdf.appendRecord('snippets', 'snippets', zSnippetData)
 
   cellNum = None

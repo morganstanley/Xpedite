@@ -263,7 +263,7 @@ namespace xpedite { namespace framework {
 
   bool initialize(const char* appInfoFile_, const char* listenerIp_, int port_, Options options_) {
     initializeThread();
-    bool rc {};
+    bool rc {isRunning()};
     std::call_once(initFlag, initializeOnce, appInfoFile_, options_, listenerIp_, static_cast<in_port_t>(port_), &rc);
     return rc;
   }
