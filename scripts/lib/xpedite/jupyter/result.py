@@ -7,8 +7,7 @@ The html reports are compressed and aggregated with adjacent flot data for repor
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-import zlib
-import base64
+from xpedite.util import compressText
 
 class ZippedMarkup(object):
   """Class to store compressed html reports"""
@@ -16,8 +15,7 @@ class ZippedMarkup(object):
   def __init__(self, markup):
     self.name = markup.name
     self.description = markup.description
-    self.zContent = zlib.compress(markup.content)
-    self.zContent = base64.b64encode(self.zContent)
+    self.zContent = compressText(markup.content)
 
 class Reportcell(object):
   """Class to store profile results for a category"""

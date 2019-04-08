@@ -82,3 +82,10 @@ https://github.com/pwaller/pyprof2calltree/blob/master/LICENSE
 
 Copyright (c) 2006-2017 David Allouche, Jp Calderone, Itamar Shtull-Trauring,
 Johan Dahlin, Peter Waller and people listed in CONTRIBUTORS.txt
+
+floatThead
+==========
+
+https://github.com/mkoryak/floatThead/blob/master/LICENSE
+
+Copyright (c) 2012-2020 Misha Koryak

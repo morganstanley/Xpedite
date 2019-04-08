@@ -70,10 +70,14 @@ HTML_BEGIN_FMT = """
   <script> {tipsy} </script>
   <script> {tablesorter} </script>
   <script> {flot} </script>
+  <script> {floatThead} </script>
   <script> {xpedite} </script>
   <script>
   $(document).ready(function () {{
     jQuery('table.tableReport').tablesorter();
+    $('.tableReport').floatThead({{
+      position: 'fixed'
+    }});
   }});
   </script>
 </head>
@@ -93,12 +97,13 @@ TIPSY = loadFile(os.path.join(JS_PATH, 'jquery.tipsy.js'))
 TABLE_SORTER = loadFile(os.path.join(JS_PATH, 'jquery.tablesorter.min.js'))
 FLOT = loadFile(os.path.join(JS_PATH, 'jquery.flot.min.js'))
 VIZ = loadFile(os.path.join(JS_PATH, 'viz.v1.js'))
+FLOAT_THEAD = loadFile(os.path.join(JS_PATH, 'jquery.floatThead.min.js'))
 
 STYLE = STATIC_REPORT_STYLE + XPEDITE_STYLE + CODE_STYLE
 
 HTML_BEGIN = HTML_BEGIN_FMT.format(
   style=STYLE, xpedite=XPEDITE, tipsy=TIPSY, tablesorter=TABLE_SORTER,
-  flot=FLOT, jquery=JQUERY, bootstrap=BOOTSTRAP
+  flot=FLOT, floatThead=FLOAT_THEAD, jquery=JQUERY, bootstrap=BOOTSTRAP
 )
 
 ERROR_TEXT = '<div class="errorText">{}</div>'

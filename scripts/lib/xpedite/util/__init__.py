@@ -233,3 +233,16 @@ def meminfo(remoteConnection=None):
     for line in fileHandle:
       meminfoMap[line.split(':')[0]] = line.split(':')[1].strip()
   return meminfoMap
+
+def compressText(data):
+  """
+  returns compressed data in base64 format
+
+  :param data: Data to be compressed
+
+  """
+  import zlib
+  import base64
+  compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+  zContent = compressor.compress(data) + compressor.flush()
+  return base64.b64encode(zContent)

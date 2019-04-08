@@ -38,9 +38,10 @@ class HtmlReportHandler(tornado.web.RequestHandler):
       xpDataPath = os.path.join(Context.xpediteDataPath, xpdFileName)
       with XpediteDataReader(xpDataPath) as xpd:
         data = xpd.getData(reportKey)
-        htmlData = base64.b64decode(data)
-        htmlStr = zlib.decompress(htmlData)
-        self.finish(htmlStr)
+        markupGz = base64.b64decode(data)
+        self.set_header("Content-type", 'text/html')
+        self.set_header("Content-Encoding", 'gzip')
+        self.finish(markupGz)
     except IOError:
       ioErr = 'Could not read html content from nbPath parameter. Check if file exists.'
       self.finish(ioErr)
