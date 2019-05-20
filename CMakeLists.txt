@@ -49,6 +49,12 @@ add_executable(xpediteSamplesLoader ${bin_files})
 target_link_libraries(xpediteSamplesLoader xpedite)
 install(TARGETS xpediteSamplesLoader DESTINATION "bin")
 
+add_library(xpedite-pic SHARED ${lib_files})
+set_property(TARGET xpedite-pic PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(xpedite-pic pthread rt dl)
+target_compile_definitions(xpedite-pic PRIVATE XPEDITE_PIE=1)
+install(TARGETS xpedite-pic DESTINATION "lib")
+
 ######################### Kernel module #############################
 
 Set(DRIVER_FILE xpedite.ko)
@@ -139,3 +145,7 @@ if(GTEST_FOUND)
   add_test(NAME testXpedite
          COMMAND testXpedite)
 endif()
+
+message("Starting Xpedite Java Setup")
+include(java/java_setup.cmake)
+java_setup()

@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Class-Path: tools.jar javassist.jar=
+Premain-Class: com.xpedite.Xpedite
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
+Boot-Class-Path: javassist.jar

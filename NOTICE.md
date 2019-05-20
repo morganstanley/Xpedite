@@ -89,3 +89,10 @@ floatThead
 https://github.com/mkoryak/floatThead/blob/master/LICENSE
 
 Copyright (c) 2012-2020 Misha Koryak
+
+javassist
+==========
+
+https://github.com/jboss-javassist/javassist/blob/master/License.html
+
+Copyright (C) 1999- Shigeru Chiba. All Rights Reserved

@@ -18,3 +18,4 @@ ko/xpedite.mod.c
 ko/xpedite.ko.unsigned
 .tmp_versions
 scripts/bin/xpeditec
+*.class
