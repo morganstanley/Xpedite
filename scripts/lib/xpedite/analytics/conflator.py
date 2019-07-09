@@ -106,7 +106,7 @@ class Conflator(object):
     dst = self.copyProfileLayout(profiles[0], category, route)
     for src in profiles:
       self.conflateTimelineStats(route, src.current, dst.current)
-      for name, benchmarkTLS in src.benchmarks.iteritems():
+      for name, benchmarkTLS in src.benchmarks.items():
         dstBenchmarkTLS = dst.benchmarks[name] if name in dst.benchmarks else Conflator.createTimelineStats(
           benchmarkTLS, category, route
         )

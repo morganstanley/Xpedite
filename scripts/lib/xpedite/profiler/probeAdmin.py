@@ -33,7 +33,7 @@ class ProbeAdmin(object):
     result = app.admin(cmd, timeout=10)
     if result:
       result = result.strip()
-      return ProbeFactory(app.workspace).buildFromRecords(result.split('\n')).values()
+      return list(ProbeFactory(app.workspace).buildFromRecords(result.split('\n')).values())
     else:
       raise Exception('failed to query probes - have you instrumentd any xpedite probes in your binary ?')
 
@@ -121,4 +121,4 @@ class ProbeAdmin(object):
     """
     from xpedite.types.containers import ProbeMap
     probes = ProbeAdmin.getProbes(app)
-    return ProbeMap(probes, probes).namedProbeMap.values()
+    return list(ProbeMap(probes, probes).namedProbeMap.values())

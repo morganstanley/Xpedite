@@ -49,7 +49,7 @@ class ObjectFactory(object):
 
   def build(self, obj, record):
     """Sets attributes of an uarch event with values from given record"""
-    for fieldName, value in record.iteritems():
+    for fieldName, value in record.items():
       if fieldName in self.attrMap:
         self.attrMap[fieldName].initialize(obj, value)
     return obj
@@ -97,47 +97,47 @@ class EventsLoader(object):
   def jsonGenericCoreFactory():
     """Builds a factory for creating generic uarch events"""
     factory = ObjectFactory()
-    factory.add(u'EventName',          'name',             lambda v : v)
-    factory.add(u'EventCode',          'eventSelect',      lambda v : int(v, 16))
-    factory.add(u'UMask',              'unitMask',         lambda v : int(v, 16))
-    factory.add(u'CounterMask',        'counterMask',      int)
-    factory.add(u'Invert',             'invert',           lambda v : int(v) != 0)
-    factory.add(u'BriefDescription',   'briefDescription', lambda v : v if v else 'unknown')
-    factory.add(u'PublicDescription',  'description',      lambda v : v if v else 'unknown')
-    factory.add(u'Counter',            '_validSmtPmc',     EventsLoader.decodePmcList)
-    factory.add(u'CounterHTOff',       '_validPmc',        EventsLoader.decodePmcList)
-    factory.add(u'MSRIndex',           'msrIndex',         lambda v : v)
-    factory.add(u'MSRValue',           'msrValue',         lambda v : int(v, 16))
-    factory.add(u'AnyThread',          'anyThread',        int)
-    factory.add(u'EdgeDetect',         'edgeDetect',       lambda v : int(v) != 0)
-    factory.add(u'PEBS',               'pebs',             lambda v : int(v) != 0)
-    factory.add(u'TakenAlone',         'takenAlone',       lambda v : int(v) != 0)
-    factory.add(u'Data_LA',            'dataLA',           lambda v : int(v) != 0)
-    factory.add(u'L1_Hit_Indication',  'l1HitIndication',  lambda v : int(v) != 0)
-    factory.add(u'Errata',             'errata',           lambda v : v)
+    factory.add('EventName',          'name',             lambda v : v)
+    factory.add('EventCode',          'eventSelect',      lambda v : int(v, 16))
+    factory.add('UMask',              'unitMask',         lambda v : int(v, 16))
+    factory.add('CounterMask',        'counterMask',      int)
+    factory.add('Invert',             'invert',           lambda v : int(v) != 0)
+    factory.add('BriefDescription',   'briefDescription', lambda v : v if v else 'unknown')
+    factory.add('PublicDescription',  'description',      lambda v : v if v else 'unknown')
+    factory.add('Counter',            '_validSmtPmc',     EventsLoader.decodePmcList)
+    factory.add('CounterHTOff',       '_validPmc',        EventsLoader.decodePmcList)
+    factory.add('MSRIndex',           'msrIndex',         lambda v : v)
+    factory.add('MSRValue',           'msrValue',         lambda v : int(v, 16))
+    factory.add('AnyThread',          'anyThread',        int)
+    factory.add('EdgeDetect',         'edgeDetect',       lambda v : int(v) != 0)
+    factory.add('PEBS',               'pebs',             lambda v : int(v) != 0)
+    factory.add('TakenAlone',         'takenAlone',       lambda v : int(v) != 0)
+    factory.add('Data_LA',            'dataLA',           lambda v : int(v) != 0)
+    factory.add('L1_Hit_Indication',  'l1HitIndication',  lambda v : int(v) != 0)
+    factory.add('Errata',             'errata',           lambda v : v)
     return factory
 
   fixedCounterPrefix = 'Fixed counter '
   def jsonFixedCoreFactory(self):
     """Builds a factory for creating fixed uarch events"""
     factory = self.jsonGenericCoreFactory()
-    factory.add(u'Counter', '_validSmtPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
-    factory.add(u'CounterHTOff', '_validPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
+    factory.add('Counter', '_validSmtPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
+    factory.add('CounterHTOff', '_validPmc', lambda v : int(v.split(EventsLoader.fixedCounterPrefix)[1]))
     return factory
 
   def jsonOffCoreFactory(self):
     """Builds a factory for creating offcore uarch events"""
     factory = self.jsonGenericCoreFactory()
-    factory.add(u'EventCode', 'eventSelect', lambda v : [int(ec, 16) for ec in v.split(',')])
+    factory.add('EventCode', 'eventSelect', lambda v : [int(ec, 16) for ec in v.split(',')])
     return factory
 
   def jsonFactory(self, record):
     """Builds a factory based on the type of the record"""
-    offcoreFlag = record[u'Offcore'] if u'Offcore' in record else 0
-    if int(offcoreFlag) != 0 or record[u'EventName'] == 'OFFCORE_RESPONSE':
+    offcoreFlag = record['Offcore'] if 'Offcore' in record else 0
+    if int(offcoreFlag) != 0 or record['EventName'] == 'OFFCORE_RESPONSE':
       factory = self.jsonOffCoreFactory()
       return lambda r : factory.build(OffCoreEvent(), r)
-    elif record[u'Counter'].startswith(EventsLoader.fixedCounterPrefix):
+    elif record['Counter'].startswith(EventsLoader.fixedCounterPrefix):
       factory = self.jsonFixedCoreFactory()
       return lambda r : factory.build(FixedCoreEvent(), r)
     factory = self.jsonGenericCoreFactory()
@@ -146,8 +146,8 @@ class EventsLoader(object):
   @staticmethod
   def isOffcoreEventRecord(record):
     """Checks if a uarch spec record requires programming offcore registers"""
-    offcoreFlag = record[u'Offcore'] if u'Offcore' in record else 0
-    return int(offcoreFlag) != 0 or record[u'EventName'] == 'OFFCORE_RESPONSE'
+    offcoreFlag = record['Offcore'] if 'Offcore' in record else 0
+    return int(offcoreFlag) != 0 or record['EventName'] == 'OFFCORE_RESPONSE'
 
   def loadJson(self, eventsFile):
     """

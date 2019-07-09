@@ -56,7 +56,7 @@ class TreeCollection(object):
       indent = '\t' * level if level else ''
       nodeStr = 'Node (item count - {} | children - {})\n'.format(len(self.collection), len(self.children))
       i = 1
-      for name, child in self.children.iteritems():
+      for name, child in self.children.items():
         nodeStr = nodeStr + indent + '{}. child[{}] -> '.format(i, name) + child.__repr__(level + 1) + '\n'
         i = i + 1
       return nodeStr
@@ -145,7 +145,7 @@ class CompositeTreeCollection(object):
 
       self.collectionMap.update({treeName : node.collection})
 
-      for childName, child in node.children.iteritems():
+      for childName, child in node.children.items():
         if childName in self.children:
           compositeChild = self.children[childName]
         else:
@@ -158,10 +158,10 @@ class CompositeTreeCollection(object):
     def __repr__(self, level=0):
       """Returns string representation of a Composite Tree Collection Node"""
       indent = '\t' * level if level else ''
-      itemCountMap = {name : len(collection) for name, collection in self.collectionMap.iteritems()}
+      itemCountMap = {name : len(collection) for name, collection in self.collectionMap.items()}
       nodeStr = 'CompositeNode (item counts - {} | children - {})\n'.format(itemCountMap, len(self.children))
       i = 1
-      for name, child in self.children.iteritems():
+      for name, child in self.children.items():
         nodeStr = nodeStr + indent + '{}. child[{}] -> '.format(i, name) + child.__repr__(level + 1) + '\n'
         i = i + 1
       return nodeStr
@@ -234,7 +234,7 @@ class TreeCollectionFactory(object):
     childNodes = []
     for node in nodes:
       subCollectionMap = classifier(node.collection, node.ancestry)
-      for name, subCollection in subCollectionMap.iteritems():
+      for name, subCollection in subCollectionMap.items():
         child = node.addChild(name, subCollection)
         childNodes.append(child)
     return childNodes
@@ -249,7 +249,7 @@ class TreeCollectionFactory(object):
 
     """
     compositeTree = CompositeTreeCollection()
-    for name, collection in collectionsMap.iteritems():
+    for name, collection in collectionsMap.items():
       tree = TreeCollectionFactory.buildTreeCollection(name, collection, treeClassifiers)
       compositeTree.addTree(tree)
     return compositeTree

@@ -122,12 +122,12 @@ class Extractor(object):
       self.orphanedRecords.append(record)
       return None
     data = fields[self.INDEX_DATA]
-    tsc = long(fields[self.INDEX_TSC], 16)
+    tsc = int(fields[self.INDEX_TSC], 16)
 
     counter = Counter(threadId, probes[addr], data, tsc)
     if len(fields) > self.MIN_FIELD_COUNT:
       for pmc in fields[self.MIN_FIELD_COUNT+1:]:
-        counter.addPmc(long(pmc))
+        counter.addPmc(int(pmc))
     if self.counterFilter.canLoad(counter):
       loader.loadCounter(counter)
     return counter

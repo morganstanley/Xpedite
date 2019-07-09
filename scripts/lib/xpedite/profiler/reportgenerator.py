@@ -45,7 +45,7 @@ class ReportGenerator(object):
 
     """
     histograms = {}
-    txnCollections = [repo.getCurrent()] + repo.getBenchmarks().values()
+    txnCollections = [repo.getCurrent()] + list(repo.getBenchmarks().values())
     if not txnCollections[0].isCurrent() or txnCollections[0].name != CURRENT_RUN:
       from xpedite.types import InvariantViloation
       raise InvariantViloation(
@@ -55,7 +55,7 @@ class ReportGenerator(object):
 
     elapsedTimeBundles = self.analytics.buildElapsedTimeBundles(txnCollections, classifier)
 
-    for category, elaspsedTimeBundle in elapsedTimeBundles.iteritems():
+    for category, elaspsedTimeBundle in elapsedTimeBundles.items():
       buckets = buildBuckets(elaspsedTimeBundle[0], 35)
       if not buckets:
         LOGGER.debug('category %s has not enough data points to generate histogram', category)

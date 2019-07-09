@@ -89,7 +89,7 @@ class AppInfo(object):
 
       tscHzInfo = records[self.INDEX_TSC_HZ].split()
       if len(tscHzInfo) >= 2:
-        self.tscHz = long(tscHzInfo[1])
+        self.tscHz = int(tscHzInfo[1])
       else:
         self.raiseError(
           'failed to load tscHz from appinfo from file {} | line {}'.format(self.path, records[self.INDEX_TSC_HZ])

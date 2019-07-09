@@ -192,7 +192,7 @@ class FrameworkController(ArgparseController):
   @expose(help='List the NON Archtectural hardware performance counters, that can be profiled with xpedite')
   def list(self):
     eventsDb = _loadPerfEventsDb()
-    for n, e in eventsDb.eventsMap.iteritems():
+    for n, e in eventsDb.eventsMap.items():
       LOGGER.info(e)
     LOGGER.info('')
 
@@ -200,7 +200,7 @@ class FrameworkController(ArgparseController):
   def metrics(self):
     from xpedite.pmu.topdown import Topdown
     topdown = Topdown(_loadPerfEventsDb())
-    for n, m in topdown.metrics().iteritems():
+    for n, m in topdown.metrics().items():
       LOGGER.info('%s', topdown.metricsToString(n))
     LOGGER.info('')
 

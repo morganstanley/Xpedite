@@ -114,7 +114,7 @@ def downloadUarchSpecDb(uarchSpecDb):
 
   """
   onceFlag = False
-  for _, uarchSpec in uarchSpecDb.iteritems():
+  for _, uarchSpec in uarchSpecDb.items():
     if not os.path.exists(uarchSpec.coreEventsDbFile):
       if not onceFlag:
         LOGGER.info('syncing uarch spec database for %d micro architectures', len(uarchSpecDb))

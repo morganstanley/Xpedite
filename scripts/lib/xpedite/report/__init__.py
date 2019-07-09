@@ -99,7 +99,7 @@ def generate(app, profiles, histograms, resultOrder, classifier, txnFilter, benc
   """
   envReport = generateEnvironmentReport(app, profiles.transactionRepo, resultOrder, classifier,
       txnFilter, benchmarkPaths)
-  categories = {name : Report.Category(name, histogram) for name, histogram in histograms.iteritems()}
+  categories = {name : Report.Category(name, histogram) for name, histogram in histograms.items()}
   for profile in profiles:
     category = categories.get(profile.category, None)
     if category:

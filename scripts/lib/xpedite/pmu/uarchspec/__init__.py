@@ -69,13 +69,13 @@ class UarchSpecDb(object):
   def __getitem__(self, cpuId):
     return self.uarchSpecMap[cpuId] if cpuId in self.uarchSpecMap else None
 
-  def iteritems(self):
+  def items(self):
     """Returns an iterable for events in this database"""
-    return self.uarchSpecMap.iteritems()
+    return self.uarchSpecMap.items()
 
   def __repr__(self):
     repStr = 'UarchSpecDb ({}) entries'.format(len(self.uarchSpecMap))
-    for cpuId, uarchSpec in self.uarchSpecMap.iteritems():
+    for cpuId, uarchSpec in self.uarchSpecMap.items():
       repStr += '\n\t{}\t{}'.format(cpuId, uarchSpec)
     return repStr
 

@@ -50,7 +50,7 @@ class Analytics(object):
         )
       )
       if elapsedTscMap:
-        for category, elapsedTscList in elapsedTscMap.iteritems():
+        for category, elapsedTscList in elapsedTscMap.items():
           if category in elapsedTscBundles:
             elapsedTscBundles[category].append(elapsedTscList)
           else:
@@ -95,7 +95,7 @@ class Analytics(object):
 
     treeClassifiers[1] = RouteConflatingAggregator(txnTree).aggregateTxnsByRoutes
     benchmarkCompositeTree = TreeCollectionFactory.buildCompositeTreeCollection(
-      {name : collection.getSubCollection() for name, collection in txnRepo.getBenchmarks().iteritems()},
+      {name : collection.getSubCollection() for name, collection in txnRepo.getBenchmarks().items()},
       treeClassifiers
     )
     return(txnTree, benchmarkCompositeTree)
@@ -136,9 +136,9 @@ class Analytics(object):
     txnTree, benchmarkCompositeTree = self.buildTxnTree(txnRepo, classifier)
     profiles = Profiles(name, txnRepo)
 
-    for category, categoryNode in txnTree.getChildren().iteritems():
+    for category, categoryNode in txnTree.getChildren().items():
       i = 1
-      for route, txnNode in categoryNode.children.iteritems():
+      for route, txnNode in categoryNode.children.items():
         routeName = ' [route - {}]'.format(i) if len(categoryNode.children) > 1 else ''
         profileName = '{} - {}{}'.format(name, category, routeName)
         begin = time.time()
@@ -188,7 +188,7 @@ class Analytics(object):
       txnMap = txnCollection.txnMap
       filteredCount = 0
       unfilteredCount = len(txnMap)
-      for tid, txn in txnMap.iteritems():
+      for tid, txn in txnMap.items():
         if not txnFilter(txnCollection.name, txn):
           del txnMap[tid]
           filteredCount += 1

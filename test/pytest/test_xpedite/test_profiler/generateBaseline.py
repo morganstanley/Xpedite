@@ -12,7 +12,7 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 import os
 import json
-import cPickle as pickle
+import pickle
 import argparse
 from shutil                               import copy
 from xpedite.benchmark                    import makeBenchmark

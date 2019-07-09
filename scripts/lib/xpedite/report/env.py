@@ -65,7 +65,7 @@ class EnvReportBuilder(object):
       heading.th('Value')
 
       tbody = table.tbody
-      for i, (k, val) in enumerate(info.iteritems()):
+      for i, (k, val) in enumerate(info.items()):
         row = tbody.tr
         row.td('{:,}'.format(i+1), klass=TD_KEY)
         row.td('{} '.format(k), klass=TD_KEY)

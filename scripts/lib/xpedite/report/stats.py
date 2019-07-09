@@ -195,7 +195,7 @@ class StatsBuilder(object):
       tabHeader = ''
       tabBody = ''
       tableCount = 0
-      for eventName, deltaSeriesCollection in timelineStats.deltaSeriesRepo.iteritems():
+      for eventName, deltaSeriesCollection in timelineStats.deltaSeriesRepo.items():
         tabId = '{}_{}'.format(eventName, makeUniqueId())
         tabId = tabId.replace(' ', '_').replace('.', '_').replace(':', '_')
         tabHeader += TAB_HEADER_FMT.format(tabId, tabState(tableCount == 0), eventName)

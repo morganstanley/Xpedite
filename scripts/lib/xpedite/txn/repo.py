@@ -74,7 +74,7 @@ class TxnRepo(object):
 
   def getTxnCollections(self):
     """Returns transaction collections for current profile session and benchmarks"""
-    return [self._currentCollection] + self._benchmarkCollections.values()
+    return [self._currentCollection] + list(self._benchmarkCollections.values())
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
