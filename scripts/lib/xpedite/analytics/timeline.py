@@ -308,9 +308,9 @@ class DeltaSeriesRepo(object):
     """Returns a duration collection for a given event"""
     return self.deltaSeriesCollectionMap[eventName]
 
-  def iteritems(self):
+  def items(self):
     """Returns iterable items from the underlying container"""
-    return self.deltaSeriesCollectionMap.iteritems()
+    return self.deltaSeriesCollectionMap.items()
 
   def isEventsEnabled(self):
     """Checks if this repository stores data for PMU events"""
@@ -319,7 +319,7 @@ class DeltaSeriesRepo(object):
   def __repr__(self):
     """Returns str representation of this Duration Series Repo"""
     durationSeriesRepoStr = ''
-    for name, deltaSeriesCollection in self.deltaSeriesCollectionMap.iteritems():
+    for name, deltaSeriesCollection in self.deltaSeriesCollectionMap.items():
       durationSeriesRepoStr += '{}{}\n'.format(name, deltaSeriesCollection)
     return 'Duration Series Repo \n pmc {}\ntopdown {}\n{}'.format(
       self.pmcNames, self.topdownKeys, durationSeriesRepoStr

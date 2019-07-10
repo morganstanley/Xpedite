@@ -45,7 +45,7 @@ def _loadProbes(app):
       pingApp(app)
       return ProbeAdmin.loadProbes(app)
   except Exception as _:
-    return app.appInfo.probes.values()
+    return list(app.appInfo.probes.values())
 
 class Profiler(object):
   """Xpedite Profiler"""

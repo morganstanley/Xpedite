@@ -63,7 +63,7 @@ def buildHistograms(ticks, series, stack=False):
 
   """
   totalWidth = 0.8
-  options = {'xaxis': {'ticks': zip(range(0, len(ticks)), ticks)}}
+  options = {'xaxis': {'ticks': list(zip(range(0, len(ticks)), ticks))}}
 
   if stack:
     options['series'] = {'stack': True}
@@ -85,7 +85,7 @@ def buildHistograms(ticks, series, stack=False):
     data.append(
       {
         'label': name,
-        'data': zip([offset(centre) for centre in range(0, len(serie))], serie),
+        'data': list(zip([offset(centre) for centre in range(0, len(serie))], serie)),
         'shadowSize': 4,
         'bars':
         {

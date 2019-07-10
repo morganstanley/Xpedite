@@ -38,8 +38,9 @@ def buildSnippets(profiles):
       profile.current.timelineCollection[0].txnId, profile.current.timelineCollection[txnCount - 1].txnId
     )
     txnsDiffArgs = '([{}, {}], [{}, {}])'.format(
-      profile.current.timelineCollection[0].txnId, profile.current.timelineCollection[txnCount / 4].txnId,
-      profile.current.timelineCollection[txnCount / 2].txnId, profile.current.timelineCollection[txnCount - 1].txnId
+      profile.current.timelineCollection[0].txnId, profile.current.timelineCollection[int(txnCount / 4)].txnId,
+      profile.current.timelineCollection[int(txnCount / 2)].txnId,
+      profile.current.timelineCollection[txnCount - 1].txnId
     )
 
     txnCode = [breakCommand('txns{}'.format(routeProbes))]

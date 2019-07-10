@@ -72,7 +72,7 @@ class ExpectedResultFiles(object):
     """
     Load files with expected results for comparison
     """
-    import cPickle as pickle
+    import pickle
     from xpedite.jupyter.xpediteData    import XpediteDataReader
     with open(os.path.join(dataDir, PROBE_CMD_BASELINE_PATH)) as probeFileHandle:
       self.baselineProbeMap = pickle.load(probeFileHandle) # pylint: disable=c-extension-no-member
@@ -272,7 +272,7 @@ class ScenarioLoader(object):
 
   def __iter__(self):
     """Support iterating over scenario loader objects"""
-    for _, value in self._scenarios.iteritems():
+    for _, value in self._scenarios.items():
       yield value
 
   def keys(self):

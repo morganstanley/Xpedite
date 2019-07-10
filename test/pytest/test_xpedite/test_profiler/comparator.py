@@ -21,7 +21,7 @@ def findDiff(dict1, dict2, path=''):
     return
 
   for key in dict1.keys():
-    if not dict2.has_key(key):
+    if key not in dict2:
       LOGGER.info('---------------- DIFF ----------------\n')
       LOGGER.info('Object 1 key %s does not eixst in Object 2', key)
       continue
@@ -31,7 +31,7 @@ def findDiff(dict1, dict2, path=''):
     formatKey = dict1[key].__class__.__name__
     if path == '':
       path = key
-    elif Formatters.formatters.has_key(formatKey):
+    elif formatKey in Formatters.formatters:
       func = Formatters.formatters[formatKey]
       path = '{} -> {}: {}'.format(path, key, func(dict1[key]))
     else:

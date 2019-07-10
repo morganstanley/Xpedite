@@ -97,7 +97,7 @@ class FlotBuilder(object):
           seriesId :
           {
             'label': name,
-            'data': zip(range(0, len(serie)), serie),
+            'data': list(zip(range(0, len(serie)), serie)),
             'points': {'show' : True},
             'lines': {'show' : True}
           }
@@ -165,7 +165,7 @@ class FlotBuilder(object):
     tscDeltaSeriesCollection = timelineStats.getTscDeltaSeriesCollection()
     for i, _ in enumerate(tscDeltaSeriesCollection):
       series = [(timelineStats.name, tscDeltaSeriesCollection[i])]
-      for benchmarkName, benchmarkTls in benchmarkTlsMap.iteritems():
+      for benchmarkName, benchmarkTls in benchmarkTlsMap.items():
         series.append((benchmarkName, benchmarkTls.getTscDeltaSeriesCollection()[i]))
       seriesMap = FlotBuilder.buildFlotSeriesMap(series, uid)
       flotData.append(seriesMap)

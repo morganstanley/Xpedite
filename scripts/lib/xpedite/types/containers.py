@@ -76,7 +76,7 @@ class ProbeMap(object):
     :param probeMap: A map of probe to value
 
     """
-    for probe, value in probeMap.iteritems():
+    for probe, value in probeMap.items():
       if probe.isAnchored():
         self.anchoredProbeMap.update({probe:value})
         self.namedProbeMap.update({probe.sysName:value})

@@ -49,7 +49,7 @@ class TxnCollection(object):
     self.cpuInfo = cpuInfo
     for txn in txnMap.values():
       txn.finalize()
-    self.txnMap = OrderedDict(sorted(txnMap.iteritems(), key=lambda pair: pair[1].begin.tsc))
+    self.txnMap = OrderedDict(sorted(txnMap.items(), key=lambda pair: pair[1].begin.tsc))
     if len(self.txnMap) != len(txnMap):
       raise Exception('failed to reorder transaction for {}'.format(name))
     self.probes = probes
@@ -61,7 +61,7 @@ class TxnCollection(object):
   def getSubCollection(self):
     """Builds an instance of transaction sub collection"""
     return TxnSubCollection(
-      self.name, self.cpuInfo, self.txnMap.values(), self.probes, self.topdownMetrics, self.events
+      self.name, self.cpuInfo, list(self.txnMap.values()), self.probes, self.topdownMetrics, self.events
     )
 
   def isCurrent(self):
@@ -79,6 +79,6 @@ class TxnCollection(object):
     return rep
 
   def __eq__(self, other):
-    selfDict = dict((k, val) for k, val in self.__dict__.iteritems() if k != 'repo' and k != 'dataSource')
-    otherDict = dict((k, val) for k, val in other.__dict__.iteritems() if k != 'repo' and k != 'dataSource')
+    selfDict = dict((k, val) for k, val in self.__dict__.items() if k != 'repo' and k != 'dataSource')
+    otherDict = dict((k, val) for k, val in other.__dict__.items() if k != 'repo' and k != 'dataSource')
     return selfDict == otherDict

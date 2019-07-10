@@ -23,6 +23,6 @@ class Config(object):
 
   def __repr__(self):
     cfgStr = 'Xpedite Configurations'
-    for k, val in vars(self).iteritems():
+    for k, val in vars(self).items():
       cfgStr += '\n\t{} - {}'.format(k, val)
     return cfgStr

@@ -62,5 +62,5 @@ class PMUResultsLoader(object):
     """
     Support iterating
     """
-    for _, value in self._pmuResults.iteritems():
+    for _, value in self._pmuResults.items():
       yield value

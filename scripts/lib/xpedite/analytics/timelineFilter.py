@@ -52,7 +52,7 @@ class TimelineFilter(object):
     if not current:
       return None
     dstProfile = Profile(srcProfile.name, current, {})
-    for name, tls in srcProfile.benchmarks.iteritems():
+    for name, tls in srcProfile.benchmarks.items():
       filteredtls = self.filterTimelineStats(tls)
       if filteredtls:
         dstProfile.benchmarks.update({name:filteredtls})
