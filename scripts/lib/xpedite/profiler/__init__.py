@@ -208,7 +208,7 @@ class Profiler(object):
     """
     profileInfo = loadProfileInfo(profileInfoPath)
     app = XpediteApp('app', profileInfo.appHost, profileInfo.appInfo)
-    return _loadProbes(app)
+    return _loadProbes(app), profileInfo
 
   @staticmethod
   def generate(appInfoPath, hostname=None):
