@@ -101,7 +101,8 @@ class AppController(ArgparseController):
   )
   def probes(self):
     from xpedite.profiler import Profiler
-    probes = Profiler.probes(self.app.pargs.profileInfo)
+    profileInfoPath = self.app.pargs.profileInfo
+    probes, profileInfo = Profiler.probes(profileInfoPath)
     if(len(probes)):
       LOGGER.info('%-80s \t %s', 'probe name', 'status')
       for probe in probes:
