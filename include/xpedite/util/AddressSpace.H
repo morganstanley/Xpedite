@@ -37,10 +37,10 @@ namespace xpedite { namespace util {
       Segment() = default;
 
       Segment(Pointer begin_, Pointer end_, bool canRead_, bool canWrite_, bool canExec_,
-          bool isPositionIndependent_, std::string file_)
+          bool isPositionIndependent_, bool isHugePage_, std::string file_)
         : _begin {begin_}, _end {end_},
           _protections {protections(canRead_, canWrite_, canExec_)}, _isPatchable {},
-          _isPositionIndependent {isPositionIndependent_}, _file {std::move(file_)} {
+          _isPositionIndependent {isPositionIndependent_}, _isHugePage {isHugePage_}, _file {std::move(file_)} {
       }
 
       Pointer begin()              const noexcept { return _begin;                    }
@@ -50,6 +50,7 @@ namespace xpedite { namespace util {
       bool canExec()               const noexcept { return _protections & PROT_EXEC;  }
       bool isPatchable()           const noexcept { return _isPatchable;              }
       bool isPositionIndependent() const noexcept { return _isPositionIndependent;    }
+      bool isHugePage()            const noexcept { return _isHugePage;               }
       const std::string& file()    const noexcept { return _file;                     }
 
       explicit operator bool() const noexcept {
@@ -100,6 +101,7 @@ namespace xpedite { namespace util {
       int _protections;
       bool _isPatchable;
       bool _isPositionIndependent;
+      bool _isHugePage;
       std::string _file;
     };
 

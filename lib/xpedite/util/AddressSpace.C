@@ -18,6 +18,8 @@
 #include <fstream>
 #include <iostream>
 
+constexpr int HUGE_PAGE_SIZE = 2 * 1024 * 1024;
+
 namespace xpedite { namespace util {
 
   AddressSpace* AddressSpace::_instance;
@@ -26,7 +28,7 @@ namespace xpedite { namespace util {
     os_ << "Segment [" << this << "] {" << 
         std::hex << static_cast<const void*>(_begin) << "-" << static_cast<const void*>(_end) << " | " << std::dec <<
         "can read - " << canRead() << ", can write - " << canWrite() << ", can exec - " << canExec() <<
-        ", is position independent - " << isPositionIndependent() << ", file - " << file() <<
+        ", is position independent - " << isPositionIndependent() << ", is hugepage - " << isHugePage() << ", file - " << file() <<
       "}";
   }
 
@@ -37,6 +39,11 @@ namespace xpedite { namespace util {
   }
 
   const char* anonymousSegment {"[anonymous]"};
+  const char* hugePageSegment {"hugepage"};
+
+  bool isMappingHugePage(unsigned long long size_, std::string file_) {
+    return !(size_ % HUGE_PAGE_SIZE) && file_.find(hugePageSegment) != std::string::npos;
+  }
 
   AddressSpace::Segment readSegment(std::string record, const std::string& executablePath_) {
     std::string range, flags, file;
@@ -60,7 +67,8 @@ namespace xpedite { namespace util {
     if(std::getline(stream, begin, '-') && std::getline(stream, end, ' ')) {
       auto b = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(begin, 0, 16));
       auto e = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(end, 0, 16));
-      return AddressSpace::Segment {b, e, flags[0] == 'r', flags[1] == 'w', flags[2] == 'x', isPositionIndependent, file};
+      auto isHugePage = isMappingHugePage(e - b, file);
+      return AddressSpace::Segment {b, e, flags[0] == 'r', flags[1] == 'w', flags[2] == 'x', isPositionIndependent, isHugePage, file};
     }
     return {};
   }
