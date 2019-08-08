@@ -41,7 +41,7 @@ namespace xpedite { namespace util {
   const char* anonymousSegment {"[anonymous]"};
   const char* hugePageSegment {"hugepage"};
 
-  bool isMappingHugePage(unsigned long long size_, std::string file_) {
+  bool isMappingHugePage(unsigned long long size_, const std::string& file_) {
     return !(size_ % HUGE_PAGE_SIZE) && file_.find(hugePageSegment) != std::string::npos;
   }
 
@@ -55,19 +55,20 @@ namespace xpedite { namespace util {
       while(stream) {
         stream >> file;
       }
-      if(file[0] != '/' && file[0] != '[') {
-        // Anonymous memory segment
-        file = anonymousSegment;
-      }
     }
 
-    bool isPositionIndependent {file != executablePath_ && file != anonymousSegment};
     std::istringstream stream {range};
     std::string begin, end;
     if(std::getline(stream, begin, '-') && std::getline(stream, end, ' ')) {
       auto b = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(begin, 0, 16));
       auto e = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(end, 0, 16));
       auto isHugePage = isMappingHugePage(e - b, file);
+
+      if(file[0] != '/' && file[0] != '[') {
+        // Anonymous memory segment
+        file = anonymousSegment;
+      }
+      bool isPositionIndependent {file != executablePath_ && file != anonymousSegment};
       return AddressSpace::Segment {b, e, flags[0] == 'r', flags[1] == 'w', flags[2] == 'x', isPositionIndependent, isHugePage, file};
     }
     return {};
