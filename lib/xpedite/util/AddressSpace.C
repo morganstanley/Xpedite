@@ -55,20 +55,19 @@ namespace xpedite { namespace util {
       while(stream) {
         stream >> file;
       }
+      if(file[0] != '/' && file[0] != '[') {
+        // Anonymous memory segment
+        file = anonymousSegment;
+      }
     }
 
+    bool isPositionIndependent {file != executablePath_ && file != anonymousSegment};
     std::istringstream stream {range};
     std::string begin, end;
     if(std::getline(stream, begin, '-') && std::getline(stream, end, ' ')) {
       auto b = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(begin, 0, 16));
       auto e = reinterpret_cast<AddressSpace::Segment::Pointer>(std::stoull(end, 0, 16));
-      auto isHugePage = isMappingHugePage(e - b, file);
-
-      if(file[0] != '/' && file[0] != '[') {
-        // Anonymous memory segment
-        file = anonymousSegment;
-      }
-      bool isPositionIndependent {file != executablePath_ && file != anonymousSegment};
+      auto isHugePage = isMappingHugePage(e - b, record);
       return AddressSpace::Segment {b, e, flags[0] == 'r', flags[1] == 'w', flags[2] == 'x', isPositionIndependent, isHugePage, file};
     }
     return {};
