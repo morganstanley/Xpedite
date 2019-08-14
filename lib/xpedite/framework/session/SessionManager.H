@@ -37,7 +37,6 @@ namespace xpedite { namespace framework { namespace session {
     bool _isAlive;
 
     public:
-
     SessionManager()
       : _handler {}, _localSession {new LocalSession {_handler}}, _remoteSession {},
         _sessionType {DORMANT}, _isAlive {} {
@@ -98,9 +97,8 @@ namespace xpedite { namespace framework { namespace session {
       }
     }
 
-    bool execute(request::Request* request_) {
-      //hardcoded to no timilimit, as requests are allocated in stack
-      MilliSeconds timeout= MilliSeconds {0};
+    bool execute(request::Request *request_) {
+      MilliSeconds timeout= MilliSeconds {100};
       return _localSession->execute(request_, timeout);
     }
 

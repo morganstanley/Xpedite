@@ -13,7 +13,6 @@
 namespace xpedite { namespace framework { namespace request {
 
   struct ProbeListRequest : public Request {
-
     void execute(Handler& handler_) override {
       _response.setValue(handler_.listProbes());
     }
@@ -21,14 +20,16 @@ namespace xpedite { namespace framework { namespace request {
     const char* typeName() const override {
       return "ProbeListRequest";
     }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<ProbeListRequest>(*this);
+    }
   };
 
   class ProbeActivationRequest : public Request {
-
     std::vector<probes::ProbeKey> _keys;
 
-    public:
-    
+  public:
     ProbeActivationRequest(std::vector<probes::ProbeKey> keys_)
       : _keys {std::move(keys_)} {
     }
@@ -43,14 +44,16 @@ namespace xpedite { namespace framework { namespace request {
     const char* typeName() const override {
       return "ProbeActivationRequest";
     }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<ProbeActivationRequest>(*this);
+    }
   };
 
   class ProbeDeactivationRequest : public Request {
-
     std::vector<probes::ProbeKey> _keys;
 
-    public:
-    
+  public:
     ProbeDeactivationRequest(std::vector<probes::ProbeKey> keys_)
       : _keys {std::move(keys_)} {
     }
@@ -64,6 +67,10 @@ namespace xpedite { namespace framework { namespace request {
 
     const char* typeName() const override {
       return "ProbeDeactivationRequest";
+    }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<ProbeDeactivationRequest>(*this);
     }
   };
 

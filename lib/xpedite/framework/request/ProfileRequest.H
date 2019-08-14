@@ -17,7 +17,6 @@
 namespace xpedite { namespace framework { namespace request {
 
   class ProfileActivationRequest : public Request {
-
     std::string _samplesFilePattern;
     MilliSeconds _pollInterval;
     uint64_t _samplesDataCapacity;
@@ -25,8 +24,7 @@ namespace xpedite { namespace framework { namespace request {
     XpediteRecorder _recorder;
     XpediteDataProbeRecorder _dataProbeRecorder;
 
-    public:
-
+  public:
     ProfileActivationRequest(std::string samplesFilePattern_, MilliSeconds pollInterval_, uint64_t samplesDataCapacity_)
       : _samplesFilePattern {std::move(samplesFilePattern_)}, _pollInterval {pollInterval_},
         _samplesDataCapacity {samplesDataCapacity_}, _recorder {}, _dataProbeRecorder {} {
@@ -57,10 +55,13 @@ namespace xpedite { namespace framework { namespace request {
     const char* typeName() const override {
       return "ProfileActivationRequest";
     }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<ProfileActivationRequest>(*this);
+    }
   };
 
   struct ProfileDeactivationRequest : public Request {
-
     void execute(Handler& handler_) override {
       auto rc = handler_.endProfile();
       if(rc.empty()) {
@@ -74,14 +75,17 @@ namespace xpedite { namespace framework { namespace request {
     const char* typeName() const override {
       return "ProfileDeactivationRequest";
     }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<ProfileDeactivationRequest>(*this);
+    }
   };
 
   class PmuActivationRequest : public Request {
     int _gpEventsCount;
     std::vector<int> _fixedEventIndices;
 
-    public:
-
+  public:
     PmuActivationRequest(int gpEventsCount_, std::vector<int> fixedEventIndices_)
       : _gpEventsCount {gpEventsCount_}, _fixedEventIndices {std::move(fixedEventIndices_)} {
     }
@@ -97,14 +101,16 @@ namespace xpedite { namespace framework { namespace request {
     const char* typeName() const override {
       return "PmuActivationRequest";
     }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<PmuActivationRequest>(*this);
+    }
   };
 
   class PerfEventsActivationRequest : public Request {
-
     PMUCtlRequest _request;
 
     public:
-
     PerfEventsActivationRequest(const PMUCtlRequest& request_)
       : _request {request_} {
     }
@@ -121,6 +127,10 @@ namespace xpedite { namespace framework { namespace request {
     const char* typeName() const override {
       return "PerfEventsActivationRequest";
     }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<PerfEventsActivationRequest>(*this);
+    }
   };
 
   struct PmuDeactivationRequest : public Request {
@@ -131,6 +141,10 @@ namespace xpedite { namespace framework { namespace request {
 
     const char* typeName() const override {
       return "PmuDeactivationRequest";
+    }
+
+    std::unique_ptr<Request> clone() const {
+      return std::make_unique<PmuDeactivationRequest>(*this);
     }
   };
 

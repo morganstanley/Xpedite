@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/common/LeasedPtr.H>
 #include <xpedite/util/Allocator.H>
 #include <xpedite/log/Log.H>
 #include <sstream>
@@ -21,7 +22,7 @@ namespace xpedite { namespace framework { namespace session {
 
   class LocalSession : public util::AlignedObject<XPEDITE_CACHELINE_SIZE>
   {
-    std::atomic<request::Request*> _request;
+    common::LeasedPtr<request::Request> _request;
 
     alignas(XPEDITE_CACHELINE_SIZE) Handler& _handler;
 
@@ -34,28 +35,34 @@ namespace xpedite { namespace framework { namespace session {
       return elapsed_ > duration_;
     }
 
-    public:
-
+  public:
     LocalSession(Handler& handler_)
       : _request {}, _handler (handler_), _isAlive {} {
     }
 
     bool execute(request::Request* request_, MilliSeconds timeout_) {
       MilliSeconds elapsed {0};
+      auto request = request_->clone();
       // enque request
       while(!hasTimedOut(timeout_, elapsed)) {
-        request::Request* expected = {};
-        if(_request.compare_exchange_weak(expected, request_, std::memory_order_release, std::memory_order_relaxed)) {
-          break;
-        }
+	request = std::move(_request.provision(std::move(request)));
+	if (!request) {
+	  break;
+	}
+
         std::this_thread::sleep_for(_handler.pollInterval());
         elapsed += _handler.pollInterval();
       }
       
       // await execution
-      while(!hasTimedOut(timeout_, elapsed) && _request.load(std::memory_order_acquire) == request_) {
+      while(!hasTimedOut(timeout_, elapsed) && !_request.empty()) {
         std::this_thread::sleep_for(_handler.pollInterval());
         elapsed += _handler.pollInterval();
+      }
+
+      const auto releasedRequest = _request.revoke();
+      if (releasedRequest) {
+	request_->response() = std::move(request->response());
       }
 
       if(hasTimedOut(timeout_, elapsed)) {
@@ -73,14 +80,14 @@ namespace xpedite { namespace framework { namespace session {
     }
 
     bool poll(bool canAcceptRequest_) {
-      if(auto* request = _request.load(std::memory_order_acquire)) {
+      if(auto request = _request.lease()) {
         if(canAcceptRequest_) {
           request->execute(_handler);
           _isAlive = true;
         } else {
           request->abort("xpedite dectected active session - multiple sessions not supported");
         }
-        _request.store(nullptr, std::memory_order_release);
+	_request.returnLease(std::move(request));
       }
       return isAlive();
     }

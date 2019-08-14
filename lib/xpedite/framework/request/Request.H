@@ -24,8 +24,7 @@ namespace xpedite { namespace framework { namespace request {
   {
     std::string _value;
 
-    public:
-
+  public:
     void setValue(std::string value_) {
       _value = std::move(value_);
       _status = Status::SUCCESS;
@@ -37,9 +36,7 @@ namespace xpedite { namespace framework { namespace request {
   };
 
   class Request : public AbstractRequest {
-
-    protected:
-
+  protected:
     Response _response;
 
     static std::string toString(Status status_);
@@ -50,7 +47,8 @@ namespace xpedite { namespace framework { namespace request {
       return "Request";
     }
 
-    public:
+  public:
+    virtual std::unique_ptr<Request> clone() const = 0;
 
     const Response& response() const override {
       return _response;
@@ -66,7 +64,6 @@ namespace xpedite { namespace framework { namespace request {
   };
 
   struct PingRequest : public Request {
-
     void execute(Handler& handler_) override {
       _response.setValue(handler_.ping());
     }
@@ -75,10 +72,12 @@ namespace xpedite { namespace framework { namespace request {
       return "PingRequest";
     }
 
+    std::unique_ptr<Request> clone() const override {
+      return std::make_unique<PingRequest>(*this);
+    }
   };
 
   struct TscRequest : public Request {
-
     void execute(Handler& handler_) override {
       auto tscHz = handler_.tscHz();
       _response.setValue(std::to_string(tscHz));
@@ -88,14 +87,15 @@ namespace xpedite { namespace framework { namespace request {
       return "TscRequest";
     }
 
+    std::unique_ptr<Request> clone() const override{
+      return std::make_unique<TscRequest>(*this);
+    }
   };
 
   struct InvalidRequest : public Request {
-
     std::string _errors;
 
-    public:
-
+  public:
     explicit InvalidRequest(std::string errors_)
       : _errors {std::move(errors_)} {
     }
@@ -106,6 +106,10 @@ namespace xpedite { namespace framework { namespace request {
 
     const char* typeName() const override {
       return "InvalidRequest";
+    }
+
+    std::unique_ptr<Request> clone() const override{
+      return std::make_unique<InvalidRequest>(*this);
     }
   };
 
