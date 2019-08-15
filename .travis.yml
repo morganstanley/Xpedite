@@ -8,8 +8,11 @@ branches:
   only:
   - master
 
+addons:
+  apt:
+    update: true
+
 before_script:
- - sudo apt-get -qq update
  - sudo apt-get install -y libgtest-dev cmake
  - sudo wget https://github.com/google/googletest/archive/release-1.7.0.tar.gz
  - sudo tar xf release-1.7.0.tar.gz

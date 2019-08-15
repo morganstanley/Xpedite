@@ -147,5 +147,4 @@ if(GTEST_FOUND)
 endif()
 
 message("Starting Xpedite Java Setup")
-include(java/java_setup.cmake)
-java_setup()
+add_subdirectory(jni)

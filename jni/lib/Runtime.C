@@ -11,8 +11,8 @@
 #include <jni.h>
 #include <mutex>
 #include <xpedite/framework/SamplesBuffer.H>
-#include "com_xpedite_Xpedite.h"
-#include <xpedite/java/Runtime.H>
+#include <com_xpedite_Xpedite.h>
+#include <Runtime.H>
 
 static std::mutex mutex;
 static Runtime* runtime;
@@ -58,7 +58,6 @@ JNIEXPORT void JNICALL Java_com_xpedite_Xpedite_profile(JNIEnv*, jclass, jobject
 
 JNIEXPORT void JNICALL Java_com_xpedite_Xpedite_record(JNIEnv*, jclass, jint probeID) {
   using namespace xpedite::probes;
-
   auto tsc_ = RDTSC();
   void* returnSite_ = reinterpret_cast<void*>(probeID);
   xpediteRecordPerfEvents(returnSite_, tsc_);
