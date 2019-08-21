@@ -9,3 +9,5 @@ This package provides logic to
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
+from xpedite.dependencies import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Six)

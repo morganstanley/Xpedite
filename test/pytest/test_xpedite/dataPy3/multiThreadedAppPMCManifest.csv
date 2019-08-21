@@ -1,0 +1,9 @@
+file name, size, lines
+multiThreadedAppPMC/expectedResults/generateCmdBaseline.py,4655,100
+multiThreadedAppPMC/expectedResults/probeCmdBaseline.pkl,735,5
+multiThreadedAppPMC/expectedResults/reportCmdBaseline.xpd,19294094,18480
+multiThreadedAppPMC/parameters/baselineCpuInfo.json,1375,0
+multiThreadedAppPMC/parameters/data/xpedite-multiThreadedApp-1566426618-14673-00002b9c00530000.data,192,1
+multiThreadedAppPMC/parameters/data/xpedite-multiThreadedApp-1566426618-14676-00002b9c0193b700.data,360816,4097
+multiThreadedAppPMC/parameters/profileInfo.py,1368,31
+multiThreadedAppPMC/parameters/xpedite-appinfo.txt,2180,13

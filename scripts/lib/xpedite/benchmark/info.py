@@ -8,8 +8,8 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 import logging
-import ConfigParser
 from datetime               import date
+from six.moves              import configparser
 from xpedite.types          import CpuInfo
 from xpedite.pmu.event      import Event
 
@@ -38,7 +38,7 @@ def makeBenchmarkInfo(benchmarkName, profiles, path):
 
   """
   path = os.path.join(path, BENCHMARK_FILE_NAME)
-  config = ConfigParser.RawConfigParser()
+  config = configparser.RawConfigParser()
   config.add_section(BENCHMARK_SECTION)
   config.set(BENCHMARK_SECTION, BENCHMARK_NAME_KEY, benchmarkName)
   legend = '{} run at {}'.format(benchmarkName, str(date.today()))
@@ -65,7 +65,7 @@ def loadBenchmarkInfo(path):
   :param path: path of the benchmark info file
 
   """
-  configParser = ConfigParser.RawConfigParser()
+  configParser = configparser.RawConfigParser()
   fileName = os.path.join(path, BENCHMARK_FILE_NAME)
   if os.path.exists(fileName):
     configParser.read(fileName)

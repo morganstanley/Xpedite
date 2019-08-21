@@ -83,6 +83,13 @@ https://github.com/pwaller/pyprof2calltree/blob/master/LICENSE
 Copyright (c) 2006-2017 David Allouche, Jp Calderone, Itamar Shtull-Trauring,
 Johan Dahlin, Peter Waller and people listed in CONTRIBUTORS.txt
 
+html
+===============
+
+https://github.com/r1chardj0n3s/html/blob/master/html/format.py
+
+Copyright (c) 2009 eKit.com Inc (http://www.ekit.com/)
+
 floatThead
 ==========
 

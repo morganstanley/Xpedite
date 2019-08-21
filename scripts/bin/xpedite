@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 """
 Xpedite is a probe based profiler to measure and optimise,
 performance of ultra-low-latency / real time systems.

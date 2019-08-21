@@ -9,7 +9,8 @@
 
 PROGRAM_NAME=$0
 TEST_DIR=`dirname $0`
-DATA_DIR=${TEST_DIR}/pytest/test_xpedite/data
+PY_VERSION=$(python -c 'import sys; print(sys.version_info[:][0])')
+DATA_DIR=${TEST_DIR}/pytest/test_xpedite/dataPy${PY_VERSION}
 
 source ${TEST_DIR}/.testrc
 

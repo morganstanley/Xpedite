@@ -5,6 +5,7 @@ Author: Dhruv Shekhawat, Morgan Stanley
 """
 
 import logging
+import six
 import socket
 from xpedite.util import parsePort
 import time
@@ -67,7 +68,7 @@ class Client(object):
     LOGGER.debug('Sending msg %s', msg)
 
     tsp = time.time() * 1000000
-    size = self.socket.send(msg)
+    size = self.socket.send(six.ensure_binary(msg))
     return (tsp, size)
 
   def receive(self, size, timeout=30):

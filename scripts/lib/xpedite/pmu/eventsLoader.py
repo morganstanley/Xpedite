@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 """
 Loader to build an events database from micro architecture specifications (json)
 
@@ -15,7 +15,9 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import logging
-from xpedite.pmu.uarchEvent  import GenericCoreEvent, FixedCoreEvent, OffCoreEvent
+from collections            import OrderedDict
+from xpedite.util           import loadTextFile
+from xpedite.pmu.uarchEvent import GenericCoreEvent, FixedCoreEvent, OffCoreEvent
 
 LOGGER = logging.getLogger(__name__)
 
@@ -157,11 +159,11 @@ class EventsLoader(object):
 
     """
     import json
-    eventsDb = {}
+    eventsDb = OrderedDict()
     incompatibleRecords = []
     uninitializedEvents = []
     try:
-      records = json.load(open(eventsFile, 'rb'))
+      records = json.loads(loadTextFile(eventsFile))
       for record in records:
         try:
           event = self.jsonFactory(record)(record)

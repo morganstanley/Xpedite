@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 """
 UarchSpecLoader collects hardware performance counter specifications
 and topdown hierarchy computation modules
@@ -61,12 +61,14 @@ def downloadFile(url, path):
   :param path: Path of download directory
 
   """
-  from urllib2 import urlopen, URLError
+  import six
+  from six.moves.urllib.request import urlopen # pylint: disable=import-error
+  from six.moves.urllib.error import URLError # pylint: disable=relative-import
   try:
     response = urlopen(url)
     data = response.read()
     with open(path, 'w') as fileHandle:
-      fileHandle.write(data)
+      fileHandle.write(six.ensure_str(data))
     return True
   except URLError:
     LOGGER.exception('failed to retrieve file "%s" from url - %s', os.path.basename(path), url)

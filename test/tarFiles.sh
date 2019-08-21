@@ -9,6 +9,8 @@
 
 TEST_DIR=`dirname $0`
 PYTEST_DIR=${TEST_DIR}/pytest
+PY_VERSION=$(python -c 'import sys; print(sys.version_info[:][0])')
+DATA_DIR=test_xpedite/dataPy${PY_VERSION}
 
 source ${TEST_DIR}/.testrc
 
@@ -35,13 +37,13 @@ function unzipFiles() {
   for a in "${APPS[@]}"; do
     for s in "${SCENARIOS[@]}"; do
       if [ "${EXCLUDE_RESULTS}" == false ]; then
-        tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/${a}${s}.tar.gz
+        tar -C $1 -zxf ${PYTEST_DIR}/${DATA_DIR}/${a}${s}.tar.gz
       else
-        tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/${a}${s}.tar.gz --exclude=${a}${s}/benchmark --exclude=${a}${s}/expectedResults --exclude=${a}${s}/parameters/data
+        tar -C $1 -zxf ${PYTEST_DIR}/${DATA_DIR}/${a}${s}.tar.gz --exclude=${a}${s}/benchmark --exclude=${a}${s}/expectedResults --exclude=${a}${s}/parameters/data
       fi
     done
   done
-  tar -C $1 -zxf ${PYTEST_DIR}/test_xpedite/data/${PMU_DATA}.tar.gz
+  tar -C $1 -zxf ${PYTEST_DIR}/${DATA_DIR}/${PMU_DATA}.tar.gz
 }
 
 function zipProfilerFiles() {
@@ -51,7 +53,7 @@ function zipProfilerFiles() {
   for a in "${APPS[@]}"; do
     for s in "${SCENARIOS[@]}"; do
       createManifest $1 ${a}${s}
-      ARCHIVE_FILE=${FILE_PATH}/test_xpedite/data/${a}${s}.tar.gz
+      ARCHIVE_FILE=${FILE_PATH}/${DATA_DIR}/${a}${s}.tar.gz
       tar -czf ${ARCHIVE_FILE} ${a}${s} --files-from=${a}${s}/parameters --files-from=${a}${s}/expectedResults
       if [ "${s}" == "Benchmark" ]; then
         tar -czf ${ARCHIVE_FILE} ${a}${s} --files-from=${a}${s}/benchmark
@@ -63,13 +65,13 @@ function zipProfilerFiles() {
 function zipPMUFiles() {
   cd $1
   find . -name "*.pyc" -type f -delete
-  tar -czf ${TEST_DIR_PATH}/pytest/test_xpedite/data/${PMU_DATA}.tar.gz ${PMU_DATA}
+  tar -czf ${TEST_DIR_PATH}/pytest/${DATA_DIR}/${PMU_DATA}.tar.gz ${PMU_DATA}
   createManifest $1 ${PMU_DATA}
 }
 
 function createManifest() {
   cd $1
-  MANIFEST_PATH=${TEST_DIR_PATH}/pytest/test_xpedite/data/${2}Manifest.csv
+  MANIFEST_PATH=${TEST_DIR_PATH}/pytest/${DATA_DIR}/${2}Manifest.csv
   rm ${MANIFEST_PATH}
   echo "file name, size, lines" >> ${MANIFEST_PATH}
   for FILE in `find ${2} -type f | sort`; do

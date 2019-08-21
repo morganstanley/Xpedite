@@ -5,7 +5,7 @@ probe names, tsc duration, and performance counters
 Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 """
-from html import HTML
+from thirdParty.html import HTML
 
 class DiffBuilder(object):
   """

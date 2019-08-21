@@ -17,7 +17,7 @@ import logging
 from xpedite.util                 import promptUser
 from xpedite.transport.client     import Client
 from xpedite.dependencies         import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.Netifaces, Package.Rpyc)
+DEPENDENCY_LOADER.load(Package.Netifaces, Package.Rpyc, Package.Six)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -80,11 +80,13 @@ def readAtleast(transport, length, timeout):
   :param length: Length of data to read
 
   """
+  import six
   LOGGER.debug('Awaiting data %d bytes', length)
   data = ''
   while len(data) < length:
     bufLen = length - len(data)
     block = transport.receive(bufLen, timeout)
+    block = six.ensure_str(block)
     if block:
       data = data + block
     else:
