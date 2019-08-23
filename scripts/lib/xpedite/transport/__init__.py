@@ -12,6 +12,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 import sys
+import six
 import socket
 import logging
 from xpedite.util                 import promptUser
@@ -85,6 +86,7 @@ def readAtleast(transport, length, timeout):
   while len(data) < length:
     bufLen = length - len(data)
     block = transport.receive(bufLen, timeout)
+    block = six.ensure_str(block)
     if block:
       data = data + block
     else:

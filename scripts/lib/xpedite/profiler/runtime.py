@@ -11,6 +11,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import logging
 from xpedite.txn.classifier       import DefaultClassifier
 from xpedite.types            import ResultOrder
+import time
 
 LOGGER = logging.getLogger(__name__)
 
@@ -229,8 +230,8 @@ class Runtime(AbstractRuntime):
       LOGGER.exception('failed to start profiling')
       raise ex
 
-  def report(self, reportName=None, benchmarkPaths=None, classifier=DefaultClassifier(), txnFilter=None,
-      reportThreshold=3000, resultOrder=ResultOrder.WorstToBest):
+  def report(self, reportName=None, benchmarkPaths=None, classifier=DefaultClassifier(), txnFilter=None, #pylint: disable=too-many-locals
+      reportThreshold=3000, resultOrder=ResultOrder.WorstToBest, context=None, ecgwidget=None, stopButton=None):
     """
     Ends active profile session and generates reports.
 
@@ -256,26 +257,201 @@ class Runtime(AbstractRuntime):
     from xpedite.profiler.reportgenerator import ReportGenerator
     from xpedite.txn.repo import TxnRepoFactory
     from xpedite.pmu.event       import Event
-    try:
-      if not self.app.dryRun:
+    try: # pylint: disable=too-many-nested-blocks
+      if (not self.app.dryRun) and (self.eventSet):
+        self.app.disablePMU()
+
+      repoFactory = TxnRepoFactory()
+      pmc = [Event(req.name, req.uarchName) for req in self.eventSet.requests()] if self.eventSet  else []
+
+      timeStart = time.time()
+
+      # dryrun
+      if self.app.dataSource:
+        repo = repoFactory.buildTxnRepo(None,
+          self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
+          pmc, self.benchmarkProbes, benchmarkPaths
+        )
+        reportName = reportName if reportName else self.app.name
+        reportGenerator = ReportGenerator(reportName)
+        return reportGenerator.generateReport(
+          self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
+        )
+
+      # realtime mode
+      if context:
+        from xpedite.txn.loader           import BoundedTxnLoader
+        from xpedite.analytics            import CURRENT_RUN
+        from xpedite.txn.filter           import TrivialCounterFilter
+        import xpedite.txn.repo
+        from xpedite.analytics               import Analytics
+
+        loaderType = BoundedTxnLoader
+        loader = loaderType(CURRENT_RUN, self.cpuInfo, self.probes, self.topdownMetrics, events=pmc)
+        counterFilter = TrivialCounterFilter()
+        analytics = Analytics()
+
+        from xpedite.txn.extractor      import Extractor
+        extractor = Extractor(counterFilter)
+
+        firstTimeline = True
+        firstTsc = 0
+        timeStart = time.time()
+        lastEpoch = 0
+        timeArr = {}
+        minGap = 100
+
+        for loaderSignal in extractor.gatherCountersLive(self.app, loader, stopButton):
+          if loaderSignal == 1:
+            break
+          newTxns = loader.getNewCompleteTxns()
+          newRepo = TxnRepoFactory.buildTxnRepo(
+            newTxns, self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
+            pmc, None, None
+          )
+          subCollection = newRepo.getCurrent().getSubCollection()
+          if len(subCollection.transactions) == 0:
+            continue
+          newProfiles = analytics.generateProfiles(reportName, newRepo, classifier)
+
+          for newProfile in newProfiles.profiles:
+            timelines = newProfile.current.timelineCollection
+            maxLatency = 0
+            minLatency = 9999999
+            for timeline in timelines:
+              tsc = timeline.tsc
+              if firstTimeline:
+                firstTsc = tsc
+                firstTimeline = False
+                lastEpoch = int(timeStart*1000)
+                lastEpoch -= lastEpoch%minGap
+              epoch = int(timeStart*1000) + int(self.cpuInfo.convertCyclesToTime(tsc - firstTsc)/1000)
+              if epoch > int(time.time()*1000):
+                if epoch - int(time.time()*1000) > 100:
+                  LOGGER.warn("collected wrong time stamp")
+                epoch = int(time.time()*1000)
+              epoch = epoch - epoch%minGap
+              if epoch is None:
+                LOGGER.warn("missing time stamp")
+
+              if lastEpoch == 0 or abs(epoch - lastEpoch) < minGap:
+                for timepoint in timeline.points:
+                  latency = timepoint.duration
+                  if latency > maxLatency:
+                    maxLatency = latency
+                  if latency < minLatency and latency != 0:
+                    minLatency = latency
+                lastEpoch = epoch
+                continue
+
+              # if the time gap between the new timeline and the previous timeline is longer than minGap
+              # add ticks to the epoch of previous timeline and the min/max latency collected
+              if maxLatency != 0 and minLatency != 9999999:
+                addTicks(ecgwidget, maxLatency, minLatency, epoch, timeArr)
+                # re-initialze min/max latency[]
+                maxLatency = 0
+                minLatency = 9999999
+              for timepoint in timeline.points:
+                latency = timepoint.duration
+                if latency > maxLatency:
+                  maxLatency = latency
+                if latency < minLatency and latency != 0:
+                  minLatency = latency
+                addTicks(ecgwidget, maxLatency, minLatency, epoch, timeArr)
+              #update last epoch
+              lastEpoch = epoch
+
+            # at the end of this collection, add ticks to last epoch with the min/max collected
+            addTicks(ecgwidget, maxLatency, minLatency, epoch, timeArr)
+
+          if not context._profiles: #pylint: disable=protected-access
+            context._profiles = newProfiles #pylint: disable=protected-access
+          else:
+            mergeProfiles(context._profiles, newProfiles) #pylint: disable=protected-access
+
+        # after a stop statement is called and while loop is broke
+        loader.endLoad()
+        if loader.isCompromised() or loader.getTxnCount() <= 0:
+          LOGGER.warn(loader.report())
+        elif loader.isNotAccounted():
+          LOGGER.debug(loader.report())
+        loader.endCollection()
+        LOGGER.warn(loader.report())
+
+        allTxns = loader.getData()
+        repo = repoFactory.buildTxnRepo(allTxns,
+          self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
+          pmc, self.benchmarkProbes, benchmarkPaths
+        )
+        reportName = reportName if reportName else self.app.name
+        reportGenerator = ReportGenerator(reportName)
+        return reportGenerator.generateReport(
+          self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
+        )
+      # in batch mode
+      else:
         try:
           self.app.endProfile()
         except Exception:
           pass
-        if self.eventSet:
-          self.app.disablePMU()
 
-      repoFactory = TxnRepoFactory()
-      pmc = [Event(req.name, req.uarchName) for req in self.eventSet.requests()] if self.eventSet  else []
-      repo = repoFactory.buildTxnRepo(
-        self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
-        pmc, self.benchmarkProbes, benchmarkPaths
-      )
-      reportName = reportName if reportName else self.app.name
-      reportGenerator = ReportGenerator(reportName)
-      return reportGenerator.generateReport(
-        self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
-      )
+        repo = repoFactory.buildTxnRepo(
+          None, self.app, self.cpuInfo, self.probes, self.topdownCache, self.topdownMetrics,
+          pmc, self.benchmarkProbes, benchmarkPaths
+        )
+        reportName = reportName if reportName else self.app.name
+        reportGenerator = ReportGenerator(reportName)
+        return reportGenerator.generateReport(
+          self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
+        )
+
     except Exception as ex:
       LOGGER.exception('failed to generate report')
       raise ex
+
+def addTicks(ecgwidget, maxLatency, minLatency, epoch, timeArr):
+  """
+  Add spike to the ECG chart.
+  The program maintains a timeArr dictionary to store the maximum and minimum latency
+  at each time interval.
+  The function executes by the following logic:
+    1. check if the epoch for comming data is in the timeArr dictionary
+    2. if not, add spike to ECG chart
+    3. else, update timeArr and then add spike to ECG chart
+  """
+  if epoch not in timeArr.keys():
+    timeArr[epoch] = (maxLatency, minLatency)
+    newDataMax = {'color': 'red',
+                  'latency' : maxLatency,
+                  'position' : epoch}
+    newDataMin = {'color': 'green',
+                  'latency' : minLatency,
+                  'position' : epoch}
+    ecgwidget.evt_ticks = [newDataMax, newDataMin]
+  else:
+    if maxLatency > timeArr[epoch][0]:
+      newDataMax = {'color': 'red',
+                    'latency' : maxLatency,
+                    'position' : epoch}
+      newDataMin = {'color': 'green',
+                    'latency' : timeArr[epoch][1],
+                    'position' : epoch}
+      ecgwidget.evt_ticks = [newDataMax, newDataMin]
+      timeArr[epoch] = (maxLatency, timeArr[epoch][1])
+    if minLatency < timeArr[epoch][1]:
+      newDataMax = {'color': 'red',
+                    'latency' : timeArr[epoch][0],
+                    'position' : epoch}
+      newDataMin = {'color': 'green',
+                  'latency' : minLatency,
+                  'position' : epoch}
+      ecgwidget.evt_ticks = [newDataMax, newDataMin]
+      timeArr[epoch] = (timeArr[epoch][0], minLatency)
+
+def mergeProfiles(profiles, newProfiles):
+  """
+  Merge the new profiles object to the global profiles object
+  """
+  for newProfile in newProfiles:
+    profiles.addProfile(newProfile)
+  (profiles.transactionRepo._currentCollection.txnMap).update(newProfiles.transactionRepo._currentCollection.txnMap) #pylint: disable=protected-access

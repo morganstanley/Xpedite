@@ -1,0 +1,29 @@
+var pyCode = `flotFrmt="""
+<!DOCTYPE html>
+<meta charset="utf-8">
+<h3 class="chart-header">{name}</h3>
+<p>{description}</p>
+<svg class='chart{cellNum}'></svg>
+<script>
+  require(['d3', 'd3flot'], function(d3, d3flot) {{{{
+      createFlotFromPython('{cellNum}', {d3flot});
+  }}}});
+</script>
+<p>This category has transactions with {reportNum} routes</p>
+<ol>
+{linksCode}
+</ol>
+"""
+thismodule = sys.modules[__name__]
+fileName = getattr(thismodule, Context.fileKey)
+result = 'Failed to resolve xpedite data file name'
+if fileName:
+  result = flotFrmt
+  result = result.replace('[fileName]', fileName)
+display(HTML(result))
+`
+
+var newCell = Jupyter.notebook.insert_cell_below('code');
+newCell.set_text(pyCode)
+newCell.element.find("div.input").hide();
+newCell.execute();

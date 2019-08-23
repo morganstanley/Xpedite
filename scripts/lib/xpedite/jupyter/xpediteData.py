@@ -12,7 +12,7 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 
 import struct
 from ctypes import create_string_buffer
-import pickle
+import six.moves.cPickle as pickle
 
 class LayoutEntry(object):
   """Stores meta data about the layout of the data file"""

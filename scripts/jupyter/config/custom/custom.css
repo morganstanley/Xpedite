@@ -7,6 +7,8 @@
 *******************************************************************************************/
 
 @import 'flot.css';
+@import 'realtime.css';
+@import 'layout.css';
 @import 'notebook.css';
 @import 'sunburst.css';
 @import 'bipartite.css';

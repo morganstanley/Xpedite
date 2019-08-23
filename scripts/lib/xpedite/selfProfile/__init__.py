@@ -14,7 +14,7 @@ import sys
 import pstats
 import cProfile
 import logging
-import StringIO
+from six import StringIO
 
 LOGGER = logging.getLogger(__name__)
 

@@ -15,6 +15,8 @@
 #include "StorageMgr.H"
 #include <string>
 #include <tuple>
+#include <chrono>
+#include <thread>
 
 namespace xpedite { namespace probes {
   class Sample;
@@ -30,7 +32,8 @@ namespace xpedite { namespace framework {
 
     Collector(std::string fileNamePattern_, uint64_t samplesDataCapacity_)
       : _storageMgr {samplesDataCapacity_}, _fileNamePattern {std::move(fileNamePattern_)},
-        _isCollecting {}, _capacityBreached {} {
+        _isCollecting {}, _capacityBreached {}, _flushInterval{5} {
+          this->periodicFlush(_flushInterval);
     }
 
     ~Collector() {
@@ -47,6 +50,8 @@ namespace xpedite { namespace framework {
     bool endSamplesCollection();
     void poll(bool flush_ = false);
 
+    void periodicFlush(unsigned int flushInterval_);
+
     private:
 
     void persistSamples(int fd_, const probes::Sample* begin_, const probes::Sample* end_);
@@ -57,6 +62,7 @@ namespace xpedite { namespace framework {
     std::string _fileNamePattern;
     bool _isCollecting;
     bool _capacityBreached;
+    unsigned int _flushInterval;
   };
 
 }}

@@ -25,6 +25,10 @@ def loadTemplate(name, description):
     LOGGER.exception('Could not load %s from file %s', description, path)
     raise ex
 
+def loadEcgWidget():
+  """Returns cell markup for each of the txn categories"""
+  return loadTemplate('ecg.fmt', 'code for instantiating the widget')
+
 def loadCategoryMarkup():
   """Returns cell markup for each of the txn categories"""
   return loadTemplate('category.fmt', 'markup for txn categories')
@@ -40,3 +44,17 @@ def loadTxnPlotTreeMarkup():
 def loadTxnPmcMarkup():
   """Returns markup for visaulizing correlation of txn pmu with sections of code"""
   return loadTemplate('bipartite.html', 'markup for txn pmu visaulization')
+
+def loadLiveInitCell():
+  """Returns python source for realtime mode init cell"""
+  return loadTemplate('initCellLive.fmt', 'python source for init cell')
+
+def loadReportCell():
+  """Returns python source for realtime mode report cell"""
+  code = loadTemplate('reportCell.fmt', 'python source for report cell')
+  return code
+
+def loadProfilingCell():
+  """Returns python source for realtime mode profiling execution cell"""
+  code = loadTemplate('profilingCell.fmt', 'python source for tmp init cell')
+  return code

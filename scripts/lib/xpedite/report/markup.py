@@ -5,6 +5,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 """
 import os
+import six
 from xpedite.dependencies import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.HTML, Package.Pygments)
 from html import HTML # pylint: disable=wrong-import-position
@@ -16,8 +17,8 @@ def loadFile(path):
   :param path: Path of the file to load
 
   """
-  with open(path) as fileHandle:
-    return fileHandle.read()
+  with open(path, 'rb') as fileHandle:
+    return six.ensure_str(fileHandle.read())
 
 def formatList(inputList):
   """

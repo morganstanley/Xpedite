@@ -47,7 +47,8 @@ class RouteAggregator(object):
     :param txnSubCollection: Transaction subcollection to be aggregated
 
     """
-    routeMap = {}
+    from collections import OrderedDict
+    routeMap = OrderedDict()
     for txn in txnSubCollection:
       addTxn(routeMap, txnSubCollection, txn.route, txn)
     return routeMap

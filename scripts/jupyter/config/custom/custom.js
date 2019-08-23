@@ -11,6 +11,8 @@ requirejs.config({
       'd3': ['/static/d3.min'],
       'd3v4': ['/static/d3.v4.min'],
       'd3flot': ['/static/d3flot'],
+      'realtimemain': ['/static/realtimemain'],
+      'realtimechart': ['/static/realtimechart'],
       'flot': ['/static/jquery.flot.min'],
       'tablesorter': ['/static/jquery.tablesorter.min'],
       'tipsy': ['/static/jquery.tipsy'],

@@ -9,7 +9,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import types
-from collections            import defaultdict, Counter
+from collections            import OrderedDict, defaultdict, Counter
 from xpedite.pmu.uarchEvent import GenericCoreEvent, FixedCoreEvent, OffCoreEvent
 from xpedite.dependencies   import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Termcolor)
@@ -59,10 +59,11 @@ class Hierarchy(object):
   def __init__(self, eventsDb):
     self.eventsDb = eventsDb
     self.root = Root()
-    self.nodes = {Root.name : self.root}
+    self.nodes = OrderedDict()
+    self.nodes[Root.name] = self.root
     self.maxLevel = 0
     self.levels = defaultdict(list)
-    self.metrics = {}
+    self.metrics = OrderedDict()
 
   @staticmethod
   def formatName(name):
@@ -82,7 +83,7 @@ class Hierarchy(object):
       """
       if isinstance(event, types.LambdaType):
         return event(delegate, level)
-      events.add(event)
+      events[event] = None
       return 99
     return delegate
 
@@ -126,7 +127,7 @@ class Hierarchy(object):
       node.supported = self.isNodeSupported(node) # pylint: disable=attribute-defined-outside-init
 
     for metric in self.metrics.values():
-      events = set()
+      events = OrderedDict()
       metric.compute(self.buildEventsCollector(events))
       metric.events = self.resolveEvents(events)
       metric.computeValue = types.MethodType(Hierarchy.computeTopdownMetric, metric)
@@ -196,7 +197,7 @@ class Hierarchy(object):
     :param node: Node to lookup events for
 
     """
-    events = set()
+    events = OrderedDict()
     delegate = self.buildEventsCollector(events)
     if node.children:
       for child in node.children:

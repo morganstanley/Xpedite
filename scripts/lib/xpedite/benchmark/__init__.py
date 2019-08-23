@@ -12,7 +12,6 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import os
 import shutil
 import logging
-import ConfigParser
 from datetime               import date
 from xpedite.txn.collector  import Collector, APPINFO_FILE_NAME
 from xpedite.types          import CpuInfo

@@ -15,8 +15,10 @@ import re
 import time
 import logging
 import subprocess
+import fcntl
 from xpedite.types      import Counter, DataSource
 from xpedite.util       import makeLogPath, mkdir
+from threading import Thread
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,10 +39,18 @@ class Extractor(object):
     self.binaryReportFilePattern = re.compile(r'[^\d]*(\d+)-(\d+)-([0-9a-fA-F]+)\.data')
     self.counterFilter = counterFilter
     self.orphanedRecords = []
+    self.stopProfiling = False
 
-  def gatherCounters(self, app, loader):
+  def stopExtracting(self, button): #pylint: disable=unused-argument
     """
-    Gathers time and pmu counters from sample files for the current profile session
+    Receive and respond signals from the stop button on jupyter interface.
+    """
+    LOGGER.completed('Live Profiling Stopped')
+    self.stopProfiling = True
+
+  def gatherCountersLive(self, app, loader, stopButton):
+    """
+    Gathers time and pmu counters from sample files for the current profile session in realtime mode
 
     :param app: Handle to the instance of the xpedite app
     :type app: xpedite.profiler.environment.XpediteApp
@@ -48,55 +58,118 @@ class Extractor(object):
 
     """
     pattern = app.sampleFilePattern()
+    patternList = pattern.split('/')[:-1]
+    dataDir = '/'.join(patternList) + '/'
     LOGGER.info('scanning for samples files matching - %s', pattern)
-    filePaths = app.gatherFiles(pattern)
 
     samplePath = makeLogPath('{}/{}'.format(app.name, app.runId))
     dataSource = DataSource(app.appInfoPath, samplePath)
     loader.beginCollection(dataSource)
 
-    for filePath in filePaths:
-      (threadId, tlsAddr) = self.extractThreadInfo(filePath)
-      if not threadId or not tlsAddr:
-        raise Exception('failed to extract thread info for file {}'.format(filePath))
-      LOGGER.info('loading counters for thread %s from file %s -> ', threadId, filePath)
+    args = [self.samplesLoader]
+    args.extend([str(app.runId), "REALTIME", dataDir])
 
-      iterBegin = begin = time.time()
-      loader.beginLoad(threadId, tlsAddr)
-      inflateFd = self.openInflateFile(samplePath, threadId, tlsAddr)
-      extractor = subprocess.Popen([self.samplesLoader, filePath],
-        bufsize=2*1024*1024, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-      recordCount = 0
-      while True:
-        record = extractor.stdout.readline()
-        if record.strip() == '':
-          if extractor.poll() is not None:
-            errmsg = extractor.stderr.read()
-            if errmsg:
-              raise Exception('failed to load {} - {}'.format(filePath, errmsg))
-          break
-        if inflateFd:
-          inflateFd.write(record)
-        if recordCount > 0:
-          self.loadCounter(threadId, loader, app.probes, record)
-          elapsed = time.time() - iterBegin
-          if elapsed >= 5:
-            LOGGER.completed('\n\tprocessed %d counters | ', recordCount-1)
-            iterBegin = time.time()
-        recordCount += 1
-      loader.endLoad()
-      if inflateFd:
-        inflateFd.close()
-      elapsed = time.time() - begin
+    iterBegin = begin = time.time()
+    extractor = subprocess.Popen(
+      args,
+      bufsize=2*1024*1024,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      universal_newlines=True
+    )
+
+    recordCount = 0
+    timeLast = time.time()
+
+    stopButton.on_click(self.stopExtracting)
+
+    while True:
+
+      if self.stopProfiling:
+        extractor.kill()
+        yield 1
+
+      if time.time() - timeLast >= 0.02:
+        timeLast = time.time()
+        yield
+
+      entry = readFromLoader(extractor, 'REALTIME')
+      if entry is None:
+        continue
+      threadId, _, record = entry
+
+      if recordCount > 0:
+        self.loadCounter(threadId, loader, app.probes, record)
+        elapsed = time.time() - iterBegin
+        if elapsed >= 5:
+          LOGGER.completed('\n\tprocessed %d counters | ', recordCount-1)
+          iterBegin = time.time()
+
+      recordCount += 1
       self.logCounterFilterReport()
+
+      elapsed = time.time() - begin
       if self.orphanedRecords:
         LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', len(self.orphanedRecords))
-      LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1, loader.getCount(), elapsed)
-    if loader.isCompromised() or loader.getTxnCount() <= 0:
-      LOGGER.warn(loader.report())
-    elif loader.isNotAccounted():
-      LOGGER.debug(loader.report())
-    loader.endCollection()
+
+
+  def gatherCounters(self, app, loader):
+    """
+    Gathers time and pmu counters from sample files for the current profile session in batch mode
+
+    :param app: Handle to the instance of the xpedite app
+    :type app: xpedite.profiler.environment.XpediteApp
+    :param loader: Loader to build transactions out of the counters
+
+    """
+    pattern = app.sampleFilePattern()
+    patternList = pattern.split('/')[:-1]
+    dataDir = '/'.join(patternList) + '/'
+    LOGGER.info('scanning for samples files matching - %s', pattern)
+
+    samplePath = makeLogPath('{}/{}'.format(app.name, app.runId))
+    dataSource = DataSource(app.appInfoPath, samplePath)
+    loader.beginCollection(dataSource)
+
+    args = [self.samplesLoader]
+    args.extend([str(app.runId), "BATCH", dataDir])
+
+    iterBegin = begin = time.time()
+    extractor = subprocess.Popen(
+      args,
+      bufsize=2*1024*1024,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+      universal_newlines=True
+    )
+
+    recordCount = 0
+
+    while True:
+      entry = readFromLoader(extractor, 'BATCH')
+      if entry is None:
+        break
+      threadId, _, record = entry
+
+      if recordCount > 0:
+        self.loadCounter(threadId, loader, app.probes, record)
+
+        elapsed = time.time() - iterBegin
+        if elapsed >= 5:
+          LOGGER.completed('\n\tprocessed %d counters | ', recordCount-1)
+          iterBegin = time.time()
+
+      recordCount += 1
+      self.logCounterFilterReport()
+
+      elapsed = time.time() - begin
+      if self.orphanedRecords:
+        LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', len(self.orphanedRecords))
+
+      if loader.isCompromised() or loader.getTxnCount() <= 0:
+        LOGGER.warn(loader.report())
+      elif loader.isNotAccounted():
+        LOGGER.debug(loader.report())
 
   MIN_FIELD_COUNT = 2
   INDEX_TSC = 0
@@ -114,7 +187,7 @@ class Extractor(object):
     :param record: A sample record in csv format
 
     """
-    fields = record.split(',')
+    fields = record
     if len(fields) < self.MIN_FIELD_COUNT:
       raise Exception('detected record with < {} fields - \nrecord: "{}"\n'.format(self.MIN_FIELD_COUNT, record))
     addr = fields[self.INDEX_ADDR]
@@ -168,3 +241,43 @@ class Extractor(object):
       else:
         LOGGER.error(report)
     self.counterFilter.reset()
+
+def readFromLoader(extractor, mode):
+  """
+  read output from the C++ loader
+  parse the record if a valid record is collected
+  """
+  if mode == 'REALTIME':
+    fd = extractor.stdout.fileno()
+    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    while True:
+      try:
+        fullRecord = extractor.stdout.readline()
+      except: #pylint: disable=bare-except
+        return
+      break
+  else:
+    fullRecord = extractor.stdout.readline()
+
+  if fullRecord.strip() == '':
+    if extractor.poll() is not None:
+      errmsg = extractor.stderr.read()
+      if errmsg:
+        raise Exception('failed to execute c++ {}'.format(errmsg))
+    return
+
+  recordList = fullRecord.split(',')
+  if len(recordList) < 2:
+    recordList.extend('')
+    if extractor.poll() is not None:
+      errmsg = extractor.stderr.read()
+      if errmsg:
+        raise Exception('failed to load {} - {}'.format(recordList, errmsg))
+    return
+
+  currentThreadId = recordList[0]
+  currentTlsAddr = recordList[1]
+  record = recordList[2:]
+
+  return currentThreadId, currentTlsAddr, record

@@ -38,6 +38,8 @@ class AbstractTxnLoader(object):
     self.currentTxn = None
     self.threadId = None
     self.tlsAddr = None
+    self.completeTxnCount = 0
+    self.newCompleteTxns = OrderedDict()
 
   def reset(self):
     """Resets the state of the loader"""
@@ -47,10 +49,16 @@ class AbstractTxnLoader(object):
     self.nonTxnCounters = []
     self.ephemeralCounters = []
     self.currentTxn = None
+    self.newCompleteTxns = OrderedDict()
+    self.incompleteTxnIds = []
 
   def getTxnCount(self):
     """Returns the number of transactions loaded"""
     return len(self.txns)
+
+  def getCompleteTxnCount(self):
+    """Returns the number of complete transactions loaded"""
+    return len(self.newCompleteTxns)
 
   def isCompromised(self):
     """Returns True, if any of the loaded transactions were compromised or corrupted"""
@@ -63,6 +71,8 @@ class AbstractTxnLoader(object):
   def appendTxn(self, txn):
     """
     Inserts or updates transaction to collection
+    check the set for incomplete transactions
+    update completed transactions if a new transaction is collected
 
     :param txn: Transaction to be appended
 
@@ -70,7 +80,21 @@ class AbstractTxnLoader(object):
     if txn.txnId in self.txns:
       self.txns[txn.txnId].join(txn)
     else:
+      for prevTxnId in self.incompleteTxnIds:
+        if self.txns[prevTxnId].hasEndProbe:
+          self.newCompleteTxns.update({prevTxnId : self.txns[prevTxnId]})
+          self.incompleteTxnIds.remove(prevTxnId)
       self.txns.update({txn.txnId : txn})
+      self.incompleteTxnIds.append(txn.txnId)
+
+  def getNewCompleteTxns(self):
+    """get the transaction collection of the newly collected complete transactions"""
+    newCollection = TxnCollection(
+      self.name, self.cpuInfo, self.newCompleteTxns, self.probes, self.topdownMetrics, self.events, self.dataSource
+    )
+    self.completeTxnCount += len(self.newCompleteTxns)
+    self.newCompleteTxns = OrderedDict()
+    return newCollection
 
   def report(self):
     """Returns loader statistics"""
@@ -118,6 +142,10 @@ class AbstractTxnLoader(object):
   def getCount(self):
     """Returns the count of transactions loaded"""
     return len(self.txns) + (1 if self.currentTxn else 0)
+
+  def getCompleteCount(self):
+    """Returns the count of complete transactions loaded"""
+    return self.completeTxnCount
 
 class ChaoticTxnLoader(AbstractTxnLoader):
   """Loads transactions from counters with tolerance for compromised transactions"""
@@ -310,3 +338,9 @@ class BoundedTxnLoader(AbstractTxnLoader):
     txns = self.fragments.join(self.nextTxnId)
     for txn in txns:
       AbstractTxnLoader.appendTxn(self, txn)
+
+  def getNewCompleteTxns(self):
+    txns = self.fragments.join(self.nextTxnId)
+    for txn in txns:
+      AbstractTxnLoader.appendTxn(self, txn)
+    return AbstractTxnLoader.getNewCompleteTxns(self)

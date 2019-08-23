@@ -12,6 +12,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import os
+from six.moves import intern
 
 class AbstractProbe(object):
   """Base class for probes"""

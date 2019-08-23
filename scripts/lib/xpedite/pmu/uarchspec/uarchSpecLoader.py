@@ -61,7 +61,8 @@ def downloadFile(url, path):
   :param path: Path of download directory
 
   """
-  from urllib2 import urlopen, URLError
+  from six.moves.urllib.request import urlopen
+  from six.moves.urllib.error import URLError
   try:
     response = urlopen(url)
     data = response.read()

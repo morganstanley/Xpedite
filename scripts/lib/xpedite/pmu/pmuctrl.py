@@ -10,6 +10,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import os
+import six
 import struct
 import logging
 from xpedite.pmu.request     import (
@@ -152,6 +153,7 @@ class PMUCtrl(object):
     eventSet = self.buildEventSet(self.eventsDb, cpuSet, events)
     for cpu in cpuSet:
       requestGroup = self.buildRequestGroup(cpu, eventSet)
+      requestGroup = six.ensure_str(requestGroup, encoding='latin-1')
       LOGGER.debug(
         'sending request (%d bytes) to xpedite ko [%s]',
         len(requestGroup), ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
@@ -172,6 +174,7 @@ class PMUCtrl(object):
     eventSet = PMUCtrl.buildEventSet(eventsDb, [], events)
     if not eventSet.offcoreRequestCount():
       requestGroup = PMUCtrl.buildRequestGroup(0, eventSet)
+      requestGroup = six.ensure_str(requestGroup, encoding='latin-1')
       pdu = ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
       return (eventSet, pdu)
     return (None, None)

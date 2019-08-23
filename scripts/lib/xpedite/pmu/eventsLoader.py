@@ -15,6 +15,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import logging
+from collections             import OrderedDict
 from xpedite.pmu.uarchEvent  import GenericCoreEvent, FixedCoreEvent, OffCoreEvent
 
 LOGGER = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class ObjectFactory(object):
   """Factory to load and set uarch event attributes from cpu micro architecture specifications"""
 
   def __init__(self):
-    self.attrMap = {}
+    self.attrMap = OrderedDict()
 
   def add(self, fieldName, attrName, converter):
     """
@@ -76,7 +77,7 @@ class EventsLoader(object):
     factory.add('UnitMask', 'unitMask', lambda v : int(v, 16))
     factory.add('Description', 'description', lambda v : v)
 
-    eventsMap = {}
+    eventsMap = OrderedDict()
     with open(eventsFile) as eventsFileHandle:
       reader = csv.DictReader([row for row in eventsFileHandle if row[0]!='#'])
       for record in reader:
@@ -157,11 +158,11 @@ class EventsLoader(object):
 
     """
     import json
-    eventsDb = {}
+    eventsDb = OrderedDict()
     incompatibleRecords = []
     uninitializedEvents = []
     try:
-      records = json.load(open(eventsFile, 'rb'))
+      records = json.load(open(eventsFile, 'r'))
       for record in records:
         try:
           event = self.jsonFactory(record)(record)

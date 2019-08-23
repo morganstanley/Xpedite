@@ -80,7 +80,7 @@ def buildReportLink(reportKey, action):
   """Returns an url to uniquely identify a report"""
   return '/xpedite?{}={{0}}&reportKey={}&action={}'.format(Context.fileKey, reportKey, action)
 
-def buildReportCells(nb, result, dataFilePath):
+def buildReportCells(result, dataFilePath, nb=None):
   """
   Method to build the report cells. Populates the
    metadata to be stored in init cell and preloads
@@ -92,7 +92,6 @@ def buildReportCells(nb, result, dataFilePath):
   from xpedite.jupyter.xpediteData       import XpediteDataFactory
   from xpedite.jupyter.templates         import loadCategoryMarkup
 
-  nb['cells'] = []
   d3Flots = []
   flotCode = loadCategoryMarkup()
   reportCount = 0
@@ -109,6 +108,7 @@ def buildReportCells(nb, result, dataFilePath):
   xpdf.appendRecord('snippets', 'snippets', zSnippetData)
 
   cellNum = None
+  cellArgs = []
   for cellNum, cell in enumerate(result.reportCells):
     linksCode = ''
     d3Flot = buildD3Flot(cell)
@@ -137,14 +137,28 @@ def buildReportCells(nb, result, dataFilePath):
       LOGGER.exception(typeErr)
       raise InvariantViloation(typeErr)
 
-    nb['cells'].append(
-      nbf.new_code_cell(source=cellCode, metadata={
-        'init_cell': True, 'hide_input': True, 'editable': False, 'deletable': True
-      })
-    )
+    xpdf.commit()
 
-  xpdf.commit()
-  return cellNum, d3Flots
+    if nb:
+      nb['cells'].append(
+        nbf.new_code_cell(source=cellCode, metadata={
+          'init_cell': True, 'hide_input': True, 'editable': False, 'deletable': True
+        })
+      )
+      return cellNum, d3Flots
+    else:
+      linksCode = linksCode.format('[fileName]')
+      cellArg = {
+        'name':cell.flot.title,
+        'description':cell.flot.description,
+        'cellNum':cellNum,
+        'reportNum':reportNum + 1,
+        'linksCode':linksCode,
+        'd3flot':d3Flot.toDict()
+      }
+      cellArgs.append(cellArg)
+      return cellNum, d3Flots, cellArgs
+
 
 def buildInitCell(nb, numOfCategories, d3Flots, appName, runId):
   """
@@ -168,7 +182,6 @@ def buildInitCell(nb, numOfCategories, d3Flots, appName, runId):
   'hide_input': True, 'editable': False, 'deletable': False,\
   'd3Flots': d3Flots})] + nb['cells']
 
-
 def buildNotebook(appName, result, notebookPath, dataFilePath, runId):
   """
   Method to build .ipynb notebook with init code
@@ -178,7 +191,8 @@ def buildNotebook(appName, result, notebookPath, dataFilePath, runId):
   begin = time.time()
   LOGGER.info('generating notebook %s -> ', os.path.basename(notebookPath))
   nb = nbf.new_notebook()
-  numOfCategories, d3Flots = buildReportCells(nb, result, dataFilePath)
+  nb['cells'] = []
+  numOfCategories, d3Flots = buildReportCells(result, dataFilePath, nb)
   buildInitCell(nb, numOfCategories, d3Flots, appName, runId)
 
   try:
@@ -237,6 +251,81 @@ def validatePath(homeDir, reportName):
     os.makedirs(dataDir)
   return notebookPath, dataFilePath, homeDir
 
+def buildLiveNotebook(appName, notebookPath, dataFilePath, pargs):
+  """
+  Method to build .ipynb notebook with init code
+   cell for realtime transaction data collection and visualization.
+
+  """
+  begin = time.time()
+  LOGGER.info('generating notebook %s -> ', os.path.basename(notebookPath))
+  nb = nbf.new_notebook()
+  buildLiveInitCell(nb, appName, pargs, dataFilePath, notebookPath)
+  buildEcgWidgetCell(nb)
+  buildProfilingCell(nb)
+  LOGGER.info('finish building intitial cell')
+
+  try:
+    with open(notebookPath, 'w') as reportFile:
+      nbformat.write(nb, reportFile)
+    LOGGER.info('finish writing ipynb file')
+    notebookSize = formatHumanReadable(os.path.getsize(notebookPath))
+    elapsed = time.time() - begin
+    LOGGER.completed('completed %s in %0.2f sec.', notebookSize, elapsed)
+    return True
+  except IOError:
+    LOGGER.exception('Could not write to the notebook(.ipynb) file')
+    return False
+
+def buildProfilingCell(nb):
+  """
+  Method to build .ipynb notebook with the code to start profiling
+  """
+  from xpedite.jupyter.templates import loadProfilingCell
+  profilingCode = loadProfilingCell()
+  nb['cells'].append(
+    nbf.new_code_cell(source=profilingCode, metadata={
+      'init_cell': True, 'hide_input': True, 'editable': False, 'deletable': True
+    })
+  )
+
+def buildLiveInitCell(nb, appName, pargs, datafilePath, notebookPath):
+  """
+  Method to build the init cell which contains the intro for realtime mode
+  """
+  from xpedite.jupyter.templates import loadLiveInitCell
+  nb['cells'] = []
+  initCode = loadLiveInitCell()
+  from xpedite.selfProfile import CProfile
+  cprofile = CProfile(pargs.selfProfile) if pargs.selfProfile else None
+  initCode = initCode.format(appName=appName,
+                            profileInfo=pargs.profileInfo,
+                            benchmarkPath=pargs.createBenchmark,
+                            duration=pargs.duration,
+                            heartbeatInterval=pargs.heartbeat,
+                            samplesFileSize=pargs.samplesFileSize,
+                            cprofile=cprofile,
+                            profileName=pargs.name,
+                            verbose=pargs.verbose,
+                            datafilePath=datafilePath,
+                            notebookPath=notebookPath
+                            )
+
+  nb['cells'] = [nbf.new_code_cell(source=initCode, metadata={'init_cell': True, 'isInit': '0xFFFFFFFFA5A55A5DUL',\
+  'hide_input': True, 'editable': False, 'deletable': False})] + nb['cells']
+
+def buildEcgWidgetCell(nb):
+  """
+  Method to build the cell with the code for initiating ECG widget
+  """
+  from xpedite.jupyter.templates import loadEcgWidget
+  ecgCode = loadEcgWidget()
+  nb['cells'].append(
+    nbf.new_code_cell(source=ecgCode, metadata={
+      'init_cell': True, 'hide_input': True, 'editable': False, 'deletable': True
+    })
+  )
+
 class Driver(object):
   """Xpedite driver to render profile results in jupyter shell"""
 
@@ -254,3 +343,11 @@ class Driver(object):
         launchJupyter(profileInfo.homeDir)
     else:
       LOGGER.error('Aborting profile - no txn collected. Did you generate any transactions ?')
+  @staticmethod
+  def renderLive(profileInfo, reportName, pargs):
+    """initialize a profile session and render updated results"""
+    notebookPath, dataFilePath, profileInfo.homeDir = validatePath(profileInfo.homeDir, reportName)
+    rc = buildLiveNotebook(profileInfo.appName, notebookPath, dataFilePath, pargs)
+    if not rc:
+      LOGGER.error('Aborting profile - unable to build notebook')
+    launchJupyter(profileInfo.homeDir)

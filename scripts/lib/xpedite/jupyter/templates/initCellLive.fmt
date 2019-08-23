@@ -1,0 +1,75 @@
+import os, sys, time
+from IPython.display import display, HTML, Javascript
+sys.path.append(os.environ['XPEDITE_PATH'])
+import xpedite
+from xpedite.jupyter.commands import routes, txns, plot, stat, filter, diff
+from xpedite.analytics.timelineTree import buildTimelineTree
+from xpedite.jupyter.templates.initCellLive import INTRO_FRMT
+from xpedite.jupyter.context import Context, context
+from concurrent import futures
+import nbformat
+import ipywidgets as widgets
+
+NOTEBOOKPATH = '{notebookPath}'
+NBVERSION = 4
+WAITINTERVAL = 0.5
+
+def IPython_awaits(cellNum):
+  script = '''
+        require(["base/js/namespace"],function(Jupyter) {{
+            Jupyter.notebook.save_checkpoint();
+        }});
+  '''
+  while(True):
+    display(Javascript(script))
+    nb = nbformat.read(NOTEBOOKPATH, NBVERSION)
+    newCellNum = len(nb['cells'])
+    if newCellNum > cellNum:
+      return newCellNum
+    time.sleep(WAITINTERVAL)
+
+thismodule = sys.modules[__name__]
+fileName = getattr(thismodule, Context.fileKey)
+result = 'Failed to resolve xpd data file name'
+if fileName:
+  context.initialize(fileName, isRealtime = True)
+  result = INTRO_FRMT.format(appName = '{appName}')
+display(HTML(result))
+
+stopButton = widgets.Button(description="Stop Profiling")
+output = widgets.Output()
+display(stopButton, output)
+
+from xpedite.profiler import Profiler
+
+def poller(ecgwidget, stopButton):
+  profileInfo, report = Profiler.record(
+  '{profileInfo}',
+  {benchmarkPath},
+  {duration},
+  {heartbeatInterval},
+  {samplesFileSize},
+  {cprofile},
+  {profileName},
+  {verbose},
+  context,
+  ecgwidget,
+  stopButton
+  )
+
+  from xpedite.jupyter.result import Result
+  import xpedite.jupyter.driver
+  from xpedite.jupyter.driver import buildReportCell
+  from xpedite.jupyter.templates import loadReportCell
+
+  result = Result(report)
+  numOfCategories, d3Flots, args = buildReportCell(result, '{datafilePath}')
+
+  nb = nbformat.read(NOTEBOOKPATH, NBVERSION)
+  cellNum = len(nb['cells'])
+
+  for count, arg in enumerate(args):
+    reportCode = loadReportCell()
+    reportCode = reportCode.format(name = arg['name'], description = arg['description'], cellNum = arg['cellNum'], reportNum = arg['reportNum'], linksCode = arg['linksCode'], d3flot = arg['d3flot'])
+    display(Javascript(reportCode))
+    cellNum = IPython_awaits(cellNum)

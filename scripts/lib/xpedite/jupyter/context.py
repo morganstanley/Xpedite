@@ -37,6 +37,7 @@ class Context(object):
     self.txn = None
     self.executor = futures.ThreadPoolExecutor(max_workers=1)
     self.dataFile = None
+    self.isRealtime = False
 
   def loadProfiles(self):
     """Load profile data from Xpedite data file"""
@@ -53,7 +54,7 @@ class Context(object):
     self.txn = Txn(self._profiles.pmcNames) if self._profiles else None
     self.profileState = ProfileStatus.LoadComplete if self._profiles else ProfileStatus.LoadFailed
 
-  def initialize(self, notebookName, cb=None):
+  def initialize(self, notebookName, cb=None, isRealtime=None):
     """
     Initialize context
 
@@ -69,6 +70,7 @@ class Context(object):
       if cb:
         cb(self)
     self.executor.submit(doLoad)
+    self.isRealtime = isRealtime
 
   @property
   def profiles(self):
@@ -83,16 +85,17 @@ class Context(object):
       return self._profiles
     else:
       count = 0
-      while self.profileState == ProfileStatus.LoadInProgress:
-        time.sleep(.5)
-        if self.profileState == ProfileStatus.LoadComplete:
-          self.executor.shutdown()
-          self.executor = None
-          break
-        count += 1
-        if count >= 60:
-          LOGGER.error('Loading profiles has timed out.')
-          raise Exception('Timeout loading profiles.')
+      if not self.isRealtime:
+        while self.profileState == ProfileStatus.LoadInProgress:
+          time.sleep(.5)
+          if self.profileState == ProfileStatus.LoadComplete:
+            self.executor.shutdown()
+            self.executor = None
+            break
+          count += 1
+          if count >= 60:
+            LOGGER.error('Loading profiles has timed out.')
+            raise Exception('Timeout loading profiles.')
     return self._profiles
 
 context = Context() # pylint: disable=invalid-name

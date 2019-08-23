@@ -51,8 +51,9 @@ class Profiler(object):
   """Xpedite Profiler"""
 
   @staticmethod
-  def profile(app, profileInfo, reportName, reportPath, dryRun, # pylint: disable=too-many-locals
-    heartbeatInterval=120, samplesFileSize=None, interactive=True, duration=None, cprofile=None):
+  def profile(app, profileInfo, reportName, reportPath, dryRun,# pylint: disable=too-many-locals
+    heartbeatInterval=120, samplesFileSize=None, interactive=True,
+    duration=None, cprofile=None, context=None, ecgwidget=None, stopButton=None):
     """
     Orchestrates a Xpedite profile session
 
@@ -124,15 +125,17 @@ class Profiler(object):
     if cprofile:
       cprofile.enable()
 
-    report = runtime.report(reportName=reportName, benchmarkPaths=profileInfo.benchmarkPaths
-        , classifier=classifier, resultOrder=profileInfo.resultOrder, txnFilter=profileInfo.txnFilter)
+    report = runtime.report(reportName=reportName, benchmarkPaths=profileInfo.benchmarkPaths,
+        classifier=classifier, resultOrder=profileInfo.resultOrder, txnFilter=profileInfo.txnFilter,
+        context=context, ecgwidget=ecgwidget, stopButton=stopButton)
     if reportPath:
       report.makeBenchmark(reportPath)
     return report
 
   @staticmethod
   def record(profileInfoPath, benchmarkPath=None, duration=None, heartbeatInterval=None,
-      samplesFileSize=None, cprofile=None, profileName=None, verbose=None):
+      samplesFileSize=None, cprofile=None, profileName=None, verbose=None,
+      context=None, ecgwidget=None, stopButton=None):
     """
     Records an xpedite profile using the supplied parameters
 
@@ -163,7 +166,8 @@ class Profiler(object):
       reportName = buildReportName(profileInfo.appName, profileName)
       report = Profiler.profile(
         app, profileInfo, reportName, benchmarkPath, False, heartbeatInterval=heartbeatInterval,
-        samplesFileSize=samplesFileSize, duration=duration, cprofile=cprofile
+        samplesFileSize=samplesFileSize, duration=duration, cprofile=cprofile,
+        context=context, ecgwidget=ecgwidget, stopButton=stopButton
       )
     return profileInfo, report
 

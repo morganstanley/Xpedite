@@ -243,6 +243,7 @@ def compressText(data):
   """
   import zlib
   import base64
+  import six
   compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
-  zContent = compressor.compress(data) + compressor.flush()
+  zContent = compressor.compress(six.ensure_binary(data)) + compressor.flush()
   return base64.b64encode(zContent)

@@ -44,7 +44,8 @@ class UarchSpecDb(object):
   mapHdrEventType = 'EventType'
 
   def __init__(self, manifestPath):
-    self.uarchSpecMap = {}
+    from collections import OrderedDict
+    self.uarchSpecMap = OrderedDict()
     uarchSpecDirPath = os.path.dirname(os.path.abspath(manifestPath))
     with open(manifestPath) as fileHandle:
       reader = csv.DictReader(fileHandle)
