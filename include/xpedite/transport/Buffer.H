@@ -18,12 +18,20 @@
 #include <string.h>
 #include <xpedite/util/Errno.H>
 
+enum MODE {BATCH = 0, REALTIME = 1, TRANSPORT = 2};
+
 namespace xpedite { namespace transport { namespace util {
 
 struct Buffer {
 
   explicit Buffer(uint32_t capacity_) 
-    : _capacity {capacity_}, _in {}, _out {} {
+    : _capacity {capacity_}, _in {}, _out {}, _mode {TRANSPORT} {
+    _buffer = static_cast<char*>(::malloc(capacity_));
+    ::bzero(_buffer, capacity_);
+  }
+  
+  explicit Buffer(uint32_t capacity_, enum MODE mode_) 
+    : _capacity {capacity_}, _in {}, _out {}, _mode {mode_} {
     _buffer = static_cast<char*>(::malloc(capacity_));
     ::bzero(_buffer, capacity_);
   }
@@ -70,7 +78,11 @@ struct Buffer {
       XpediteLogDebug << "failed to read. not enough usable capacity available" << XpediteLogEnd;
       return 0;
     }
-    int status = ::read(fd_, _buffer + _in, usableCapacity());
+    int status;
+    if(_mode != TRANSPORT) // in loader
+      status = ::read(fd_, _buffer + _in, _sizeToRead);
+    else
+      status = ::read(fd_, _buffer + _in, usableCapacity());
     if(XPEDITE_UNLIKELY(status == -1)) {
       int err = errno;
       switch (err) {
@@ -85,7 +97,8 @@ struct Buffer {
     }
 
     if(XPEDITE_UNLIKELY(status == 0)) {
-      XpediteLogDebug << "socket read for fd (" << fd_ << ") terminated - recieved EOF." << XpediteLogEnd;
+      if(_mode == TRANSPORT)
+        XpediteLogDebug << "socket read for fd (" << fd_ << ") terminated - recieved EOF." << XpediteLogEnd;
       return -1;
     }
     _in += status;
@@ -100,9 +113,17 @@ struct Buffer {
         while (newSize < _capacity + needed) {
           newSize *= 2;
         }
-        XpediteLogDebug << "reallocating to new size - " << newSize << XpediteLogEnd;
+        if(_mode == TRANSPORT)
+          XpediteLogDebug << "reallocating to new size - " << newSize << XpediteLogEnd;
 
         char* buffer = static_cast<char*>(realloc(_buffer, newSize));
+
+        if(_mode != TRANSPORT){
+          if(size() > 0){
+            ::memmove(static_cast<void*>(buffer), static_cast<void*>(_buffer + _out), size());
+          }
+        }
+
         if(nullptr == buffer) {
           throw std::bad_alloc();
         }
@@ -110,12 +131,17 @@ struct Buffer {
         _capacity = newSize;
       }
       else if(XPEDITE_UNLIKELY(size() > 0)) {
-        XpediteLogDebug << "relocating data (" << size() << " bytes)"  << XpediteLogEnd;
+        if(_mode == TRANSPORT)
+          XpediteLogDebug << "relocating data (" << size() << " bytes)"  << XpediteLogEnd;
         ::memmove(static_cast<void*>(_buffer), static_cast<void*>(_buffer + _out), size());
       }
       _in -= _out;
       _out = 0;
     }
+  }
+
+  void updateReadSize(uint32_t size_){
+    _sizeToRead = size_;
   }
 
   private:
@@ -124,6 +150,8 @@ struct Buffer {
   uint32_t _capacity;
   uint32_t _in;
   uint32_t _out;
+  enum MODE _mode;
+  uint32_t _sizeToRead;
 };
 
 }}}

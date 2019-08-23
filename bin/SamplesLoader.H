@@ -23,8 +23,12 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <xpedite/transport/Buffer.H>
+#include "SamplesFramer.H"
+#include <cstdlib> 
+#include <regex>
+#include <sys/inotify.h>
 
 namespace xpedite { namespace framework {
 
@@ -33,131 +37,65 @@ namespace xpedite { namespace framework {
     int _fd;
     const FileHeader* _fileHeader;
     CallSiteMap _callSiteMap;
-    const SegmentHeader* _segmentHeader;
-    unsigned _size;
-
-    const void* samplesEnd() const noexcept {
-      return reinterpret_cast<const char*>(_fileHeader) + _size;
-    }
-
-    SamplesLoader(const SamplesLoader&)            = delete;
-    SamplesLoader& operator=(const SamplesLoader&) = delete;
-    SamplesLoader(SamplesLoader&&)                 = delete;
-    SamplesLoader& operator=(SamplesLoader&&)      = delete;
+    uint32_t initial_cap = 1024*8;
+    xpedite::framework::Framer* _framer;
+    const probes::Sample* _sample;
+    size_t _fileHeaderSize;
+    FileHdrParser* fileParser;
+    SegHdrParser* segParser;
+    const probes:: Sample* _currentSample;
+    static size_t _samplesSize;
+    enum MODE _mode;
 
     public:
-
-    class Iterator : public std::iterator<std::input_iterator_tag, const probes::Sample>
-    {
-      const probes::Sample* _samples;
-      const void* _end;
-      unsigned _size;
-
-      public:
-
-      explicit Iterator(const SegmentHeader* samplesHeader_, const void* end_)
-        : _samples {reinterpret_cast<const probes::Sample*>(end_)}, _end {end_}, _size {} {
-        if(samplesHeader_ < _end) {
-          std::tie(_samples, _size) = samplesHeader_->samples();
-        }
-      }
-
-      explicit Iterator(const void* begin_, const void* end_)
-        : _samples {reinterpret_cast<const probes::Sample*>(begin_)}, _end {end_}, _size {} {
-      }
-
-      Iterator& operator++() {
-        if(_samples < _end) {
-          _size -= _samples->size();
-          _samples = _samples->next();
-          if(!_size && _samples < _end) {
-            auto samplesHeader = reinterpret_cast<const SegmentHeader*>(_samples);
-            std::tie(_samples, _size) = samplesHeader->samples();
-          }
-        }
-        return *this;
-      }
-
-      Iterator operator++(int) {
-        Iterator i {*this};
-        operator++();
-        return i;
-      }
-
-      bool operator==(Iterator other_) const {
-        return _samples == other_._samples && _end == other_._end;
-      }
-
-      bool operator!=(Iterator other_) const {
-        return !(*this == other_);
-      }
-
-      reference operator*() const {
-        return *_samples;
-      }
-    };
-
-    SamplesLoader(const char* path_)
-      : _fd {}, _fileHeader {}, _callSiteMap {}, _segmentHeader {}, _size {} {
-      load(path_);
+    int hasFileHeader;
+    
+    SamplesLoader()
+      : _fd {}, _fileHeader {}, _callSiteMap {}, hasFileHeader {}, _framer {}, _mode {} {
     }
 
-    ~SamplesLoader() {
-      if(_fileHeader) {
-        munmap(const_cast<FileHeader*>(_fileHeader), _size);
+    SamplesLoader(const int fd_, enum MODE mode_)
+      : _fd {fd_}, _fileHeader {}, _callSiteMap {}, hasFileHeader {0}, _framer {}, _mode {mode_} {
+
+        fileParser = new FileHdrParser;
+        segParser = new SegHdrParser;
+        _framer = new Framer(_fd, fileParser, _mode);
+
+        loadFileHeader();
+    }
+
+    void loadFileHeader(){
+      while(1){
+        xpedite::transport::tcp::Frame frame = _framer->readFrame();
+        if(frame.isEOF()){ break; }
+        if(frame.data() == NULL){ hasFileHeader = 0; }
+        else {
+          hasFileHeader = 1;
+          _framer->resetParser(segParser);
+          void* ptr = new char[sizeof(FileHeader)];
+          memcpy(ptr, frame.data(), sizeof(FileHeader));
+          _fileHeader = reinterpret_cast<const FileHeader*>(ptr);
+          if(!_fileHeader->isValid()) { throw std::runtime_error {errorMsg("detected data corruption - mismatch in header signature")}; }
+          break;
+        }
       }
-      if(_fd) {
-        close(_fd);
-      }
+    }
+
+    xpedite::transport::tcp::Frame loadSegment(){
+      xpedite::transport::tcp::Frame frame = _framer->readFrame();
+      return frame;
     }
 
     std::string errorMsg(const char* msg_) {
-      util::Errno e;
+      xpedite::util::Errno e;
       std::ostringstream os;
       os << msg_ << " - " << e.asString();
       return os.str();
     }
 
-    void load(const char* path_) {
-      int _fd = open(path_, O_RDONLY);
-      if (_fd < 0) {
-        throw std::runtime_error {errorMsg("failed to open samples file")};
-      }
-
-      struct stat buf;
-      if(fstat(_fd, &buf)) {
-        throw std::runtime_error {errorMsg("failed to stat samples file")};
-      }
-      _size = buf.st_size;
-
-      char* ptr {};
-      if((ptr = static_cast<char*>(mmap(nullptr, _size, PROT_READ, MAP_SHARED, _fd, 0))) == MAP_FAILED) {
-        throw std::runtime_error {errorMsg("failed to mmap file")};
-      }
-
-      _fileHeader = reinterpret_cast<const FileHeader*>(ptr);
-      if(!_fileHeader->isValid()) {
-        throw std::runtime_error {errorMsg("detected data corruption - mismatch in header signature")};
-      }
-
-      const CallSiteInfo* callSites;
-      uint64_t callSiteCount;
-      std::tie(callSites, callSiteCount) = _fileHeader->callSites();
-      for(unsigned i=0; i<callSiteCount; ++i) {
-        _callSiteMap.add(callSites[i]);
-      }
-      _segmentHeader = _fileHeader->segmentHeader();
-    }
-
-    const CallSiteInfo* locateCallSite(const void* callSite_) const noexcept {
-      return _callSiteMap.locateInfo(callSite_);
-    }
-
+    const CallSiteInfo* locateCallSite(const void* callSite_) const noexcept { return _callSiteMap.locateInfo(callSite_); }
     uint32_t pmcCount()             const noexcept { return _fileHeader->pmcCount(); }
     const CallSiteMap callSiteMap() const noexcept { return _callSiteMap;            }
-
-    Iterator begin() { return Iterator {_segmentHeader, samplesEnd()}; }
-    Iterator end()   { return Iterator {samplesEnd(), samplesEnd()};   }
 
     uint64_t tscHz() const noexcept {
       if(_fileHeader) {
@@ -165,6 +103,91 @@ namespace xpedite { namespace framework {
       }
       return {};
     }
+
   };
 
 }}
+
+struct file {
+  int fd;
+  size_t fileSize;
+  std::string threadId;
+  std::string tlsAddr;
+  char* filePath;
+  xpedite::framework::SamplesLoader loader;
+  int initialInfoPrinted = 0;
+};
+
+int segmentSize;
+const xpedite::probes::Sample* sample;
+std::string filePathS;
+std::string fileNameS;
+char filePathC[4096];
+size_t hasRunId;
+int currentFd;
+int currentWd;
+struct stat fInfo;
+
+void printFileHeader(struct file* currentFile) {
+    auto pmcCount = (currentFile->loader).pmcCount();
+    std::cout<< currentFile->threadId<<", "<<currentFile->tlsAddr<<", ";
+    std::cout << "Tsc,ReturnSite,Data";
+
+    for(unsigned i=0; i<pmcCount; ++i) {
+      std::cout << ",Pmc-" << i+1;
+    }
+    std::cout << std::endl;
+    currentFile->initialInfoPrinted = 1;
+  }
+
+void printSamples(const xpedite::framework::SegmentHeader* segmentHeader, struct file* currentFile) {
+  std::tie(sample, segmentSize) = segmentHeader->samples();
+  const void* end = sample + segmentSize/16;
+
+  while(sample < end){
+    std::cout<< currentFile->threadId<<", "<<currentFile->tlsAddr<<", ";
+    std::cout << std::hex << sample->tsc() << std::dec << "," << sample->returnSite();
+    if (sample->hasData()) {
+      std::cout << std::hex << "," << std::get<1>(sample->data()) << std::setw(16) << std::setfill('0') 
+        << std::right << std::get<0>(sample->data()) << std::dec;
+    }
+    else { std::cout << ","; }
+
+    if (sample->hasPmc()) {
+      const uint64_t* v; int c;
+      std::tie(v, c) = sample->pmc();
+      for(int i=0; i<c; ++i) {
+        std::cout << "," << v[i];
+      }
+    }
+    std::cout << std::endl;
+    sample = sample->next();
+  }
+}
+
+bool newMonitorFile(auto fileNameC, auto dirPathS, auto runId, int fd, struct file* newFile, int* currentWd, enum MODE mode){
+  fileNameS = fileNameC;
+  hasRunId = fileNameS.find(runId);
+
+  if(hasRunId == std::string::npos){ return false; }
+
+  filePathS = dirPathS + "/" + fileNameS;
+  std::strcpy(filePathC, filePathS.c_str());
+  currentFd = open(filePathC, O_RDONLY);
+
+  (*currentWd) = inotify_add_watch(fd, filePathC, IN_MODIFY | IN_CLOSE_WRITE | IN_ATTRIB | IN_OPEN);
+  std::regex r("[^\\d]*(\\d+)-(\\d+)-([0-9a-fA-F]+)\\.data");
+  std::smatch m;
+  std::regex_search(fileNameS, m, r);
+
+  fstat(currentFd, &fInfo);
+  xpedite::framework::SamplesLoader currentLoader {currentFd, mode};
+  newFile->fd = currentFd;
+  newFile->threadId = m[2];
+  newFile->tlsAddr = m[3];
+  newFile->filePath = filePathC;
+  newFile->fileSize = fInfo.st_size;
+  newFile->loader = currentLoader;
+
+  return true;
+}

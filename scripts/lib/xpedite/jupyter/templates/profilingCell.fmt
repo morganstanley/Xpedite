@@ -1,0 +1,2 @@
+executor = futures.ThreadPoolExecutor(max_workers=1)
+executor.submit(poller, ecgwidget, stopButton)

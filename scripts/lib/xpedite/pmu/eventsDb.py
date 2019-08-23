@@ -105,7 +105,8 @@ class EventsDbCache(object):
   """A cache for event databases for all known cpu micro architectures"""
 
   def __init__(self):
-    self.cache = {}
+    from collections import OrderedDict
+    self.cache = OrderedDict()
 
   def get(self, cpuId):
     """

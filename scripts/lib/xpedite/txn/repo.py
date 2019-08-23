@@ -117,8 +117,8 @@ def loaderFactory(loaderType, benchmark, probes, benchmarkProbes, topdownCache, 
 class TxnRepoFactory(object):
   """Factory to build a repository of transactions"""
 
-  @staticmethod
-  def buildTxnRepo(app, cpuInfo, probes, topdownCache, topdownMetrics,
+  @staticmethod  # modified to be able to create repo with given transactions
+  def buildTxnRepo(newTxns, app, cpuInfo, probes, topdownCache, topdownMetrics,
     events, benchmarkProbes, benchmarkPaths):
     """
     Builds a repository of transactions for current profile session and benchmarks
@@ -139,19 +139,23 @@ class TxnRepoFactory(object):
     from xpedite.txn.filter           import TrivialCounterFilter
     from xpedite.analytics            import CURRENT_RUN
     from xpedite.util                 import timeAction
-    counterFilter = TrivialCounterFilter()
-    collector = Collector(counterFilter)
 
+    if not newTxns:
+      counterFilter = TrivialCounterFilter()
+      collector = Collector(counterFilter)
 
-    if any(probe.canBeginTxn or probe.canEndTxn for probe in probes):
-      loaderType = BoundedTxnLoader
+      if any(probe.canBeginTxn or probe.canEndTxn for probe in probes):
+        loaderType = BoundedTxnLoader
+      else:
+        loaderType = ChaoticTxnLoader
+
+      loader = loaderType(CURRENT_RUN, cpuInfo, probes, topdownMetrics, events)
+
+      timeAction('gathering counters', lambda: collector.gatherCounters(app, loader))
+      currentTxns = loader.getData()
+
     else:
-      loaderType = ChaoticTxnLoader
-
-    loader = loaderType(CURRENT_RUN, cpuInfo, probes, topdownMetrics, events)
-
-    timeAction('gathering counters', lambda: collector.gatherCounters(app, loader))
-    currentTxns = loader.getData()
+      currentTxns = newTxns
 
     if not currentTxns:
       if loader.processedCounterCount:

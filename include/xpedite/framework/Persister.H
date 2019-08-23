@@ -36,6 +36,10 @@ namespace xpedite { namespace framework {
     timeval time()  const noexcept { return _time; }
     uint32_t size() const noexcept { return _size; }
     uint32_t seq()  const noexcept { return _seq;  }
+    uint64_t signature() const {return _signature;}
+    bool isValid() const noexcept {
+      return _signature == XPEDITE_SEGMENT_HDR_SIG;
+    }
 
   } __attribute__((packed));
 
@@ -66,6 +70,10 @@ namespace xpedite { namespace framework {
       : _signature {XPEDITE_FILE_HDR_SIG}, _version {XPEDITE_VERSION}, _time (time_),
         _tscHz {tscHz_}, _pmcCount {pmcCount_}, _callSiteCount {static_cast<uint32_t>(callSites_.size())} {
       memcpy(_callSites, &callSites_.front(), callSiteSize(callSites_.size()));
+    }
+
+    unsigned int getSize() const noexcept {
+      return _callSiteCount*sizeof(CallSiteInfo);
     }
 
     bool isValid() const noexcept {

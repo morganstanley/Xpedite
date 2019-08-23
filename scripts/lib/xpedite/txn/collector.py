@@ -126,6 +126,18 @@ class Collector(Extractor):
     self.logCounterFilterReport()
     return recordCount
 
+  def gatherCountersLive(self, app, loader, stopButton):
+    """
+    Gathers time and pmu counters from sample files for a profile session
+
+    :param app: Handle to the instance of the xpedite app
+    :param loader: Loader to build transactions out of the counters
+
+    """
+    if app.dataSource:
+      return self.loadDataSource(app.dataSource, loader)
+    return Extractor.gatherCountersLive(self, app, loader, stopButton)
+
   def gatherCounters(self, app, loader):
     """
     Gathers time and pmu counters from sample files for a profile session

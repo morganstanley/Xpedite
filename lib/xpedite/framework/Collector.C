@@ -175,5 +175,16 @@ namespace xpedite { namespace framework {
       }
     }
   }
+  
+  void Collector::periodicFlush(unsigned int flushInterval_){
+    std::thread([&, flushInterval_]()
+    {
+      while (true){
+        auto next = std::chrono::steady_clock::now() + std::chrono::milliseconds(flushInterval_);
+        this->poll(true);
+        std::this_thread::sleep_until(next);
+      }
+    }).detach();
+  }
 
 }}
