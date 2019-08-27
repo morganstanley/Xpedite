@@ -1,0 +1,61 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'com.xpedite.Xpedite'
+
+compileJava {
+  def nativeHeaders = new File(rootProject.projectDir, "install/jni");
+  options.compilerArgs += ['-h', nativeHeaders]
+}
+
+repositories {
+  mavenCentral()
+}
+	
+dependencies {
+  implementation files('jar/javassist.jar')
+}
+
+sourceSets {
+  main {
+    java.srcDirs = ['src/main/java', 'src/demo/java']
+  }
+}
+
+task xpediteJar(type: Jar) {
+  baseName = 'xpedite'
+  exclude(['**/demo/**'])
+  manifest {
+    attributes(
+      'Implementation-Title': 'Xpedite Jar',
+      'Premain-Class': 'com.xpedite.Xpedite',
+      'Can-Redefine-Classes': 'true',
+      'Can-Retransform-Classes': 'true',
+      'Boot-Class-Path': 'javassist.jar'
+    )
+  }
+  with jar
+}
+
+task demoJar(type: Jar) {
+  include(['**/demo/**'])
+  exclude(['**/com/xpedite/probes'])
+  baseName = 'xpediteDemo'
+  manifest {
+    attributes(
+      'Implementation-Title': 'Xpedite Demo Jar',
+      'Main-Class': 'com.xpedite.demo.EmbeddedDemo',
+    )
+  }
+  with jar
+}
+
+build.dependsOn xpediteJar, demoJar, compileJava
+
+artifacts {
+  archives xpediteJar, demoJar
+}
+
+task javaDocs(type: Javadoc) {
+   source = sourceSets.main.allJava
+}

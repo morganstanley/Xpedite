@@ -35,12 +35,11 @@ public class ClassTransformer implements ClassFileTransformer {
         byte[] bytecode = classfileBuffer;
         try {
             ClassPool cPool = ClassPool.getDefault();
-            CtClass ctClass = cPool.get(className);
-
             for (AbstractProbe probe: probes) {
                 if (!probe.getClassName().equals(className)) {
                     continue;
                 }
+                CtClass ctClass = cPool.get(probe.getClassName().replace('/', '.'));
                 CtMethod ctClassMethod = ctClass.getDeclaredMethod(probe.getMethodName());
                 if (ctClassMethod == null) {
                     continue;
@@ -52,11 +51,9 @@ public class ClassTransformer implements ClassFileTransformer {
                 } else {
                     ctClassMethod.insertAt(((AnchoredProbe) probe).getLineNo(), buildTrampoline(callSites[0].getId()));
                 }
+                bytecode = ctClass.toBytecode();
+                ctClass.detach();
             }
-
-            bytecode = ctClass.toBytecode();
-            ctClass.detach();
-
         } catch (IOException | RuntimeException e) {
             throw new IllegalClassFormatException(e.getMessage());
         } catch (NotFoundException | CannotCompileException e) {

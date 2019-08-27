@@ -1,3 +1,4 @@
+package com.xpedite.demo;
 ///////////////////////////////////////////////////////////////////////////////
 //
 //Application for testing embedded profiling with Xpedite
@@ -15,11 +16,12 @@ import com.xpedite.probes.AnchoredProbe;
 public class EmbeddedDemo {
 
     public static void main(String args[]) {
+      String appClass = "com/xpedite/demo/App";
       try {
         AbstractProbe[] probes = new AbstractProbe[] {
-          new AnchoredProbe("App", "doCompute", 12),
-          new ScopedProbe("App", "doCompute"),
-          new ScopedProbe("App", "doIo")
+          new AnchoredProbe(appClass, "doCompute", 12),
+          new ScopedProbe(appClass, "doCompute"),
+          new ScopedProbe(appClass, "doIo")
         };
         com.xpedite.Xpedite.getInstance().profile(probes);
         new App().run();
