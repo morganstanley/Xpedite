@@ -16,6 +16,8 @@ at nodes of the hierarchy.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
+from collections import OrderedDict
+
 class TreeCollection(object):
   """
   A datastructure to build hierarchical classification of collections
@@ -34,7 +36,7 @@ class TreeCollection(object):
 
     def __init__(self, collection, ancestry=None):
       self.collection = collection
-      self.children = {}
+      self.children = OrderedDict()
       self.ancestry = ancestry if ancestry else []
 
     def addChild(self, name, subCollection):
@@ -127,8 +129,8 @@ class CompositeTreeCollection(object):
     """
 
     def __init__(self, ancestry=None):
-      self.collectionMap = {}
-      self.children = {}
+      self.collectionMap = OrderedDict()
+      self.children = OrderedDict()
       self.ancestry = ancestry if ancestry else []
 
     def addNode(self, treeName, node):

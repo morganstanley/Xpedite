@@ -5,19 +5,10 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 """
 import os
+from thirdParty.html      import HTML
+from xpedite.util         import loadTextFile
 from xpedite.dependencies import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.HTML, Package.Pygments)
-from html import HTML # pylint: disable=wrong-import-position
-
-def loadFile(path):
-  """
-  Loads contents of the given file
-
-  :param path: Path of the file to load
-
-  """
-  with open(path) as fileHandle:
-    return fileHandle.read()
+DEPENDENCY_LOADER.load(Package.Pygments, Package.Six)
 
 def formatList(inputList):
   """
@@ -87,17 +78,17 @@ HTML_END = '</body></html>'
 
 JS_PATH = os.path.join(os.path.dirname(__file__), '../../../jupyter/js')
 STYLE_PATH = os.path.join(os.path.dirname(__file__), '../../../jupyter/config/custom')
-STATIC_REPORT_STYLE = loadFile(os.path.join(STYLE_PATH, 'static.css'))
-XPEDITE_STYLE = loadFile(os.path.join(STYLE_PATH, 'xpedite.css'))
-CODE_STYLE = loadFile(os.path.join(STYLE_PATH, 'code.css'))
-XPEDITE = loadFile(os.path.join(JS_PATH, 'xpedite.js'))
-JQUERY = loadFile(os.path.join(JS_PATH, 'jquery-3.2.1.min.js'))
-BOOTSTRAP = loadFile(os.path.join(JS_PATH, 'bootstrap.min.js'))
-TIPSY = loadFile(os.path.join(JS_PATH, 'jquery.tipsy.js'))
-TABLE_SORTER = loadFile(os.path.join(JS_PATH, 'jquery.tablesorter.min.js'))
-FLOT = loadFile(os.path.join(JS_PATH, 'jquery.flot.min.js'))
-VIZ = loadFile(os.path.join(JS_PATH, 'viz.v1.js'))
-FLOAT_THEAD = loadFile(os.path.join(JS_PATH, 'jquery.floatThead.min.js'))
+STATIC_REPORT_STYLE = loadTextFile(os.path.join(STYLE_PATH, 'static.css'))
+XPEDITE_STYLE = loadTextFile(os.path.join(STYLE_PATH, 'xpedite.css'))
+CODE_STYLE = loadTextFile(os.path.join(STYLE_PATH, 'code.css'))
+XPEDITE = loadTextFile(os.path.join(JS_PATH, 'xpedite.js'))
+JQUERY = loadTextFile(os.path.join(JS_PATH, 'jquery-3.2.1.min.js'))
+BOOTSTRAP = loadTextFile(os.path.join(JS_PATH, 'bootstrap.min.js'))
+TIPSY = loadTextFile(os.path.join(JS_PATH, 'jquery.tipsy.js'))
+TABLE_SORTER = loadTextFile(os.path.join(JS_PATH, 'jquery.tablesorter.min.js'))
+FLOT = loadTextFile(os.path.join(JS_PATH, 'jquery.flot.min.js'))
+VIZ = loadTextFile(os.path.join(JS_PATH, 'viz.v1.js'))
+FLOAT_THEAD = loadTextFile(os.path.join(JS_PATH, 'jquery.floatThead.min.js'))
 
 STYLE = STATIC_REPORT_STYLE + XPEDITE_STYLE + CODE_STYLE
 

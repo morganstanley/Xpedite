@@ -12,12 +12,13 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 import os
 import shutil
 import logging
-import ConfigParser
 from datetime               import date
 from xpedite.txn.collector  import Collector, APPINFO_FILE_NAME
 from xpedite.types          import CpuInfo
 from xpedite.pmu.event      import Event
 from xpedite.benchmark.info import makeBenchmarkInfo, loadBenchmarkInfo
+from xpedite.dependencies   import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Six)
 
 LOGGER = logging.getLogger(__name__)
 

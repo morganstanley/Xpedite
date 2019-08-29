@@ -10,14 +10,16 @@ This module provides utility methods for
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-from __future__     import division
+from __future__           import division
 import sys
 import os
 import time
 import shutil
 import tempfile
 import logging
-from collections    import OrderedDict
+from collections          import OrderedDict
+from xpedite.dependencies import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Six, Package.PyCpuInfo)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -204,8 +206,6 @@ def touch(path):
 
 def getCpuInfo():
   """Loads cpu info for localhost"""
-  from xpedite.dependencies import Package, DEPENDENCY_LOADER
-  DEPENDENCY_LOADER.load(Package.PyCpuInfo)
   from cpuinfo import cpuinfo
   fullCpuInfo = cpuinfo.get_cpu_info()
   return fullCpuInfo
@@ -243,6 +243,18 @@ def compressText(data):
   """
   import zlib
   import base64
+  import six
   compressor = zlib.compressobj(9, zlib.DEFLATED, zlib.MAX_WBITS | 16)
-  zContent = compressor.compress(data) + compressor.flush()
+  zContent = compressor.compress(six.ensure_binary(data)) + compressor.flush()
   return base64.b64encode(zContent)
+
+def loadTextFile(path):
+  """
+  Loads contents of the given file
+
+  :param path: Path of the file to load
+
+  """
+  import six
+  with open(path, 'rb') as fileHandle:
+    return six.ensure_str(fileHandle.read())

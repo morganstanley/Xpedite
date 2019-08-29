@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 """
 Package to support loading and lookup of cpu micro architectural specifications
 

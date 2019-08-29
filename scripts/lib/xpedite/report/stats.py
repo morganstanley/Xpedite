@@ -15,9 +15,9 @@ import os
 from xpedite.report.markup         import (
                                      HTML, TIME_POINT_STATS_TITLE, TRIVIAL_STATS_TABLE,
                                      TABLE_SUMMARY, TIME_POINT_STATS, TD_KEY, SELECTOR,
-                                     DURATION_FORMAT, DURATION_FORMAT_2, loadFile
+                                     DURATION_FORMAT, DURATION_FORMAT_2
                                    )
-from xpedite.util                  import makeUniqueId
+from xpedite.util                  import makeUniqueId, loadTextFile
 from xpedite.analytics.timeline    import TSC_EVENT_NAME
 from xpedite.report.tabs           import (
                                      TAB_HEADER_FMT, TAB_BODY_FMT, TAB_BODY_PREFIX,
@@ -30,7 +30,7 @@ class StatsBuilder(object):
 
   def __init__(self):
     path = os.path.dirname(__file__)
-    self.benchmarkStatsContainerFmt = loadFile(os.path.join(path, 'benchmarkStatsContainer.fmt'))
+    self.benchmarkStatsContainerFmt = loadTextFile(os.path.join(path, 'benchmarkStatsContainer.fmt'))
     self.percentile1 = 95
     self.percentile2 = 99
 

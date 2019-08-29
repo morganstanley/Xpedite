@@ -1,0 +1,8 @@
+file name, size, lines
+dataTxnAppPMC/expectedResults/generateCmdBaseline.py,5834,118
+dataTxnAppPMC/expectedResults/probeCmdBaseline.pkl,4462,808
+dataTxnAppPMC/expectedResults/reportCmdBaseline.xpd,21467111,201614
+dataTxnAppPMC/parameters/baselineCpuInfo.json,1375,0
+dataTxnAppPMC/parameters/data/xpedite-dataTxnApp-1566424436-193470-00002b9bd0dfff60.data,2098736,22529
+dataTxnAppPMC/parameters/profileInfo.py,1395,31
+dataTxnAppPMC/parameters/xpedite-appinfo.txt,8209,34

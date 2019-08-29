@@ -6,7 +6,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 from xpedite.dependencies import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.Enum)
+DEPENDENCY_LOADER.load(Package.Enum, Package.Six)
 from enum import Enum # pylint: disable=wrong-import-position
 
 class Counter(object):

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 """
 Module to interact with Xpedite device driver to program H/W performance counters
 
@@ -10,6 +10,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import os
+import six
 import struct
 import logging
 from xpedite.pmu.request     import (
@@ -154,7 +155,8 @@ class PMUCtrl(object):
       requestGroup = self.buildRequestGroup(cpu, eventSet)
       LOGGER.debug(
         'sending request (%d bytes) to xpedite ko [%s]',
-        len(requestGroup), ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
+        len(requestGroup), ':'.join('{:02x}'.format(six.indexbytes(requestGroup, i))
+                                    for i in range(0, len(requestGroup)))
       )
       self.device.write(requestGroup)
       self.device.flush()
@@ -172,6 +174,6 @@ class PMUCtrl(object):
     eventSet = PMUCtrl.buildEventSet(eventsDb, [], events)
     if not eventSet.offcoreRequestCount():
       requestGroup = PMUCtrl.buildRequestGroup(0, eventSet)
-      pdu = ':'.join('{:02x}'.format(ord(request)) for request in requestGroup)
+      pdu = ':'.join('{:02x}'.format(six.indexbytes(requestGroup, i)) for i in range(0, len(requestGroup)))
       return (eventSet, pdu)
     return (None, None)

@@ -16,7 +16,7 @@ from xpedite.util                        import timeAction
 from xpedite.types.containers            import ProbeMap
 
 from xpedite.dependencies                import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.Numpy)
+DEPENDENCY_LOADER.load(Package.Numpy, Package.Six)
 from xpedite.analytics.aggregator        import TxnAggregator, RouteAggregator, RouteConflatingAggregator # pylint: disable=wrong-import-position
 from xpedite.analytics.timeline          import buildTimelineStats # pylint: disable=wrong-import-position
 from xpedite.analytics.treeCollections   import TreeCollectionFactory # pylint: disable=wrong-import-position

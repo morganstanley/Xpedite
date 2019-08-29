@@ -17,6 +17,7 @@ DEPENDENCY_LOADER.load(
   Package.Futures,
   Package.FuncTools,
   Package.Jupyter,
+  Package.Six,
 )
 
 DATA_DIR = 'xpData'

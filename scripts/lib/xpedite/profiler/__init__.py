@@ -18,6 +18,8 @@ import xpedite
 from xpedite.profiler.profileInfo       import loadProfileInfo
 from xpedite.profiler.app               import XpediteApp, XpediteDormantApp, pingApp
 from logger                             import enableVerboseLogging
+from xpedite.dependencies               import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Six)
 
 LOGGER = logging.getLogger(__name__)
 

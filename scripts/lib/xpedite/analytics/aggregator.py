@@ -6,6 +6,7 @@ Module to aggregate transactions, routes and counters
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
+from collections                import OrderedDict
 from xpedite.txn.classifier     import DefaultClassifier
 
 def txnSubCollectionFactory(txnSubCollection, txn):
@@ -47,7 +48,7 @@ class RouteAggregator(object):
     :param txnSubCollection: Transaction subcollection to be aggregated
 
     """
-    routeMap = {}
+    routeMap = OrderedDict()
     for txn in txnSubCollection:
       addTxn(routeMap, txnSubCollection, txn.route, txn)
     return routeMap

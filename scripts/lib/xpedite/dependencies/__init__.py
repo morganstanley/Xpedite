@@ -49,7 +49,6 @@ class Package(object):
   Enum = Dependency.get('enum34', True)
   FuncTools = Dependency.get('functools32', True)
   Futures = Dependency.get('futures', True)
-  HTML = Dependency.get('html', True)
   Netifaces = Dependency.get('netifaces', True)
   Numpy = Dependency.get('numpy', True)
   Pygments = Dependency.get('pygments', True)
@@ -58,6 +57,7 @@ class Package(object):
   Termcolor = Dependency.get('termcolor', True)
   PyCpuInfo = Dependency.get('py-cpuinfo', True)
   Jupyter = Dependency.get('jupyter', True)
+  Six = Dependency.get('six', True)
 
 def buildDependencyLoader():
   """Builds an instance of dependency loader"""

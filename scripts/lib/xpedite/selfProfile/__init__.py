@@ -14,7 +14,8 @@ import sys
 import pstats
 import cProfile
 import logging
-import StringIO
+from xpedite.dependencies import Package, DEPENDENCY_LOADER
+DEPENDENCY_LOADER.load(Package.Six)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +40,8 @@ class CProfile(object):
 
   def disable(self):
     """Disaables profiling"""
-    from xpedite.selfProfile.pyprof2calltree import convert
+    from thirdParty.pyprof2calltree import convert
+    from six import StringIO
     self.cprofile.disable()
     strIO = StringIO.StringIO()
     sortby = 'cumulative'
