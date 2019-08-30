@@ -13,7 +13,7 @@ repositories {
 }
 	
 dependencies {
-  implementation files(System.getenv("JARPATH") + '/javassist.jar')
+  implementation files(System.getenv("XPEDITE_JARPATH") + '/javassist.jar')
 }
 
 sourceSets {
@@ -31,7 +31,7 @@ task xpediteJar(type: Jar) {
       'Premain-Class': 'com.xpedite.Xpedite',
       'Can-Redefine-Classes': 'true',
       'Can-Retransform-Classes': 'true',
-      'Boot-Class-Path': 'javassist.jar'
+      'Boot-Class-Path': System.getenv("XPEDITE_JARPATH") + '/javassist.jar'
     )
   }
   with jar
