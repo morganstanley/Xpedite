@@ -28,13 +28,14 @@ BENCHMARK_PMC_SECTION = 'pmc'
 BENCHMARK_PMC_COUNTER_COUNT = 'counterCount'
 BENCHMARK_PMC_COUNTER = 'counter#{}'
 
-def makeBenchmarkInfo(benchmarkName, profiles, path):
+def makeBenchmarkInfo(benchmarkName, path, cpuInfo, events=None):
   """
   Creates an info file with benchmark details in human readable format
 
   :param benchmarkName: Name of the benchmark
   :param path: Path of the benchmark info file
-  :param profiles: Profile data for the benchmark
+  :param cpuInfo: CPU info for profiles
+  :param events: Events associated with a profile
 
   """
   path = os.path.join(path, BENCHMARK_FILE_NAME)
@@ -44,15 +45,14 @@ def makeBenchmarkInfo(benchmarkName, profiles, path):
   legend = '{} run at {}'.format(benchmarkName, str(date.today()))
   config.set(BENCHMARK_SECTION, BENCHMARK_LEGEND_KEY, legend)
 
-  cpuInfo = profiles.cpuInfo
   config.add_section(BENCHMARK_CPU_INFO_SECTION)
   config.set(BENCHMARK_CPU_INFO_SECTION, BENCHMARK_CPU_ID_KEY, cpuInfo.cpuId)
   config.set(BENCHMARK_CPU_INFO_SECTION, BENCHMARK_CPU_FREQUENCY_KEY, cpuInfo.frequency)
 
-  if profiles.events:
+  if events:
     config.add_section(BENCHMARK_PMC_SECTION)
-    config.set(BENCHMARK_PMC_SECTION, BENCHMARK_PMC_COUNTER_COUNT, len(profiles.events))
-    for i, event in enumerate(profiles.events):
+    config.set(BENCHMARK_PMC_SECTION, BENCHMARK_PMC_COUNTER_COUNT, len(events))
+    for i, event in enumerate(events):
       value = '{},{},{},{}'.format(event.name, event.uarchName, event.user, event.kernel)
       config.set(BENCHMARK_PMC_SECTION, BENCHMARK_PMC_COUNTER.format(i), value)
   with open(path, 'w') as configfile:

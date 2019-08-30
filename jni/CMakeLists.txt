@@ -13,6 +13,7 @@ find_package(JNI REQUIRED)
 include(UseJava)
 find_package(Java 1.8)
 
+set(ENV{JARPATH} ${CMAKE_CURRENT_SOURCE_DIR}/jar)
 execute_process(
   COMMAND gradle build
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
