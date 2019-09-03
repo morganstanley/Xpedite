@@ -40,7 +40,7 @@ def makeBenchmark(profiles, path):
   samplePath = txnCollection.dataSource.samplePath
   shutil.copytree(samplePath, os.path.join(path, os.path.basename(samplePath)))
   shutil.copyfile(txnCollection.dataSource.appInfoPath, os.path.join(path, APPINFO_FILE_NAME))
-  makeBenchmarkInfo(benchmarkName, profiles, path)
+  makeBenchmarkInfo(benchmarkName, path, profiles.cpuInfo, profiles.events)
 
 class Benchmark(object):
   """Class to load and store benchmark data"""

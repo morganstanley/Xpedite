@@ -13,7 +13,7 @@ repositories {
 }
 	
 dependencies {
-  implementation files('jar/javassist.jar')
+  implementation files(System.getenv("JARPATH") + '/javassist.jar')
 }
 
 sourceSets {
