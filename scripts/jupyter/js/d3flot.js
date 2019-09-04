@@ -19,7 +19,7 @@ function createFlot(cellNum){
     var color = d3.scale.ordinal()
                 .range(["#E0D75F", "#4682B4", "#779B65", "#CE4F4F", "#AD7FCB", "#4F30B8", "#CB9D5F", "#692432", "#4BF08A", "#B8B79E"]);
     
-    var margin = {top: 10, right: 30, bottom: 50, left: 30},
+    var margin = {top: 10, right: 30, bottom: 50, left: 60},
         width =  1200 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
 
