@@ -7,8 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 package com.xpedite;
-import com.xpedite.probes.AbstractProbe;
-import com.xpedite.probes.AnchoredProbe;
 import com.xpedite.probes.CallSite;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
@@ -23,37 +21,34 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 public class ClassTransformer implements ClassFileTransformer {
-    private AbstractProbe[] probes;
-    public ClassTransformer(AbstractProbe[] probes) {
-        this.probes = probes;
+    private CallSite callSite;
+    public ClassTransformer(CallSite callSite) {
+        this.callSite = callSite;
     }
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+        if (!callSite.getClassName().equals(className)) {
+            return classfileBuffer;
+        }
 
         byte[] bytecode = classfileBuffer;
         try {
-            ClassPool cPool = ClassPool.getDefault();
-            for (AbstractProbe probe: probes) {
-                if (!probe.getClassName().equals(className)) {
-                    continue;
-                }
-                CtClass ctClass = cPool.get(probe.getClassName().replace('/', '.'));
-                CtMethod ctClassMethod = ctClass.getDeclaredMethod(probe.getMethodName());
-                if (ctClassMethod == null) {
-                    continue;
-                }
-                CallSite[] callSites = probe.getCallSites();
-                if (callSites.length > 1) {
-                    ctClassMethod.insertBefore(buildTrampoline(callSites[0].getId()));
-                    ctClassMethod.insertAfter(buildTrampoline(callSites[1].getId()), true);
-                } else {
-                    ctClassMethod.insertAt(((AnchoredProbe) probe).getLineNo(), buildTrampoline(callSites[0].getId()));
-                }
-                bytecode = ctClass.toBytecode();
-                ctClass.detach();
+            CtClass ctClass = ClassPool.getDefault().get(callSite.getClassName().replace('/', '.'));
+            CtMethod ctClassMethod = ctClass.getDeclaredMethod(callSite.getMethodName());
+            if (ctClassMethod == null) {
+                return classfileBuffer;
             }
+            if (callSite.getLineNo() == 0) {
+                ctClassMethod.insertBefore(buildTrampoline(callSite.getId()));
+            } else if (callSite.getLineNo() == Integer.MAX_VALUE) {
+                ctClassMethod.insertAfter(buildTrampoline(callSite.getId()), true);
+            } else {
+                ctClassMethod.insertAt(callSite.getLineNo(), buildTrampoline(callSite.getId()));
+            }
+            bytecode = ctClass.toBytecode();
+            ctClass.defrost();
         } catch (IOException | RuntimeException e) {
             throw new IllegalClassFormatException(e.getMessage());
         } catch (NotFoundException | CannotCompileException e) {

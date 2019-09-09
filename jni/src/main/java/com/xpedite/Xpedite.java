@@ -9,10 +9,10 @@
 package com.xpedite;
 
 import com.xpedite.probes.AbstractProbe;
+import com.xpedite.probes.CallSite;
 import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
 
 public class Xpedite {
     private static Instrumentation inst = null;
@@ -48,13 +48,9 @@ public class Xpedite {
 
     public static void activateProbes(AbstractProbe[] probes) throws IOException {
         AppInfo.appendAppInfo(probes);
-        ClassTransformer transformer = new ClassTransformer(probes);
-        inst.addTransformer(transformer, true);
-        for (Class cls : inst.getAllLoadedClasses()) {
-            try {
-                inst.retransformClasses(cls);
-            } catch (UnmodifiableClassException e) {
-                continue;
+        for (AbstractProbe probe: probes) {
+            for (CallSite callSite: probe.getCallSites()) {
+                inst.addTransformer(new ClassTransformer(callSite), true);
             }
         }
     }

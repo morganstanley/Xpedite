@@ -9,7 +9,6 @@
 package com.xpedite;
 
 import com.xpedite.probes.AbstractProbe;
-import com.xpedite.probes.AnchoredProbe;
 import com.xpedite.probes.CallSite;
 import com.xpedite.probes.ScopedProbe;
 import java.io.BufferedWriter;
@@ -27,14 +26,9 @@ class AppInfo {
         appInfoLine.append(" | RecorderReturnSite=" + hexString);
         appInfoLine.append(" | Status=disabled");
         appInfoLine.append(" | Name=" + callSite.getName());
-        appInfoLine.append(" | File=" + callSite.getProbe().getFilePath());
-        if (callSite.getProbe() instanceof AnchoredProbe) {
-            appInfoLine.append(" | Line=" + ((AnchoredProbe) callSite.getProbe()).getLineNo());
-        }
-        else {
-            appInfoLine.append(" | Line=0");
-        }
-        appInfoLine.append(" | Function=" + callSite.getProbe().getMethodName());
+        appInfoLine.append(" | File=" + callSite.getClassName());
+        appInfoLine.append(" | Line=" + callSite.getLineNo());
+        appInfoLine.append(" | Function=" + callSite.getMethodName());
         appInfoLine.append(" | Attributes=" + attributes + "\n");
         return appInfoLine.toString();
     }
