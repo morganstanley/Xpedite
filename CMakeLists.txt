@@ -35,7 +35,7 @@ install(TARGETS xpedite DESTINATION "lib")
 install(DIRECTORY "include/xpedite" DESTINATION "include")
 
 add_library(xpedite-pie STATIC ${lib_files})
-target_link_libraries(xpedite-pie pthread rt dl)
+target_link_libraries(xpedite-pie pthread rt dl vivify)
 target_compile_definitions(xpedite-pie PRIVATE XPEDITE_PIE=1)
 install(TARGETS xpedite-pie DESTINATION "lib")
 
@@ -46,6 +46,9 @@ file(GLOB_RECURSE bin_headers bin/*.H)
 file(GLOB_RECURSE bin_source bin/*.C)
 set(bin_files ${bin_headers} ${bin_source})
 add_executable(xpediteSamplesLoader ${bin_files})
+if(NOT LIBUNWIND_FOUND)
+  target_compile_definitions(xpediteSamplesLoader PRIVATE NO_STACK_UNWIND)
+endif()
 target_link_libraries(xpediteSamplesLoader xpedite)
 install(TARGETS xpediteSamplesLoader DESTINATION "bin")
 
@@ -148,3 +151,6 @@ endif()
 
 message("Starting Xpedite Java Setup")
 add_subdirectory(jni)
+
+message("Starting Vivify Library Setup")
+add_subdirectory(vivify)
