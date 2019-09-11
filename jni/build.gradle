@@ -3,6 +3,8 @@ apply plugin: 'application'
 
 mainClassName = 'com.xpedite.Xpedite'
 
+buildDir = new File(rootProject.projectDir, "build/jni");
+
 compileJava {
   def nativeHeaders = new File(rootProject.projectDir, "install/jni");
   options.compilerArgs += ['-h', nativeHeaders]
