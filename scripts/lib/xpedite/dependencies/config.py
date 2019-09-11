@@ -20,9 +20,18 @@ class Config(object):
     self.topdownRatiosRepoUrl = config.get(
       'topdownRatiosRepoUrl', 'https://raw.githubusercontent.com/andikleen/pmu-tools/master/'
     )
+    self.sslContext = config.get('sslContext', buildDefaultContext())
 
   def __repr__(self):
     cfgStr = 'Xpedite Configurations'
     for k, val in vars(self).items():
       cfgStr += '\n\t{} - {}'.format(k, val)
     return cfgStr
+
+def buildDefaultContext():
+  """ Build default SSL context """
+  import ssl
+  ctx = ssl.create_default_context()
+  ctx.check_hostname = True
+  ctx.verify_mode = ssl.CERT_REQUIRED
+  return ctx
