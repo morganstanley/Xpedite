@@ -1,0 +1,24 @@
+.tab button {
+    background-color: #3a3a3a;
+    color: white;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    width: 10%;
+    line-height: 30px;
+}
+
+.tab button:hover {
+    background-color: #555;
+}
+
+.tab button.active {
+    background-color: #4d4d4d;
+}
+.tabcontent {
+    display: none;
+    padding: 50px 20px;
+    height: 100%;
+}

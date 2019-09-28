@@ -1,0 +1,21 @@
+import os, sys
+from IPython.display import display, HTML
+sys.path.append(os.environ['XPEDITE_PATH'])
+LAYOUT_JS = """
+<div class="tab">
+    <button class="tablink layoutText" onclick="openPage('orders')" id="live-tab-btn">Live</button>
+    <button class="tablink layoutText" onclick="openPage('probes')">Probes</button>
+</div>
+
+<div id="orders" class="tabcontent">
+    <label id="live-switch" class="switch"><input id="evthalt" type="checkbox"><span class="slider round"></span></label>
+    <div id="liveChart"></div>
+
+</div>
+<div id="probes" class="tabcontent">
+</div>
+<script src="/static/layout.js"></script>
+<script src="/static/live-widget.js"></script>
+<script>instantiateWidget();</script>
+"""
+display(HTML(LAYOUT_JS))

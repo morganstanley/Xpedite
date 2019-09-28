@@ -7,6 +7,9 @@
 *******************************************************************************************/
 
 @import 'flot.css';
+@import 'livechart.css';
+@import 'layout.css';
+@import 'toggle.css';
 @import 'notebook.css';
 @import 'sunburst.css';
 @import 'bipartite.css';

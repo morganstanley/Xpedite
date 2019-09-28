@@ -168,7 +168,6 @@ def buildInitCell(nb, numOfCategories, d3Flots, appName, runId):
   'hide_input': True, 'editable': False, 'deletable': False,\
   'd3Flots': d3Flots})] + nb['cells']
 
-
 def buildNotebook(appName, result, notebookPath, dataFilePath, runId):
   """
   Method to build .ipynb notebook with init code
