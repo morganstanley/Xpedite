@@ -21,6 +21,7 @@
 #include <iostream>
 #include <xpedite/framework/Framework.H>
 #include <xpedite/framework/Probes.H>
+#include <xpedite/framework/Options.H>
 
 void eat()   { std::cout << "eat..."   << std::endl; }
 void sleep() { std::cout << "sleep..." << std::endl; }
@@ -40,7 +41,8 @@ void life(int timeToLive_) {
 }
 
 int main() {
-  if(!xpedite::framework::initialize("/tmp/xpedite-appinfo.txt", true)) { 
+  const xpedite::framework::Options options = {xpedite::framework::AWAIT_PROFILE_BEGIN};
+  if(!xpedite::framework::initialize("/tmp/xpedite-appinfo.txt", options)) { 
     throw std::runtime_error {"failed to init xpedite"}; 
   }
   life(100);
