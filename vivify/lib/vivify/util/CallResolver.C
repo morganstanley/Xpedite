@@ -11,13 +11,16 @@
 #include <cstdlib>
 #include <stdexcept>
 
-#include <demangle.h>
-
 
 namespace vivify { namespace util {
 
 namespace
 {
+
+#ifndef DMGL_PARAMS
+#define DMGL_PARAMS (1 << 0) // include function arguments
+#define DMGL_ANSI   (1 << 1) // include const, volatile, etc.
+#endif
 
 struct CallResolverCtxt
 {
