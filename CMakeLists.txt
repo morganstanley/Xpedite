@@ -35,7 +35,7 @@ install(TARGETS xpedite DESTINATION "lib")
 install(DIRECTORY "include/xpedite" DESTINATION "include")
 
 add_library(xpedite-pie STATIC ${lib_files})
-target_link_libraries(xpedite-pie pthread rt dl)
+target_link_libraries(xpedite-pie pthread rt dl vivify)
 target_compile_definitions(xpedite-pie PRIVATE XPEDITE_PIE=1)
 install(TARGETS xpedite-pie DESTINATION "lib")
 
@@ -148,3 +148,6 @@ endif()
 
 message("Starting Xpedite Java Setup")
 add_subdirectory(jni)
+
+message("Starting Vivify Library Setup")
+add_subdirectory(vivify)
