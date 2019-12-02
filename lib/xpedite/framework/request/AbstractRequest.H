@@ -31,6 +31,8 @@ namespace xpedite { namespace framework { namespace request {
       : _status {Status::NOT_READY}, _errors {} {
     }
 
+    virtual ~AbstractResponse() = default;
+
     Status status() const noexcept {
       return _status;
     }
@@ -65,6 +67,7 @@ namespace xpedite { namespace framework { namespace request {
       response().setErrors(std::move(errors_));
     }
 
+    virtual ~AbstractRequest() = default;
     virtual const AbstractResponse& response() const = 0;
     virtual AbstractResponse& response() = 0;
     virtual void execute(Handler& handler_) = 0;
