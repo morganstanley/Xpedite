@@ -8,6 +8,11 @@
 
 #include <xpedite/pmu/Formatter.h>
 
+static int g_xpediteCanLog = 1;
+int  xpediteCanLog()       { return g_xpediteCanLog;  }
+void xpediteSupressLog()   { g_xpediteCanLog = 0;     }
+void xpediteUnsupressLog() { g_xpediteCanLog = 1;     }
+
 void logEventSet(const PMUCtlRequest* request_, const EventSet* eventSet_) {
   if(request_->_gpEvtCount) {
     if(request_->_gpEvtCount <= XPEDITE_PMC_CTRL_GP_EVENT_MAX) {

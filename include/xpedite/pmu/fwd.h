@@ -14,4 +14,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#define XPEDITE_LOG(FORMAT_STR, ...) fprintf(stderr, FORMAT_STR, __VA_ARGS__)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int  xpediteCanLog();
+extern void xpediteSupressLog();
+extern void xpediteUnsupressLog();
+
+#ifdef __cplusplus
+}
+#endif
+
+#define XPEDITE_LOG(FORMAT_STR, ...) for(int cl=xpediteCanLog(); cl; cl=0) fprintf(stderr, FORMAT_STR, __VA_ARGS__)

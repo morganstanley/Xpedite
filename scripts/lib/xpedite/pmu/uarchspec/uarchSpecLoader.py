@@ -29,6 +29,7 @@ TOPDOWN_RATIOS_MODULES = {
   'BDX': 'bdx_server_ratios.py',
   'SKL': 'skl_client_ratios.py',
   'SKX': 'skx_server_ratios.py',
+  'CLX': 'clx_server_ratios.py',
   'SLM': 'slm_ratios.py',
   'KNL': 'knl_ratios.py',
 }

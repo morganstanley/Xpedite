@@ -187,7 +187,7 @@ class Environment(object):
 
   def getCpuClockFrequencyRaw(self):
     """Returns the raw cpu clock frequency for localhost"""
-    rawHz = self.getFullCpuInfo()['hz_advertised_raw'][0]
+    rawHz = self.getFullCpuInfo().advertisedHz
     if int(self.tscHz / 10**9) != int(rawHz / 10**9):
       LOGGER.error('Detected mismatch in estimated TSC (%s) vs raw frequency (%s)', self.tscHz, rawHz)
     return rawHz
