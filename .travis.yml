@@ -1,4 +1,7 @@
-language: cpp
+language: python
+python:
+  - "3.7"
+
 sudo: required
 dist: xenial
 compiler:
@@ -27,9 +30,9 @@ before_script:
 
 script:
   - ./build.sh
-  - ./install.sh
+  - if [[ $TRAVIS_PYTHON_VERSION = 3.7 ]]; then ./install.sh -3; else ./install.sh; fi
   - ./test/validateTarFiles.sh
-  - ./test/runTest.sh -c
+  - ./test/runTest.sh -p -S Regular -a slowFixDecoderApp
 
 after_success:
   - PATH=./install/runtime/bin:${PATH} python -m pip install codecov
