@@ -57,8 +57,9 @@ class ParameterFiles(object):
     """
     Load input files for a scenario
     """
+    from xpedite.util.cpuInfo import decodeCpuInfo
     with open(os.path.join(dataDir, BASELINE_CPU_INFO_PATH)) as fileHandle:
-      self.fullCpuInfo = json.load(fileHandle)
+      self.fullCpuInfo = json.load(fileHandle, object_hook=decodeCpuInfo)
     appInfoPath = os.path.join(tempDir, XPEDITE_APP_INFO_PATH)
     self.profileInfo = loadProfileInfo(
       dataDir, PROFILE_INFO_PATH, appInfoPath=appInfoPath, remote=remote

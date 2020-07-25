@@ -544,7 +544,7 @@ def buildTimelineStats(category, route, probes, txnSubCollection): # pylint: dis
     elapsed = time.time() - begin
     if elapsed >= 5:
       LOGGER.completed(
-        '\n\tprocessed %d out of %d transactions | %0.2f%% complete |',
+        '\tprocessed %d out of %d transactions | %0.2f%% complete |',
         txnCount, totalTxnCount, float(100 * float(txnCount)/float(totalTxnCount))
       )
       begin = time.time()

@@ -11,6 +11,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 import csv
+import fnmatch
 
 UARCH_SPEC_PKG_NAME = 'xpedite_uarch_spec'
 
@@ -60,14 +61,27 @@ class UarchSpecDb(object):
         eventsDbFile = uarchSpecDirPath + eventsDbFile
         if eventType == 'core':
           uarchSpec.coreEventsDbFile = eventsDbFile
-        elif eventType == 'core':
+        elif eventType == 'uncore':
           uarchSpec.uncoreEventsDbFile = eventsDbFile
+
+  @staticmethod
+  def _stripStepping(cpuId):
+    """Strips stepping by extracting the first three words"""
+    words = cpuId.split("-")
+    return '{}-{}-{}'.format(words[0], words[1], words[2])
 
   def __len__(self):
     return len(self.uarchSpecMap)
 
   def __getitem__(self, cpuId):
-    return self.uarchSpecMap[cpuId] if cpuId in self.uarchSpecMap else None
+    spec = self.uarchSpecMap.get(cpuId)
+    if not spec:
+      spec = self.uarchSpecMap.get(UarchSpecDb._stripStepping(cpuId))
+    if not spec:
+      for pattern, uarchSpec in self.uarchSpecMap.items():
+        if fnmatch.fnmatch(cpuId, pattern):
+          spec = uarchSpec
+    return spec
 
   def items(self):
     """Returns an iterable for events in this database"""

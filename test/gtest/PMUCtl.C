@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "PerfEventsApi.H"
+#include "../util/LogSupressScope.H"
 #include <xpedite/pmu/PMUCtl.H>
 #include <xpedite/util/RNG.H>
 #include <gtest/gtest.h>
@@ -83,6 +84,7 @@ namespace xpedite { namespace pmu { namespace test {
   }
 
   TEST_F(PMUCtlTest, SingleThreadedUsage) {
+    LogSupressScope redirectCout;
     PerfEventsApi api {};
     int eventsCount {};
     ASSERT_EQ(api.eventsCount(), eventsCount) << "detected perf events api in invalid state";
@@ -97,6 +99,7 @@ namespace xpedite { namespace pmu { namespace test {
   }
 
   TEST_F(PMUCtlTest, MultiThreadedUsage) {
+    LogSupressScope redirectCout;
     PerfEventsApi api {};
     int eventsCount {};
     ASSERT_EQ(api.eventsCount(), eventsCount) << "detected perf events api in invalid state";
@@ -121,6 +124,7 @@ namespace xpedite { namespace pmu { namespace test {
   }
 
   TEST_F(PMUCtlTest, NewThreadsUsage) {
+    LogSupressScope redirectCout;
     PerfEventsApi api {};
     ASSERT_EQ(api.eventsCount(), 0) << "detected perf events api in invalid state";
     const auto threadCount = 7;

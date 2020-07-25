@@ -218,6 +218,19 @@ class Txns(object):
   def __getitem__(self, i):
     return self.profile.current.timelineCollection[i]
 
+  def toDataFrameDict(self):
+    """Returns transactions in pandas DataFrame dict format"""
+    dfDict = {}
+    for tl in  self.profile.current.timelineCollection:
+      for i in range(len(tl)-1):
+        tp = tl[i]
+        col = dfDict.get(tp.name)
+        if not col:
+          col = []
+          dfDict.update({tp.name : col})
+        col.append(tp.duration)
+    return dfDict
+
   def __repr__(self):
     from xpedite.util import makeUniqueId
     from xpedite.report.reportbuilder   import ReportBuilder

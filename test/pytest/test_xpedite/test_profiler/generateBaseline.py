@@ -85,9 +85,9 @@ def generateBaseline(context, scenario):
     replaceWorkspace(
       report.app.appInfoPath, context.workspace, os.path.join(scenario.dataDir, XPEDITE_APP_INFO_PARAMETER_PATH)
     )
-
+    from xpedite.util.cpuInfo import CpuInfoJSONEncoder
     with open(os.path.join(scenario.dataDir, BASELINE_CPU_INFO_PATH), 'w') as fileHandle:
-      json.dump(fullCpuInfo, fileHandle)
+      json.dump(fullCpuInfo, fileHandle, cls=CpuInfoJSONEncoder)
 
     probes = loadProbes(context, scenario)
 

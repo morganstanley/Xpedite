@@ -81,7 +81,7 @@ class Extractor(object):
           self.loadCounter(threadId, loader, app.probes, record)
           elapsed = time.time() - iterBegin
           if elapsed >= 5:
-            LOGGER.completed('\n\tprocessed %d counters | ', recordCount-1)
+            LOGGER.completed('\tprocessed %d counters | ', recordCount-1)
             iterBegin = time.time()
         recordCount += 1
       loader.endLoad()

@@ -61,6 +61,6 @@ namespace xpedite { namespace log {
 #define XpediteLogError    std::cout << XPEDITE_LOG_PREFIX1 << " error "    << XPEDITE_LOG_PREFIX2 << " "
 #define XpediteLogWarning  std::cout << XPEDITE_LOG_PREFIX1 << " warning "  << XPEDITE_LOG_PREFIX2 << " "
 #define XpediteLogInfo     std::cout << XPEDITE_LOG_PREFIX1 << " info "     << XPEDITE_LOG_PREFIX2 << " "
-#define XpediteLogDebug    for (bool loggingDebug = xpedite::log::isDebug(); loggingDebug; loggingDebug = false) std::cout << XPEDITE_LOG_PREFIX1 << " debug " << XPEDITE_LOG_PREFIX2 << " "
+#define XpediteLogDebug    for(bool cl=xpedite::log::isDebug(); cl; cl=false) std::cout << XPEDITE_LOG_PREFIX1 << " debug " << XPEDITE_LOG_PREFIX2 << " "
 #define XpediteLogEnd      XPEDITE_LOG_POSTFIX << std::endl //" (" << __BASE_FILE__  << ":" << __LINE__ << ")" << std::endl
 

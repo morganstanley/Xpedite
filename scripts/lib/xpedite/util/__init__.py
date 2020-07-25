@@ -19,7 +19,7 @@ import tempfile
 import logging
 from collections          import OrderedDict
 from xpedite.dependencies import Package, DEPENDENCY_LOADER
-DEPENDENCY_LOADER.load(Package.Six, Package.PyCpuInfo)
+DEPENDENCY_LOADER.load(Package.Six)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -206,15 +206,13 @@ def touch(path):
 
 def getCpuInfo():
   """Loads cpu info for localhost"""
-  from cpuinfo import cpuinfo
-  fullCpuInfo = cpuinfo.get_cpu_info()
-  return fullCpuInfo
+  from xpedite.util.cpuInfo import CpuInfo
+  return CpuInfo()
 
 def getCpuId(cpuInfo=None):
   """Returns cpu model for localhost"""
   cpuInfo = cpuInfo if cpuInfo else getCpuInfo()
-  model = (cpuInfo['extended_model'] << 4 | cpuInfo['model'])
-  return '{}-{}-{:02X}'.format(cpuInfo['vendor_id'], cpuInfo['family'], model)
+  return cpuInfo.cpuId
 
 def meminfo(remoteConnection=None):
   """
