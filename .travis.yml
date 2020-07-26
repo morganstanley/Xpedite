@@ -9,10 +9,8 @@ branches:
   - master
 
 before_install:
- - sudo apt-get install -y libgtest-dev libdwarf-dev binutils-dev cmake
-addons:
-  apt:
-    update: true
+ - sudo apt-get update
+ - sudo apt-get -y install libgtest-dev libdwarf-dev binutils-dev cmake
 
 before_script:
  - sudo wget https://github.com/google/googletest/archive/release-1.7.0.tar.gz
@@ -26,7 +24,7 @@ before_script:
  - popd
 
 script:
-  - ./build.sh
+  - ./build.sh --withCallStacks --withJava
   - ./install.sh
   - ./test/validateTarFiles.sh
   - ./test/runTest.sh -c

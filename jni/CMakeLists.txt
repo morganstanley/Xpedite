@@ -13,15 +13,18 @@ find_package(JNI REQUIRED)
 include(UseJava)
 find_package(Java 1.8)
 
+find_program(GRADLE gradle)
+if(NOT GRADLE)
+  message("skipping java build. gradle not found !!!")
+  return()
+endif()
+
 set(ENV{XPEDITE_JARPATH} ${CMAKE_CURRENT_SOURCE_DIR}/jar)
 execute_process(
   COMMAND gradle build
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   RESULT_VARIABLE EXIT_STATUS
 )
-if(NOT ${EXIT_STATUS} EQUAL 0)
-  message(FATAL_ERROR "gradle build failed, please check your gradle installation")
-endif()
 
 get_filename_component(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 set(XPEDITE_JNI_HEADER_PATH ${SRC_DIR}/install/jni)
