@@ -2,30 +2,32 @@
 [![Build Status](https://travis-ci.org/Morgan-Stanley/Xpedite.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/Xpedite)
 [![codecov](https://codecov.io/gh/Morgan-Stanley/Xpedite/branch/master/graph/badge.svg)](https://codecov.io/gh/Morgan-Stanley/Xpedite)
 
-# Morgan Stanley Performance Toolkit
+# Xpedite
 
-Welcome to the Morgan Stanley Performance Toolkit (MSPerf).
-
-The MSPerf project provides software tools & libraries that we use internally to measure, understand, and optimise application performance. 
-  
-This project consists of several distinct tools to be used for different tasks in the software optimisation work flow. 
-We created MSPerf because there was nothing existing that quite fit our own requirements at the time. 
-  
-By open-sourcing we hope you will find these tools useful too, and we encourage your feedback and contributions to advance the field of performance optimisations. MSPerf toolkit consists of:
-
-# MSPerf-Xpedite: 
-A probe based profiler used to, measure and optimise, performance of ultra-low-latency / real time systems.
+A non-sampling profiler, purpose built to measure and optimise, performance of ultra-low-latency / real time systems.
 
 The main features include
   
-  1. Quantify how efficiently "a software stack" or "a section of code", is running in a target platform (CPU/OS).
-  2. Do Cycle accounting and bottleneck analysis using hardware performance counters and 
-     [top-down micro architecture analysis methodology](https://6f194736-a-62cb3a1a-s-sites.googlegroups.com/site/analysismethods/yasin-pubs/TopDown-Yasin-ISPASS14.pdf) 
-  3. Filter, query and visualise performance statistics with real time interactive shell ([Jupiter](http://jupyter.org)).
-  4. Prevent regressions, by benchmarking latency statistics for multiple runs/builds side-by-side. 
+  1. **Targeted Profiling** - Quantify how efficiently a section of code, runs in any Intel CPU and how much head room is left for further optimizations.
+  2. **PMU counters** - Capture hundreds of processor specific performance counters like cache/TLB misses, CPU Stalls, NUMA remote access, context switches, etc.
+  3. **Cycles accounting** - Find percent of retiring vs stalled cpu cycles with [Topdown micro architecture analysis](https://ieeexplore.ieee.org/document/6844459).
+  4. **Optimization heuristics** - Narrow down cpu bottlenecks, with potential for maximum application speed up.
+  5. **Analytics & visualization** - Provides a [Jupiter](http://jupyter.org) shell for interactive drill down and visualization of performance metrics and bottlenecks.
+  6. **Regression detection** - Benchmark multiple releases/builds side-by-side, to detect and prevent regression across releases.
+
+# Why yet another profiler ?
+Xpedite grew in the world of automated low latency trading systems, where latency directly translates to profitability. Such trading systems typically never relinquish cpu, but rather spin in a tight loop always looking for external events. Eventually when an event is detected, the engine would need to react in a few microseconds.
+    
+In cases where events occur less frequently, the amount of time spent waiting, far exceeds the time spent by the critical path reacting. Profiling such low-latency systems becomes a real challenge, with off the shelf sampling profilers like linux perf or Intel vtune.
+    
+Sampling profilers, as the name implies, will sample timestamps and performance counters from the cpu, based on some counter firing frequency. For trading systems, such a sample set will be dominated by samples from the wait loop, rather than from the critical path, which reacts to events. 
+    
+Due to this, sampling profilers typically end up profiling the least interesting part of the code, while ignoring the critical path. What we really need is an intrusive profiler, which can target and collect samples only during execution of desired critical path(s). Xpedite is primarily built to optimize real time systems of the nature described above.
+
+# Quick Start
 
 |section                                            |description                                                             |
-|---------------------------------------------------|:----------------------------------------------------------------------:|
+|---------------------------------------------------|:-----------------------------------------------------------------------|
 |[Building](#building)                              |Build and install xpedite                                               |
 |[Instrumentation](#instrumentation)                |Instrument C++ programs to identify profiling targets                   |
 |[Profiler Initialisation](#profilerInit)           |Enable profiling by initialising profiling framework                    |
@@ -384,8 +386,6 @@ OFFCORE_RESPONSE.PF_LLC_DATA_RD.LLC_HIT.SNOOP_MISS           [0xB7,0xBB|0x01] - 
 
 Let's consider, how to configure xpedite to program and collect data from hardware performance counters. 
 
-Xpedite ships with a minmalistic kernel module, that needs to be loaded for programming and collection of pmc events.
-
 Up to 8 pmc events can be programmed in modern Intel processors (Sandy Bridge and later), when hyper threading is disabled.
   
 To get consistent results, threads under profile, must be pinned to one of the cpu cores, to prevent cpu migrations.
@@ -445,7 +445,7 @@ Alternatively, moving mouse over a counter name, shows the value of that counter
 ## Cycle Accounting <a name="cycleAccounting"></a>
 
 Xpedite supports cycle accounting and bottleneck analysis using 
-[top-down micro architecture analysis methodology](https://6f194736-a-62cb3a1a-s-sites.googlegroups.com/site/analysismethods/yasin-pubs/TopDown-Yasin-ISPASS14.pdf).
+[top-down micro architecture analysis methodology](https://ieeexplore.ieee.org/document/6844459).
   
 The topdown hierarchy for any micro architecture can be rendered to console with ```xpedite topdown``` command.
 Nodes that need more than 8 general purpose counters are not supported and highlighted in Red.
@@ -466,7 +466,7 @@ Xpedite also supports a few predefined metrics like IPC, CPI etc..  The list of 
 
 ## Collaboration <a name="colloboration"></a>
 
-Xpedite facilitates collaboration, by making it easy for developers to share, profile and analysis results with other developers.
+Xpedite facilitates collaboration, by making it easy for developers to share, profile and analyze results with other developers.
   
 The jupyter notebook (along with transaction data and visualisations) can be bundled into one tar file (```.tar.xp```) using ```xpedite shell zip``` command.
 
@@ -505,10 +505,10 @@ Need Help ? Get in touch with Xpedite developers via email - msperf@morganstanle
 
 ## Acknowledgements <a name="acknowledgements"></a>
 
-Xpedite was envisioned and developed by **Manikandan Dhamodharan**.
+Xpedite was envisioned and developed by **[Manikandan Dhamodharan](http://www.linkedin.com/in/mani-d)**.
   
 
-Thanks to **Brooke Elizabeth Cantwell**, **Dhruv Shekhawat** for jupyter integration and test cases.
+Thanks to **[Brooke Elizabeth Cantwell](https://www.linkedin.com/in/brookecantwell)**, **[Dhruv Shekhawat](http://www.linkedin.com/in/dhruvshekhawat)** for jupyter integration and test cases.
   
 
 Special thanks to **Dileep Perchani** and **Kevin Elliott** for leading Xpedite open source initiative.
