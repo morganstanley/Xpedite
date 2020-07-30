@@ -153,14 +153,6 @@ namespace xpedite { namespace framework {
 
   SessionGuard Framework::beginProfile(const ProfileInfo& profileInfo_) {
     using namespace xpedite::framework::request;
-    ProbeActivationRequest probeActivationRequest {profileInfo_.probes()};
-    if(!_sessionManager.execute(&probeActivationRequest)) {
-      std::ostringstream stream;
-      stream << "xpedite failed to enable probes - " << probeActivationRequest.response().errors();
-      XpediteLogCritical <<  stream.str() << XpediteLogEnd;
-      return SessionGuard {stream.str()};
-    }
-
     SessionGuard guard {true};
     if(eventCount(&profileInfo_.pmuRequest())) {
       PerfEventsActivationRequest perfEventsRequest {profileInfo_.pmuRequest()};
@@ -170,6 +162,14 @@ namespace xpedite { namespace framework {
         XpediteLogCritical <<  stream.str() << XpediteLogEnd;
         return SessionGuard {stream.str()};
       }
+    }
+
+    ProbeActivationRequest probeActivationRequest {profileInfo_.probes()};
+    if(!_sessionManager.execute(&probeActivationRequest)) {
+      std::ostringstream stream;
+      stream << "xpedite failed to enable probes - " << probeActivationRequest.response().errors();
+      XpediteLogCritical <<  stream.str() << XpediteLogEnd;
+      return SessionGuard {stream.str()};
     }
 
     ProfileActivationRequest profileActivationRequest {
