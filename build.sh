@@ -54,7 +54,12 @@ if [ ${VERBOSE} -eq 1 ]; then
 fi
 
 if [ ${BUILD_VIVIFY} -eq 1 ]; then
-  OPTIONS="${OPTIONS} -DBUILD_VIVIFY=ON"
+  if pkg-config --help >/dev/null 2>&1; then
+    OPTIONS="${OPTIONS} -DBUILD_VIVIFY=ON"
+  else
+    echo xpedite callstack support requires pkg-config util. Please install pkg-config and run this script again
+    exit 1
+  fi
 fi
 
 if [ ${BUILD_JAVA} -eq 1 ]; then
