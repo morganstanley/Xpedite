@@ -65,7 +65,7 @@ namespace xpedite { namespace framework {
     FileHeader(const std::vector<CallSiteInfo>& callSites_, timeval time_, uint64_t tscHz_, uint32_t pmcCount_)
       : _signature {XPEDITE_FILE_HDR_SIG}, _version {XPEDITE_VERSION}, _time (time_),
         _tscHz {tscHz_}, _pmcCount {pmcCount_}, _callSiteCount {static_cast<uint32_t>(callSites_.size())} {
-      memcpy(_callSites, &callSites_.front(), callSiteSize(callSites_.size()));
+      memcpy(reinterpret_cast<char*>(_callSites), callSites_.data(), callSiteSize(callSites_.size()));
     }
 
     bool isValid() const noexcept {

@@ -67,7 +67,7 @@ namespace xpedite { namespace perf {
       XpediteLogCritical << "failed to activate pmu event group fd (" << perfEventSet.groupFd() << ") - " << err.asString() << XpediteLogEnd;
       return {};
     }
-    return std::move(perfEventSet);
+    return perfEventSet;
   }
 
 }}

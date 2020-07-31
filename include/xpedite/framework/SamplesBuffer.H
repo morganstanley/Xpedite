@@ -215,7 +215,7 @@ namespace xpedite { namespace framework {
       if(index != std::string::npos) {
         fileName.replace(index, 1, _tidStr);
       }
-      return std::move(fileName);
+      return fileName;
     }
 
     friend class pmu::PmuCtl;
