@@ -102,15 +102,15 @@ namespace xpedite { namespace probes {
 
   using Trampoline = void (*) (); 
 
-  inline constexpr uint32_t offset(CallSite callSite_, Trampoline trampoline_) noexcept {
+  inline uint32_t offset(CallSite callSite_, Trampoline trampoline_) noexcept {
     return reinterpret_cast<unsigned char*>(trampoline_) - reinterpret_cast<volatile unsigned char*>(callSite_) - CAll_SITE_LEN;
   }
 
-  inline constexpr long offset(CallSite lhs_, CallSite rhs_) noexcept {
+  inline long offset(CallSite lhs_, CallSite rhs_) noexcept {
     return reinterpret_cast<volatile unsigned char*>(lhs_) - reinterpret_cast<volatile unsigned char*>(rhs_);
   }
 
-  inline constexpr uint32_t offset(CallSite callSite_, void* trampoline_) noexcept {
+  inline uint32_t offset(CallSite callSite_, void* trampoline_) noexcept {
     return reinterpret_cast<unsigned char*>(trampoline_) - reinterpret_cast<volatile unsigned char*>(callSite_) - CAll_SITE_LEN;
   }
 

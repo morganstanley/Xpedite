@@ -182,7 +182,7 @@ namespace xpedite { namespace framework {
       XpediteLogCritical <<  stream.str() << XpediteLogEnd;
       return SessionGuard {stream.str()};
     }
-    return std::move(guard);
+    return guard;
   }
 
   void Framework::endProfile() {

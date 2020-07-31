@@ -78,7 +78,7 @@ namespace xpedite { namespace util {
       XpediteLogInfo << stream.str()<< XpediteLogEnd;
       throw std::runtime_error {stream.str()};
     }
-    return std::move(files);
+    return files;
   }
 
 }}

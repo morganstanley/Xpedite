@@ -128,7 +128,7 @@ namespace xpedite { namespace perf {
       PerfEventSetPtr perfEventSetPtr {new PerfEventSet {std::move(perfEventSet_)}};
       std::swap(activeEventSetPtr, perfEventSetPtr);
       samplesBuffer_->updatePerfEvents(activeEventSetPtr.get());
-      return std::move(perfEventSetPtr);
+      return perfEventSetPtr;
     }
     return {};
   }
