@@ -10,15 +10,14 @@
 ################################################################################################
 
 project(vivify C CXX)
-check_include_file("dwarf.h" FOUND_DWARF_H)
-if(NOT FOUND_DWARF_H)
+check_include_file("dwarf.h" DWARF_H_FOUND)
+if(NOT DWARF_H_FOUND)
   message("skipping vivify build. dwarf.h not found !!!")
   return()
 endif()
 
 
 find_package(PkgConfig REQUIRED)
-
 pkg_check_modules(LIBUNWIND libunwind)
 
 include_directories(include)
@@ -39,17 +38,17 @@ endif()
 set(lib_vivify_files ${lib_vivify_headers} ${lib_vivify_source})
 add_library(vivify STATIC ${lib_vivify_files})
 
+# begin workaround to embed bfd
+# https://sourceware.org/bugzilla/show_bug.cgi?id=14243
+# https://sourceware.org/bugzilla/show_bug.cgi?id=15920
+add_definitions(-DPACKAGE)
+add_definitions(-DPACKAGE_VERSION)
+# end of workaround
+
 if(LIBUNWIND_FOUND)
   if(NOT LIBUNWIND_DEBUG_FRAME)
     target_compile_definitions(vivify PRIVATE NO_LIBUNWIND_DEBUG_FRAME)
   endif()
-
-  # begin workaround to embed libunwind
-  # https://sourceware.org/bugzilla/show_bug.cgi?id=14243
-  # https://sourceware.org/bugzilla/show_bug.cgi?id=15920
-  add_definitions(-DPACKAGE)
-  add_definitions(-DPACKAGE_VERSION)
-  # end of workaround
 
   target_include_directories(vivify PRIVATE ${LIBUNWIND_INCLUDE_DIRS})
   target_link_libraries(vivify rt elf unwind-x86_64 unwind bfd)
