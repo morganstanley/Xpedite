@@ -89,9 +89,7 @@ AddressSpace::AddressSpace(pid_t pid_, Option opts_)
   else
   {
     l_path = "/proc/" + std::to_string(pid_);
-
     l_execPath = getUnderlyingFilePath(l_path + "/exe");
-
     l_path += "/maps";
   }
 

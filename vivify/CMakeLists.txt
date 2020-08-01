@@ -10,19 +10,27 @@
 ################################################################################################
 
 project(vivify C CXX)
+find_package(PkgConfig REQUIRED)
+
+# vivify external dependencies
+#   needs libunwind, libunwind-x86_64 to extract instruction pointers from stack frames
+#   Unwinding stack needs extraction of eh_frame section, which in turn requires
+#     1. libelf to open and extract eh_frame header and data
+#     2. dwarf.h to read eh_fram with proper exception header encoding
+#   needs libbfd to map instruction pointers to function, file and line no
+# TODO: make eh_frame extraction optional, if dwarf.h can't be located
+
 check_include_file("dwarf.h" DWARF_H_FOUND)
 if(NOT DWARF_H_FOUND)
-  message("skipping vivify build. dwarf.h not found !!!")
+  message(WARNING "skipping vivify build. dwarf.h not found !!!")
   return()
 endif()
-
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBUNWIND libunwind)
 
 include_directories(include)
 file(GLOB_RECURSE lib_vivify_headers lib/vivify/*.[hH])
 file(GLOB_RECURSE lib_vivify_source lib/vivify/*.[cC])
+
+pkg_check_modules(LIBUNWIND libunwind)
 if(LIBUNWIND_FOUND)
   link_directories(${LIBUNWIND_LIBRARY_DIRS})
   try_compile(LIBUNWIND_DEBUG_FRAME ${CMAKE_BINARY_DIR}/tmp
@@ -36,8 +44,8 @@ else()
   list(REMOVE_ITEM lib_vivify_source ${CMAKE_CURRENT_SOURCE_DIR}/lib/vivify/StackUnwind.C)
 endif()
 set(lib_vivify_files ${lib_vivify_headers} ${lib_vivify_source})
-add_library(vivify STATIC ${lib_vivify_files})
 
+add_library(vivify STATIC ${lib_vivify_files})
 # begin workaround to embed bfd
 # https://sourceware.org/bugzilla/show_bug.cgi?id=14243
 # https://sourceware.org/bugzilla/show_bug.cgi?id=15920
@@ -57,11 +65,11 @@ else()
   target_link_libraries(vivify rt bfd)
   install(DIRECTORY "include/vivify" DESTINATION "include" PATTERN "StackUnwind.H" EXCLUDE)
 endif()
-install(TARGETS vivify DESTINATION "lib")
+install(TARGETS vivify DESTINATION "lib" COMPONENT libraries)
 
 if(LIBUNWIND_FOUND)
   add_executable(stackunwindDemo demo/StackUnwind.C)
   target_include_directories(stackunwindDemo PRIVATE ${LIBUNWIND_INCLUDE_DIRS})
   target_link_libraries(stackunwindDemo vivify)
-  install(TARGETS stackunwindDemo DESTINATION "test")
+  install(TARGETS stackunwindDemo DESTINATION "test" COMPONENT testBinaries)
 endif()

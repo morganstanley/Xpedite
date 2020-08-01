@@ -24,7 +24,7 @@ before_script:
  - popd
 
 script:
-  - ./build.sh --withCallStacks --withJava
+  - ./build.sh --withCallStacks --forJava
   - ./install.sh
   - ./test/validateTarFiles.sh
   - ./test/runTest.sh -c

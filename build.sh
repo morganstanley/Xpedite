@@ -15,13 +15,13 @@ Build xpedite profiler.
 Mandatory arguments to long options are mandatory for short options too.
   -t, --type                      type of the build DEBUG, RELEASE
   -c, --withCallStacks            build support for tracing call stacks
-  -j, --withJava                  build support for profiling java apps
+  -j, --forJava                  build support for profiling java apps
   -v, --verbose                   collect hardware performance counters
 EOM
 exit 1
 }
 
-ARGS=`getopt -o t:cjv --long type:,withCallStacks,withJava,verbose -- "$@"`
+ARGS=`getopt -o t:cjv --long type:,withCallStacks,forJava,verbose -- "$@"`
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -38,7 +38,7 @@ while true ; do
         BUILD_TYPE=$2 ; shift 2 ;;
     -c|--withCallStacks)
         BUILD_VIVIFY=1 ; shift ;;
-    -j|--withJava)
+    -j|--forJava)
         BUILD_JAVA=1 ; shift ;;
     -v|--verbose)
         VERBOSE=1 ; shift ;;
