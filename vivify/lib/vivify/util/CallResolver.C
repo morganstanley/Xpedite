@@ -38,6 +38,7 @@ struct CallResolverCtxt
 
   void setInfo(CallInfo::Info& info_, const char* file_, const char* l_func) const;
 };
+
 void CallResolverCtxt::setInfo(CallInfo::Info& info_, const char* file_, const char* func_) const
 {
   if (file_ && '\0' != *file_)

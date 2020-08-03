@@ -15,7 +15,7 @@ find_package(Java 1.8)
 
 find_program(GRADLE gradle)
 if(NOT GRADLE)
-  message("skipping java build. gradle not found !!!")
+  message(WARNING "skipping java support. gradle not found !!!")
   return()
 endif()
 
@@ -23,8 +23,13 @@ set(ENV{XPEDITE_JARPATH} ${CMAKE_CURRENT_SOURCE_DIR}/jar)
 execute_process(
   COMMAND gradle build
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  RESULT_VARIABLE EXIT_STATUS
+  RESULT_VARIABLE GRADLE_BUILD_STATUS
 )
+
+if(NOT GRADLE_BUILD_STATUS EQUAL 0)
+  message(FATAL_ERROR "gradle build failed to generate jni headers!!!")
+  return()
+endif()
 
 get_filename_component(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 set(XPEDITE_JNI_HEADER_PATH ${SRC_DIR}/install/jni)

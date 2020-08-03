@@ -31,29 +31,29 @@ include_directories(include)
 
 add_library(xpedite STATIC ${lib_files})
 target_link_libraries(xpedite pthread rt dl)
-install(TARGETS xpedite DESTINATION "lib")
-install(DIRECTORY "include/xpedite" DESTINATION "include")
+install(TARGETS xpedite DESTINATION "lib" COMPONENT libraries)
+install(DIRECTORY "include/xpedite" DESTINATION "include" COMPONENT headers)
 
 add_library(xpedite-pie STATIC ${lib_files})
 target_link_libraries(xpedite-pie pthread rt dl)
 target_compile_definitions(xpedite-pie PRIVATE XPEDITE_PIE=1)
-install(TARGETS xpedite-pie DESTINATION "lib")
+install(TARGETS xpedite-pie DESTINATION "lib" COMPONENT libraries)
 
 add_library(xpedite-stub SHARED lib/stub/Stub.C)
-install(TARGETS xpedite-stub DESTINATION "lib")
+install(TARGETS xpedite-stub DESTINATION "lib" COMPONENT libraries)
 
 file(GLOB_RECURSE bin_headers bin/*.H)
 file(GLOB_RECURSE bin_source bin/*.C)
 set(bin_files ${bin_headers} ${bin_source})
 add_executable(xpediteSamplesLoader ${bin_files})
 target_link_libraries(xpediteSamplesLoader xpedite)
-install(TARGETS xpediteSamplesLoader DESTINATION "bin")
+install(TARGETS xpediteSamplesLoader DESTINATION "bin" COMPONENT binaries)
 
 add_library(xpedite-pic SHARED ${lib_files})
 set_property(TARGET xpedite-pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(xpedite-pic pthread rt dl)
 target_compile_definitions(xpedite-pic PRIVATE XPEDITE_PIE=1)
-install(TARGETS xpedite-pic DESTINATION "lib")
+install(TARGETS xpedite-pic DESTINATION "lib" COMPONENT libraries)
 
 ######################### Kernel module #############################
 
@@ -91,42 +91,42 @@ file(GLOB_RECURSE demo_headers demo/*.H)
 set(demo_files ${demo_headers} demo/Demo.C)
 add_executable(xpediteDemo ${demo_files})
 target_link_libraries(xpediteDemo xpedite)
-install(TARGETS xpediteDemo DESTINATION "bin")
+install(TARGETS xpediteDemo DESTINATION "bin" COMPONENT binaries)
 
 ######################### targets #############################
 add_executable(allocatorApp test/targets/AllocatorApp.C)
 SET(ALLOCATOR_LINK_FLAGS "-Wl,-wrap,_Znwm,-wrap,_Znam,-wrap,malloc,-wrap,calloc,-wrap,realloc,-wrap,posix_memalign,-wrap,valloc,-wrap,free,-wrap,mmap,-wrap,munmap")
 set_property(TARGET allocatorApp APPEND_STRING PROPERTY LINK_FLAGS " ${ALLOCATOR_LINK_FLAGS}")
 target_link_libraries(allocatorApp xpedite)
-install(TARGETS allocatorApp DESTINATION "test")
+install(TARGETS allocatorApp DESTINATION "test" COMPONENT testBinaries)
 
 add_executable(embeddedApp test/targets/EmbeddedApp.C)
 target_link_libraries(embeddedApp xpedite)
-install(TARGETS embeddedApp DESTINATION "test")
+install(TARGETS embeddedApp DESTINATION "test" COMPONENT testBinaries)
 
 add_executable(customRecorderApp test/targets/CustomRecorderApp.C)
 target_link_libraries(customRecorderApp xpedite)
-install(TARGETS customRecorderApp DESTINATION "test")
+install(TARGETS customRecorderApp DESTINATION "test" COMPONENT testBinaries)
 
 add_executable(multiThreadedApp test/targets/MultiThreadedApp.C)
 target_link_libraries(multiThreadedApp xpedite)
-install(TARGETS multiThreadedApp DESTINATION "test")
+install(TARGETS multiThreadedApp DESTINATION "test" COMPONENT testBinaries)
 
 add_executable(dataTxnApp test/targets/DataTxnApp.C)
 target_link_libraries(dataTxnApp xpedite)
-install(TARGETS dataTxnApp DESTINATION "test")
+install(TARGETS dataTxnApp DESTINATION "test" COMPONENT testBinaries)
 
 add_library(pic SHARED test/targets/PicLib.C)
 target_compile_definitions(pic PRIVATE XPEDITE_PIC=1)
-install(TARGETS pic DESTINATION "test")
+install(TARGETS pic DESTINATION "test" COMPONENT testBinaries)
 
 add_executable(picApp test/targets/PicApp.C)
 target_link_libraries(picApp xpedite pic)
-install(TARGETS picApp DESTINATION "test")
+install(TARGETS picApp DESTINATION "test" COMPONENT testBinaries)
 
 add_executable(slowFixDecoderApp test/targets/SlowFixDecoder.C)
 target_link_libraries(slowFixDecoderApp xpedite)
-install(TARGETS slowFixDecoderApp DESTINATION "test")
+install(TARGETS slowFixDecoderApp DESTINATION "test" COMPONENT testBinaries)
 
 ######################### test #############################
 
@@ -141,7 +141,7 @@ if(GTEST_FOUND)
   set(test_files ${test_headers} ${test_source})
   add_executable(testXpedite ${test_files})
   target_link_libraries(testXpedite ${GTEST_BOTH_LIBRARIES} xpedite)
-  install(TARGETS testXpedite DESTINATION "test")
+  install(TARGETS testXpedite DESTINATION "test" COMPONENT testBinaries)
   add_test(NAME testXpedite
          COMMAND testXpedite)
 endif()
@@ -155,3 +155,22 @@ if(BUILD_VIVIFY)
 message("Starting Vivify Library Setup")
 add_subdirectory(vivify)
 endif()
+
+######################### package #############################
+set(CPACK_GENERATOR "TGZ;DEB;RPM")
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_RPM_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE ON)
+set(CPACK_COMPONENTS_ALL headers libraries binaries)
+
+set(CPACK_PACKAGE_NAME "Xpedite")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_RPM_PACKAGE_RELEASE "1.0.0")
+set(CPACK_PACKAGE_VENDOR "Xpedite")
+set(CPACK_PACKAGE_CONTACT "Manikandan Dhamodharan")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://www.xpedite.dev")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Non-sampling profiler for low-latency/real time systems")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/docs/pkgDesc.txt")
+
+include(CPack)

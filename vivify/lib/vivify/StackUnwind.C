@@ -14,7 +14,6 @@
 #include <algorithm>
 
 #include <vivify/util/Elf.H>
-
 #include "MMap.H"
 
 
