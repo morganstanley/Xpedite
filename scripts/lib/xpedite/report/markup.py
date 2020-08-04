@@ -76,8 +76,8 @@ HTML_BEGIN_FMT = """
 """
 HTML_END = '</body></html>'
 
-JS_PATH = os.path.join(os.path.dirname(__file__), '../../../jupyter/js')
-STYLE_PATH = os.path.join(os.path.dirname(__file__), '../../../jupyter/config/custom')
+JS_PATH = os.path.join(os.path.dirname(__file__), '../jupyter/data/js')
+STYLE_PATH = os.path.join(os.path.dirname(__file__), '../jupyter/data/config/custom')
 STATIC_REPORT_STYLE = loadTextFile(os.path.join(STYLE_PATH, 'static.css'))
 XPEDITE_STYLE = loadTextFile(os.path.join(STYLE_PATH, 'xpedite.css'))
 CODE_STYLE = loadTextFile(os.path.join(STYLE_PATH, 'code.css'))

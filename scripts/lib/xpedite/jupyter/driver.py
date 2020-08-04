@@ -11,7 +11,6 @@ Author: Dhruv Shekhawat, Morgan Stanley
 
 import os
 import time
-import socket
 import copy
 import logging
 import tempfile
@@ -205,14 +204,13 @@ def launchJupyter(homeDir):
   initPath = os.path.dirname(__file__)
   jupyterEnv = os.environ
   jupyterEnv[Context.dataPathKey] = os.path.join(os.path.abspath(homeDir), DATA_DIR)
-  jupyterEnv['JUPYTER_PATH'] = os.path.join(initPath, '../../../jupyter/extensions/')
-  jupyterEnv['JUPYTER_CONFIG_DIR'] = os.path.join(initPath, '../../../jupyter/config/')
+  jupyterEnv['JUPYTER_PATH'] = os.path.join(initPath, 'data/extensions/')
+  jupyterEnv['JUPYTER_CONFIG_DIR'] = os.path.join(initPath, 'data/config/')
   jupyterEnv['XPEDITE_PATH'] = os.path.abspath(os.path.join(initPath, '../../'))
   jupyterEnv['PATH'] = pyPath
   jupyterEnv['HOME'] = tempfile.mkdtemp(prefix=SHELL_PREFIX, dir='/tmp')
-  ip = socket.gethostbyname(socket.gethostname())
   jupyterBinary = binPath('jupyter')
-  os.execle(jupyterBinary, 'Xpedite', 'notebook', '--no-browser', '--ip='+ip, '--notebook-dir='+homeDir, jupyterEnv)
+  os.execle(jupyterBinary, 'Xpedite', 'notebook', '--no-browser', '--notebook-dir='+homeDir, jupyterEnv)
 
 def validatePath(homeDir, reportName):
   """Validates the path to store xpedite notebook and data files"""
