@@ -14,3 +14,6 @@ c.NotebookApp.server_extensions = [
 # This allows adding javascript/css to be available from the notebook server
 # machine, or overriding individual files in the IPython
 c.NotebookApp.extra_static_paths = [os.path.join(currDir, '../js')]
+
+c.NotebookApp.allow_origin = '*'  #allow all origins
+c.NotebookApp.ip = '0.0.0.0'      # listen on all IPs

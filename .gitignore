@@ -2,8 +2,11 @@
 *.pyo
 *.swp
 .cache
-build
-install
+/build
+/install
+scripts/lib/dist
+scripts/lib/build
+scripts/lib/xpedite.egg-info
 __pycache__
 .pytest_cache
 .coverage

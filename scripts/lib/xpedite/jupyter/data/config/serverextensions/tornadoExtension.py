@@ -22,7 +22,7 @@ class HtmlReportHandler(tornado.web.RequestHandler):
   as indices to read metadata from notebook
   """
   def get(self):
-    xpeditePath = os.path.normpath(os.path.join(__file__, '../../../../lib'))
+    xpeditePath = os.path.normpath(os.path.join(__file__, '../../../../../..'))
     sys.path.append(xpeditePath)
 
     from xpedite.jupyter import buildXpdName
