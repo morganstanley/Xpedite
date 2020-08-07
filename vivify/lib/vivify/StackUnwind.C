@@ -73,7 +73,7 @@ int unwGetProcName(unw_addr_space_t /*as_*/, unw_word_t /*addr_*/,
   return -UNW_EINVAL; // unsupported
 }
 
-static unw_accessors_t g_unwAccessors =
+unw_accessors_t g_unwAccessors =
 {
   .find_proc_info         = unwFindProcInfo,
   .put_unwind_info        = unwPutUnwindInfo,
@@ -99,7 +99,7 @@ struct StackUnwind::Ctxt
 
   unw_addr_space_t _unwAddrSpace{nullptr};
 
-  Ctxt(const AddressSpace* addrSpace_) : _addrSpace{addrSpace_}
+  explicit Ctxt(const AddressSpace* addrSpace_) : _addrSpace{addrSpace_}
   {
     util::Elf::validateElfVersion();
 

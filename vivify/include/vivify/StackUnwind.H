@@ -63,7 +63,7 @@ public:
    * \param addrSpace_ Pointer to the virtual address space of the process.
    * \see AddressSpace class.
    */
-  StackUnwind(const AddressSpace* addrSpace_);
+  explicit StackUnwind(const AddressSpace* addrSpace_);
   ~StackUnwind();
 
   /*!

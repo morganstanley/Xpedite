@@ -9,6 +9,7 @@
 #
 ################################################################################################
 
+cmake_minimum_required(VERSION 3.4.1)
 project(vivify C CXX)
 find_package(PkgConfig REQUIRED)
 
@@ -25,6 +26,12 @@ if(NOT DWARF_H_FOUND)
   message(WARNING "skipping vivify build. dwarf.h not found !!!")
   return()
 endif()
+check_include_file("bfd.h" BFD_H_FOUND)
+if(NOT BFD_H_FOUND)
+  message(WARNING "skipping vivify build. bfd.h not found !!!")
+  return()
+endif()
+check_symbol_exists(bfd_section_flags "bfd.h" HAVE_BFD_SECTION_FLAGS)
 
 include_directories(include)
 file(GLOB_RECURSE lib_vivify_headers lib/vivify/*.[hH])
