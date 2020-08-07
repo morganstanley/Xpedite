@@ -137,8 +137,13 @@ Map* StackUnwind::Ctxt::findMap(uintptr_t addr_) noexcept
     return nullptr;
   }
 
-  const auto& l_file{l_segment->name()};
-  return &*_maps.emplace(l_it, l_segment, &_files.emplace(l_file, l_file).first->second);
+  const auto& l_name{l_segment->name()};
+
+  auto* l_file{&_files.emplace(
+    std::piecewise_construct, std::forward_as_tuple(l_name), std::forward_as_tuple(l_name))
+      .first->second};
+
+  return &*_maps.emplace(l_it, l_segment, l_file);
 }
 
 namespace
