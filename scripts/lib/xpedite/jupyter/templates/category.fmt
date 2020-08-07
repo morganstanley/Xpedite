@@ -18,8 +18,9 @@ flotFrmt="""
 import sys
 from IPython.display import display, HTML
 thismodule = sys.modules[__name__]
-fileName = getattr(thismodule, Context.fileKey)
-result = 'Failed to resolve xpedite data file name'
-if fileName:
-  result = flotFrmt.format(fileName)
+
+notebookPath = getattr(thismodule, Context.notebookPathKey)
+result = 'Failed to resolve jupyter notebook path'
+if notebookPath:
+  result = flotFrmt.format(notebookPath)
 display(HTML(result))

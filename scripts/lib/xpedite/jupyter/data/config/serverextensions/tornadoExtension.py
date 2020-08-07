@@ -25,7 +25,6 @@ class HtmlReportHandler(tornado.web.RequestHandler):
     xpeditePath = os.path.normpath(os.path.join(__file__, '../../../../../..'))
     sys.path.append(xpeditePath)
 
-    from xpedite.jupyter import buildXpdName
     from xpedite.jupyter.xpediteData import XpediteDataReader
     from xpedite.jupyter.context import Context
 
@@ -33,17 +32,17 @@ class HtmlReportHandler(tornado.web.RequestHandler):
       action = self.get_argument('action', None)
       reportKey = self.get_argument('reportKey', None)
       assert reportKey is not None
-      xpdFileName = buildXpdName(self.get_argument(Context.fileKey, None))
-      assert xpdFileName is not None
-      xpDataPath = os.path.join(Context.xpediteDataPath, xpdFileName)
-      with XpediteDataReader(xpDataPath) as xpd:
+      notebookPath = self.get_argument(Context.notebookPathKey, None)
+      assert notebookPath is not None
+      xpdFilePath = Context.buildXpdPath(notebookPath)
+      with XpediteDataReader(xpdFilePath) as xpd:
         data = xpd.getData(reportKey)
         markupGz = base64.b64decode(data)
         self.set_header("Content-type", 'text/html')
         self.set_header("Content-Encoding", 'gzip')
         self.finish(markupGz)
     except IOError:
-      ioErr = 'Could not read html content from nbPath parameter. Check if file exists.'
+      ioErr = 'Could not read html from xpd file - {} with key - {}'.format(xpdFilePath, reportKey)
       self.finish(ioErr)
       print(ioErr)
     except AssertionError as e:
