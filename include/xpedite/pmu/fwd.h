@@ -18,9 +18,9 @@
 extern "C" {
 #endif
 
-extern int  xpediteCanLog();
-extern void xpediteSupressLog();
-extern void xpediteUnsupressLog();
+extern int  xpediteCanLog(void);
+extern void xpediteSupressLog(void);
+extern void xpediteUnsupressLog(void);
 
 #ifdef __cplusplus
 }
