@@ -8,11 +8,12 @@ Author:  Brooke Elizabeth Cantwell, Morgan Stanley
 """
 
 import os
+import traceback
 import time
 from concurrent      import futures
 import logging
 from enum            import Enum
-from xpedite.jupyter import PROFILES_KEY
+from xpedite.jupyter import PROFILES_KEY, NOTEBOOK_EXT, DATA_FILE_EXT, DATA_DIR
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,9 +26,9 @@ class ProfileStatus(Enum):
 class Context(object):
   """Context to hold data for current profile session"""
 
-  fileKey = 'xpdFileName'
-  dataPathKey = 'XPEDITE_DATA_PATH'
-  xpediteDataPath = os.getenv(dataPathKey)
+  notebookPathKey = 'xpediteNotebookPath'
+  xpediteHomeKey = 'XPEDITE_HOME_PATH'
+  xpediteHome = os.getenv(xpediteHomeKey)
 
   def __init__(self):
     from xpedite.analytics.conflator import Conflator
@@ -37,6 +38,7 @@ class Context(object):
     self.txn = None
     self.executor = futures.ThreadPoolExecutor(max_workers=1)
     self.dataFile = None
+    self.errMsg = None
 
   def loadProfiles(self):
     """Load profile data from Xpedite data file"""
@@ -49,20 +51,23 @@ class Context(object):
     """Load profile data in a background thread"""
     from xpedite.jupyter.autoComplete import Txn
     self.profileState = ProfileStatus.LoadInProgress
-    self._profiles = self.loadProfiles()
-    self.txn = Txn(self._profiles.pmcNames) if self._profiles else None
-    self.profileState = ProfileStatus.LoadComplete if self._profiles else ProfileStatus.LoadFailed
+    try:
+      self._profiles = self.loadProfiles()
+      self.txn = Txn(self._profiles.pmcNames) if self._profiles else None
+    except Exception:
+      self.errMsg = traceback.format_exc()
+    finally:
+      self.profileState = ProfileStatus.LoadComplete if self._profiles else ProfileStatus.LoadFailed
 
-  def initialize(self, notebookName, cb=None):
+  def initialize(self, notebookPath, cb=None):
     """
     Initialize context
 
-    :param notebookName: name of the notebook
+    :param notebookPath: relative path to the notebook
     :param cb:  load completion call back (Default value = None)
 
     """
-    from xpedite.jupyter import buildXpdName
-    self.dataFile = buildXpdName(os.path.join(Context.xpediteDataPath, notebookName))
+    self.dataFile = self.buildXpdPath(notebookPath)
     def doLoad():
       """Deleate to invoke the given callback, after context loading"""
       self.loadProfileAsync()
@@ -70,15 +75,29 @@ class Context(object):
         cb(self)
     self.executor.submit(doLoad)
 
+  @staticmethod
+  def buildXpdPath(notebookPath):
+    """
+    Builds path of xpedite data file, given a path to notebook file
+
+    :param notebookPath: relative path of the jupyter notebook
+
+    """
+    (path, notebookName) = os.path.split(notebookPath)
+    dataFileName = notebookName.replace(NOTEBOOK_EXT, DATA_FILE_EXT)
+    return os.path.join(Context.xpediteHome, path, DATA_DIR, dataFileName)
+
   @property
   def profiles(self):
     """Returns profiles from context, awaiting async load"""
     if self.profileState == ProfileStatus.LoadFailed:
-      LOGGER.error('profile data failed to load')
-      raise Exception('Failure to get global profiles from future')
+      errMsg = 'Failed to load transactions - {}'.format(self.errMsg)
+      LOGGER.error(errMsg)
+      raise Exception(errMsg)
     elif self.profileState is None:
-      LOGGER.error('Failure to set profile state')
-      raise Exception('Failure to set profile state')
+      errMsg = 'Invariant voilation - profile loading not yet inialized'
+      LOGGER.error(errMsg)
+      raise Exception(errMsg)
     elif self.profileState == ProfileStatus.LoadComplete:
       return self._profiles
     else:
@@ -86,13 +105,14 @@ class Context(object):
       while self.profileState == ProfileStatus.LoadInProgress:
         time.sleep(.5)
         if self.profileState == ProfileStatus.LoadComplete:
-          self.executor.shutdown()
-          self.executor = None
+          if self.executor:
+            self.executor.shutdown()
+            self.executor = None
           break
         count += 1
         if count >= 60:
-          LOGGER.error('Loading profiles has timed out.')
-          raise Exception('Timeout loading profiles.')
+          LOGGER.error('Timeout loading transactions')
+          raise Exception('Timeout loading transactions')
     return self._profiles
 
 context = Context() # pylint: disable=invalid-name

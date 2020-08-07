@@ -25,7 +25,7 @@ define([
     function load_extension() {
         config.load(); // trigger loading config parameters
 
-        var urlRequest = "/xpedite?xpdFileName=" + Jupyter.notebook.notebook_name + "&reportKey=snippets&action=load";
+        var urlRequest = "/xpedite?xpediteNotebookPath=" + Jupyter.notebook.notebook_path + "&reportKey=snippets&action=load";
 
         $.getJSON(urlRequest, function(data) {
             // Add the header as the top option, does nothing on click

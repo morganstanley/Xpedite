@@ -8,10 +8,10 @@ from xpedite.jupyter.templates.initCell import INTRO_FRMT
 from xpedite.jupyter.context import Context, context
 
 thismodule = sys.modules[__name__]
-fileName = getattr(thismodule, Context.fileKey)
-result = 'Failed to resolve xpd data file name'
-if fileName:
-  context.initialize(fileName)
-  envLink='{envLink}'.format(fileName)
+notebookPath = getattr(thismodule, Context.notebookPathKey)
+result = 'Failed to resolve jupyter notebook path'
+if notebookPath:
+  context.initialize(notebookPath)
+  envLink='{envLink}'.format(notebookPath)
   result = INTRO_FRMT.format(envLink = envLink, appName = '{appName}', categoryCount = {categoryCount}, runId = {runId})
 display(HTML(result))

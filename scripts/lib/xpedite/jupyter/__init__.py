@@ -28,13 +28,3 @@ EXPORT_PREFIX = 'xpediteExport'
 SHELL_PREFIX = 'xpediteShell'
 TEMP_PREFIX = 'xpedite'
 PROFILES_KEY = 'profiles'
-
-def buildXpdName(notebookName):
-  """
-  Builds a name for xpedite data file, by substituting the file extension
-
-  :param notebookName: Name of the jupyter notebook
-
-  """
-  dataFile = notebookName.replace(NOTEBOOK_EXT, DATA_FILE_EXT)
-  return dataFile

@@ -77,7 +77,7 @@ def buildD3Flot(cell):
 
 def buildReportLink(reportKey, action):
   """Returns an url to uniquely identify a report"""
-  return '/xpedite?{}={{0}}&reportKey={}&action={}'.format(Context.fileKey, reportKey, action)
+  return '/xpedite?{}={{0}}&reportKey={}&action={}'.format(Context.notebookPathKey, reportKey, action)
 
 def buildReportCells(nb, result, dataFilePath):
   """
@@ -197,13 +197,13 @@ def launchJupyter(homeDir):
    python path and extensions, and finally launching jupyter
 
   """
-  from xpedite.jupyter         import SHELL_PREFIX, DATA_DIR
+  from xpedite.jupyter         import SHELL_PREFIX
   from xpedite.dependencies    import binPath
   LOGGER.info('')
   pyPath = os.path.dirname(binPath('python')) + os.pathsep + os.environ['PATH']
   initPath = os.path.dirname(__file__)
   jupyterEnv = os.environ
-  jupyterEnv[Context.dataPathKey] = os.path.join(os.path.abspath(homeDir), DATA_DIR)
+  jupyterEnv[Context.xpediteHomeKey] = os.path.abspath(homeDir)
   jupyterEnv['JUPYTER_PATH'] = os.path.join(initPath, 'data/extensions/')
   jupyterEnv['JUPYTER_CONFIG_DIR'] = os.path.join(initPath, 'data/config/')
   jupyterEnv['XPEDITE_PATH'] = os.path.abspath(os.path.join(initPath, '../../'))

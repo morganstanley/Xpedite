@@ -41,7 +41,8 @@ define([
     );
 
     function run_init_cells () {
-        var codePrefix = "xpdFileName='" + Jupyter.notebook.notebook_name + "'\n";
+        var notebookPathKey = "xpediteNotebookPath='";
+        var codePrefix = notebookPathKey + Jupyter.notebook.notebook_path + "'\n";
         console.log(log_prefix, 'running all initialization cells with code prefix - ' + codePrefix);
         var num = 0;
         var cells = Jupyter.notebook.get_cells();
@@ -49,9 +50,17 @@ define([
             var cell = cells[ii];
             if ((cell instanceof codecell.CodeCell) && cell.metadata.init_cell === true ) {
                 var code = cell.get_text();
-                if(!code.startsWith(codePrefix)) {
+                if(!code.startsWith(notebookPathKey)) {
                   code = codePrefix + code 
                   cell.set_text(code);
+                } else {
+                  lineIndex = code.indexOf("\n");
+                  if(lineIndex !== -1) {
+                    code = codePrefix + code.substring(lineIndex + 1);
+                    cell.set_text(code);
+                  } else {
+                    console.error(log_prefix, 'invariant voilation:', 'found code segment without a new line');
+                  }
                 }
                 cell.execute();
                 num++;
