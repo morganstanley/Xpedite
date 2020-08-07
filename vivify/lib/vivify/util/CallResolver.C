@@ -18,8 +18,36 @@ namespace
 {
 
 #ifndef DMGL_PARAMS
-#define DMGL_PARAMS (1 << 0) // include function arguments
-#define DMGL_ANSI   (1 << 1) // include const, volatile, etc.
+#define DMGL_PARAMS (1u << 0u) // include function arguments
+#define DMGL_ANSI   (1u << 1u) // include const, volatile, etc.
+#endif
+
+#if HAVE_BFD_SECTION_FLAGS
+inline auto vivify_bfd_section_flags(bfd* /*bfd_*/, asection* section_) noexcept
+{
+  return bfd_section_flags(section_);
+}
+inline auto vivify_bfd_section_vma(bfd* /*bfd_*/, asection* section_) noexcept
+{
+  return bfd_section_vma(section_);
+}
+inline auto vivify_bfd_section_size(asection* section_) noexcept
+{
+  return bfd_section_size(section_);
+}
+#else
+inline auto vivify_bfd_section_flags(bfd* bfd_, asection* section_) noexcept
+{
+  return bfd_get_section_flags(bfd_, section_);
+}
+inline auto vivify_bfd_section_vma(bfd* bfd_, asection* section_) noexcept
+{
+  return bfd_get_section_vma(bfd_, section_);
+}
+inline auto vivify_bfd_section_size(asection* section_) noexcept
+{
+  return bfd_get_section_size(section_);
+}
 #endif
 
 struct CallResolverCtxt
@@ -36,7 +64,7 @@ struct CallResolverCtxt
   CallResolverCtxt(bfd* bfd_, asymbol** symTab_, bfd_vma pc_, CallResolver::Option opts_)
   : _bfd{bfd_}, _symTab{symTab_}, _pc{pc_}, _opts{opts_} {}
 
-  void setInfo(CallInfo::Info& info_, const char* file_, const char* l_func) const;
+  void setInfo(CallInfo::Info& info_, const char* file_, const char* func_) const;
 };
 
 void CallResolverCtxt::setInfo(CallInfo::Info& info_, const char* file_, const char* func_) const
@@ -80,12 +108,12 @@ void findAddrInSection(bfd* bfd_, asection* section_, void* ctxt_) noexcept
   {
     return;
   }
-  if (0 == (bfd_get_section_flags(bfd_, section_) & SEC_ALLOC))
+  if (0 == (vivify_bfd_section_flags(bfd_, section_) & SEC_ALLOC))
   { // if not allocated, it is not a debug info section
     return;
   }
-  const auto l_vma{bfd_get_section_vma(bfd_, section_)};
-  if (l_ctxt._pc < l_vma || l_ctxt._pc >= l_vma + bfd_get_section_size(section_))
+  const auto l_vma{vivify_bfd_section_vma(bfd_, section_)};
+  if (l_ctxt._pc < l_vma || l_ctxt._pc >= l_vma + vivify_bfd_section_size(section_))
   {
     return;
   }
