@@ -21,7 +21,7 @@ class Thread
   using Task = std::function<void(Thread*)>;
 
   Thread()
-    : _canRun {true}, _thread {&Thread::run, this}, _mutex {}, _cv {}, _queue {} {
+    : _canRun {true}, _mutex {}, _cv {}, _queue {}, _thread {&Thread::run, this} {
   }
 
   void run() {
@@ -56,9 +56,9 @@ class Thread
   private:
 
   bool _canRun;
-  std::thread _thread;
   std::mutex _mutex;
   std::condition_variable _cv;
   std::queue<Task> _queue;
+  std::thread _thread;
 };
 

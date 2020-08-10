@@ -153,8 +153,9 @@ function runLint() {
 
 function runGtests() {
   TEST_APP=${TEST_DIR}/../install/test/testXpedite
-  if [ -x ${TEST_APP} ]; then
-    echo 'Failed to locate demo binary. Have you built xpedite gtests ?' > /dev/stderr
+  if [ ! -x ${TEST_APP} ]; then
+    echo "Failed to locate test binary (${TEST_APP}). Have you built xpedite gtests ?" > /dev/stderr
+    exit 1
   fi
 
   FILTER=''
