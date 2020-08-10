@@ -12,25 +12,32 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(vivify C CXX)
 find_package(PkgConfig REQUIRED)
+include(CheckSymbolExists)
+include(CheckIncludeFile)
 
 # vivify external dependencies
 #   needs libunwind, libunwind-x86_64 to extract instruction pointers from stack frames
-#   Unwinding stack needs extraction of eh_frame section, which in turn requires
-#     1. libelf to open and extract eh_frame header and data
-#     2. dwarf.h to read eh_fram with proper exception header encoding
+#   unwinding stack needs extraction of eh_frame section, which in turn requires:
+#     1. libelf to extract eh_frame header
+#     2. dwarf.h to decode eh_frame fields
 #   needs libbfd to map instruction pointers to function, file and line no
-# TODO: make eh_frame extraction optional, if dwarf.h can't be located
 
 check_include_file("dwarf.h" DWARF_H_FOUND)
 if(NOT DWARF_H_FOUND)
-  message(WARNING "skipping vivify build. dwarf.h not found !!!")
+  message(WARNING "skipping vivify build. dwarf.h not found!!!")
   return()
 endif()
 check_include_file("bfd.h" BFD_H_FOUND)
 if(NOT BFD_H_FOUND)
-  message(WARNING "skipping vivify build. bfd.h not found !!!")
+  message(WARNING "skipping vivify build. bfd.h not found!!!")
   return()
 endif()
+find_library(LIBELF_FOUND elf)
+if(NOT LIBELF_FOUND)
+  message(WARNING "skipping vivify build. libelf not found!!!")
+  return()
+endif()
+
 check_symbol_exists(bfd_section_flags "bfd.h" HAVE_BFD_SECTION_FLAGS)
 
 include_directories(include)
@@ -50,15 +57,11 @@ else()
   list(REMOVE_ITEM lib_vivify_headers ${CMAKE_CURRENT_SOURCE_DIR}/lib/vivify/StackUnwind.H)
   list(REMOVE_ITEM lib_vivify_source ${CMAKE_CURRENT_SOURCE_DIR}/lib/vivify/StackUnwind.C)
 endif()
-set(lib_vivify_files ${lib_vivify_headers} ${lib_vivify_source})
 
-add_library(vivify STATIC ${lib_vivify_files})
-# begin workaround to embed bfd
-# https://sourceware.org/bugzilla/show_bug.cgi?id=14243
-# https://sourceware.org/bugzilla/show_bug.cgi?id=15920
-add_definitions(-DPACKAGE)
-add_definitions(-DPACKAGE_VERSION)
-# end of workaround
+add_library(vivify STATIC ${lib_vivify_headers} ${lib_vivify_source})
+if(NOT HAVE_BFD_SECTION_FLAGS)
+  target_compile_definitions(vivify PRIVATE NO_BFD_SECTION_FLAGS)
+endif()
 
 if(LIBUNWIND_FOUND)
   if(NOT LIBUNWIND_DEBUG_FRAME)

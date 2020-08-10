@@ -22,7 +22,7 @@ namespace
 #define DMGL_ANSI   (1u << 1u) // include const, volatile, etc.
 #endif
 
-#if HAVE_BFD_SECTION_FLAGS
+#ifndef NO_BFD_SECTION_FLAGS
 inline auto vivify_bfd_section_flags(bfd* /*bfd_*/, asection* section_) noexcept
 {
   return bfd_section_flags(section_);

@@ -17,7 +17,7 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
   message(FATAL_ERROR "Xpedite requires GCC 5.2 or later to build.")
 endif()
 
-set (CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")
