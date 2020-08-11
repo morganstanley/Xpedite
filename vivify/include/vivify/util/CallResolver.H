@@ -7,6 +7,15 @@
 
 #pragma once
 
+// workaround for potential issues with including bfd.h
+// https://sourceware.org/bugzilla/show_bug.cgi?id=14243
+// https://sourceware.org/bugzilla/show_bug.cgi?id=15920
+#ifndef PACKAGE
+#define PACKAGE
+#endif
+#ifndef PACKAGE_VERSION
+#define PACKAGE_VERSION
+#endif
 #include <bfd.h>
 
 #include <type_traits>
