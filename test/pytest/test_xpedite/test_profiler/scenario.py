@@ -115,7 +115,6 @@ class Scenario(object):
     """
     Clean up temporary directories when exiting a scenario
     """
-    pass
 
   def makeTargetApp(self, context):
     """

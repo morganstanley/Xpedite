@@ -158,10 +158,9 @@ class TxnRepoFactory(object):
         msg = 'failed to load transactions. recheck routes specified in your profile info'
         LOGGER.error(msg)
         raise Exception(msg)
-      else:
-        msg = 'failed to load transactions. It appears the app hit any of the activated probes'
-        LOGGER.error(msg)
-        raise Exception(msg)
+      msg = 'failed to load transactions. It appears the app hit any of the activated probes'
+      LOGGER.error(msg)
+      raise Exception(msg)
 
     repo = TxnRepo()
     repo.addCurrent(currentTxns)

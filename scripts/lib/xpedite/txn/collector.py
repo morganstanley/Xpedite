@@ -59,8 +59,7 @@ class Collector(Extractor):
       match = self.samplesFilePattern.findall(fileName)
       if match and len(match) >= 1:
         return int(match[0])
-      else:
-        raise RuntimeError('failed to extract sequence no from report file ' + fileName)
+      raise RuntimeError('failed to extract sequence no from report file ' + fileName)
 
     fileNames = fnmatch.filter(os.listdir(path), self.samplesFileWildcard)
     fileNames = list(sorted(fileNames, key=orderByName))

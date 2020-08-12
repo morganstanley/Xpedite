@@ -1,7 +1,9 @@
 # Configuration file for jupyter-notebook.
 
 # Add serverextension to sys.path for jupyter to load tornadoExtension module on startup
-import os, sys
+import os
+import sys
+
 currDir = os.path.dirname(__file__)
 packagePath = os.path.join(currDir, '../config/serverextensions')
 sys.path.insert(0, packagePath)

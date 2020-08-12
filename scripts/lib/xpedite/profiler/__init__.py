@@ -100,13 +100,13 @@ class Profiler(object):
     if not dryRun:
       begin = time.time()
       elapsed = 0
-      duration = int(duration) if duration != None else None
+      duration = int(duration) if duration is not None else None
 
       if interactive:
         LOGGER.info('press RETURN key to, end live profile and generate report ...')
 
       while True:
-        timeout = min(heartbeatInterval, duration - elapsed) if duration != None else heartbeatInterval
+        timeout = min(heartbeatInterval, duration - elapsed) if duration is not None else heartbeatInterval
         eof = False
         if interactive:
           rlist, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -230,6 +230,5 @@ class Profiler(object):
       appInfoAbsolutePath = os.path.abspath(appInfoPath)
       profilerPath = os.path.abspath(os.path.join(__file__, '../../../../bin/xpedite'))
       return ProfileInfoGenerator(app.executableName, hostname, appInfoAbsolutePath, probes, profilerPath).generate()
-    else:
-      LOGGER.error('failed to generate profile_info.py. cannot locate probes in app. Have you instrumented any ?\n')
+    LOGGER.error('failed to generate profile_info.py. cannot locate probes in app. Have you instrumented any ?\n')
     return None

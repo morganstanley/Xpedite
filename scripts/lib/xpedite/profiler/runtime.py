@@ -260,8 +260,8 @@ class Runtime(AbstractRuntime):
       if not self.app.dryRun:
         try:
           self.app.endProfile()
-        except Exception:
-          pass
+        except Exception as ex:
+          LOGGER.warn('Detected unclean profile termination - %s', ex)
         if self.eventSet:
           self.app.disablePMU()
 

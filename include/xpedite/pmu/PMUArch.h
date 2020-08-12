@@ -41,7 +41,6 @@ typedef enum
 
   PMU_MSR_OFFCORE_RSP_0            = 0x1A6,
   PMU_MSR_OFFCORE_RSP_1            = 0x1A7,
-
 } PMUMsr;
 
 extern ssize_t pmuEnableEventSet(EventSet* eventSet);

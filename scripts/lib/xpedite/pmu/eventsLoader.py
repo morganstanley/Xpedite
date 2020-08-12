@@ -139,7 +139,7 @@ class EventsLoader(object):
     if int(offcoreFlag) != 0 or record['EventName'] == 'OFFCORE_RESPONSE':
       factory = self.jsonOffCoreFactory()
       return lambda r : factory.build(OffCoreEvent(), r)
-    elif record['Counter'].startswith(EventsLoader.fixedCounterPrefix):
+    if record['Counter'].startswith(EventsLoader.fixedCounterPrefix):
       factory = self.jsonFixedCoreFactory()
       return lambda r : factory.build(FixedCoreEvent(), r)
     factory = self.jsonGenericCoreFactory()

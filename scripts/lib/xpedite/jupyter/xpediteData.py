@@ -92,8 +92,7 @@ class XpediteDataFactory(object):
     if key in self.dataTable.keys():
       errMsg = 'failed to commit record to data file - duplicate key "{}" detected'.format(key)
       raise ValueError(errMsg)
-    else:
-      self.dataTable[key] = Record(key, description, data)
+    self.dataTable[key] = Record(key, description, data)
 
   def commit(self):
     """Commits accumulated data to the xpedite data file"""
