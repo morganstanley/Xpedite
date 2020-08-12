@@ -86,7 +86,7 @@ class Topdown(object):
     """
     if name.lower() == 'all':
       return nodes.values()
-    elif name in nodes:
+    if name in nodes:
       return [nodes[name]]
     return None
 

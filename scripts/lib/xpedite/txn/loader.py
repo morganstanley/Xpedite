@@ -96,7 +96,6 @@ class AbstractTxnLoader(object):
 
   def endCollection(self):
     """Ends loading of samples from multiple threads of a target process"""
-    pass
 
   def beginLoad(self, threadId, tlsAddr):
     """Marks beginning of the current load session"""

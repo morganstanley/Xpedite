@@ -94,25 +94,24 @@ class Context(object):
       errMsg = 'Failed to load transactions - {}'.format(self.errMsg)
       LOGGER.error(errMsg)
       raise Exception(errMsg)
-    elif self.profileState is None:
+    if self.profileState is None:
       errMsg = 'Invariant voilation - profile loading not yet inialized'
       LOGGER.error(errMsg)
       raise Exception(errMsg)
-    elif self.profileState == ProfileStatus.LoadComplete:
+    if self.profileState == ProfileStatus.LoadComplete:
       return self._profiles
-    else:
-      count = 0
-      while self.profileState == ProfileStatus.LoadInProgress:
-        time.sleep(.5)
-        if self.profileState == ProfileStatus.LoadComplete:
-          if self.executor:
-            self.executor.shutdown()
-            self.executor = None
-          break
-        count += 1
-        if count >= 60:
-          LOGGER.error('Timeout loading transactions')
-          raise Exception('Timeout loading transactions')
+    count = 0
+    while self.profileState == ProfileStatus.LoadInProgress:
+      time.sleep(.5)
+      if self.profileState == ProfileStatus.LoadComplete:
+        if self.executor:
+          self.executor.shutdown()
+          self.executor = None
+        break
+      count += 1
+      if count >= 60:
+        LOGGER.error('Timeout loading transactions')
+        raise Exception('Timeout loading transactions')
     return self._profiles
 
 context = Context() # pylint: disable=invalid-name

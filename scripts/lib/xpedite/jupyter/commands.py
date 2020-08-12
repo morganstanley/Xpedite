@@ -76,9 +76,8 @@ def plot(routePoints=None, profiles=None):
       if profiles.pmcNames:
         display(HTML(buildPmcPlot(timeline)))
       return
-    else:
-      display(HTML(ERROR_TEXT.format('cannot find transaction for id {}'.format(txnId))))
-      return
+    display(HTML(ERROR_TEXT.format('cannot find transaction for id {}'.format(txnId))))
+    return
   from xpedite.report.flot import FlotBuilder
   profile = conflate(profiles, routePoints)
   if profile:

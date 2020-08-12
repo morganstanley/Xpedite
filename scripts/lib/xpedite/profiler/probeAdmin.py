@@ -34,8 +34,7 @@ class ProbeAdmin(object):
     if result:
       result = result.strip()
       return list(ProbeFactory(app.workspace).buildFromRecords(result.split('\n')).values())
-    else:
-      raise Exception('failed to query probes - have you instrumentd any xpedite probes in your binary ?')
+    raise Exception('failed to query probes - have you instrumentd any xpedite probes in your binary ?')
 
   @staticmethod
   def _updateProbe(app, anchoredProbe, targetState):

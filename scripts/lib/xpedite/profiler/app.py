@@ -61,8 +61,7 @@ class XpediteApp(object):
   def __getattr__(self, name):
     if self.env:
       return getattr(self.env, name)
-    else:
-      raise Exception('app not started')
+    raise Exception('app not started')
 
   def sampleFilePattern(self):
     """Returns wildcard pattern for the xpedite sample files"""

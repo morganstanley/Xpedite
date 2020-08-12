@@ -54,8 +54,8 @@ def loadPluggableObjects():
           for objType, objName in manifestCb():
             LOGGER.debug('%s provides pluggable object type - %s | name - %s', name, objType, objName)
             pluggableObjectsMap.setdefault(objType, []).append(PluggableObject(objType, objName, module))
-    except Exception:
-      pass
+    except Exception as ex:
+      LOGGER.debug('Failed to load plugin %s - %s', name, ex)
   return pluggableObjectsMap
 
 PLUGGABLE_OBJECTS_MAP = loadPluggableObjects()

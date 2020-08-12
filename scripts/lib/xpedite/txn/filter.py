@@ -20,11 +20,9 @@ class TrivialCounterFilter(object):
 
   def reset(self):
     """Defaults to nop"""
-    pass
 
   def report(self):
     """Defaults to nop"""
-    pass
 
 class AnonymousCounterFilter(object):
   """Filter to exclude counters missing txn id"""
@@ -52,7 +50,7 @@ class AnonymousCounterFilter(object):
     if counter.txnId is None:
       self.nullIdCounters += 1
       return False
-    elif not counter.txnId:
+    if not counter.txnId:
       self.nullIdCounters += 1
       return False
 

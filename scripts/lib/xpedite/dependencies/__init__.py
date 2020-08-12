@@ -112,9 +112,7 @@ def binPath(binaryName):
   envVariable = 'XPEDITE_{}'.format(binaryName.upper())
   if envVariable in os.environ.keys():
     return os.environ[envVariable]
-  else:
-    executablePath = find_executable(binaryName)
-    if executablePath:
-      return executablePath
-    else:
-      raise Exception('Failed to find binary {} in path.'.format(binaryName))
+  executablePath = find_executable(binaryName)
+  if executablePath:
+    return executablePath
+  raise Exception('Failed to find binary {} in path.'.format(binaryName))

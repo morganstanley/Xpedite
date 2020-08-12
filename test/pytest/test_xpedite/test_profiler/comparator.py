@@ -50,13 +50,12 @@ def findDiff(dict1, dict2, path=''):
           LOGGER.info('\tObject 1 value: %s\n\tObject 2 value: %s\n', str(dict1[key]), str(dict2[key]))
           return
         return
-      else:
-        for i, _ in enumerate(dict1[key]):
-          try:
-            if dict1[key][i] != dict2[key][i]:
-              findDiff(dict1[key][i].__dict__, dict2[key][i].__dict__, path + '[{}]'.format(i))
-          except AttributeError:
-            path = path + '[{}]'.format(i)
-            if dict1[key][i] != dict2[key][i]:
-              LOGGER.info(path)
-              return
+      for i, _ in enumerate(dict1[key]):
+        try:
+          if dict1[key][i] != dict2[key][i]:
+            findDiff(dict1[key][i].__dict__, dict2[key][i].__dict__, path + '[{}]'.format(i))
+        except AttributeError:
+          path = path + '[{}]'.format(i)
+          if dict1[key][i] != dict2[key][i]:
+            LOGGER.info(path)
+            return
