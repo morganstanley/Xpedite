@@ -5,7 +5,6 @@ static html and data files
 Author: Dhruv Shekhawat, Morgan Stanley
 """
 
-from tornadoExtension        import *
 from notebook.utils          import url_path_join
 from notebook.base.handlers  import IPythonHandler
 from tornado                 import template

@@ -188,16 +188,15 @@ class RequestSorter(object):
     """
     if RequestSorter.isSorted(requests):
       return requests
-    else:
-      indexSets = [req.event.validPmc for req in requests]
-      allocator = Allocator(indexSets)
-      if allocator.slotCount() == len(indexSets):
-        allocation = allocator.allocate()
-        if allocation:
-          sortedRequests = [None] * len(requests)
-          for i, req in enumerate(requests):
-            sortedRequests[allocation[i]] = req
-          return sortedRequests
+    indexSets = [req.event.validPmc for req in requests]
+    allocator = Allocator(indexSets)
+    if allocator.slotCount() == len(indexSets):
+      allocation = allocator.allocate()
+      if allocation:
+        sortedRequests = [None] * len(requests)
+        for i, req in enumerate(requests):
+          sortedRequests[allocation[i]] = req
+        return sortedRequests
     return None
 
   @staticmethod

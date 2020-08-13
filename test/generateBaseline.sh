@@ -9,7 +9,7 @@
 
 PROGRAM_NAME=$0
 
-TEST_DIR=`dirname $0`
+TEST_DIR=$(dirname $0)
 PYTEST_DIR=${TEST_DIR}/pytest
 XPEDITE_DIR=${TEST_DIR}/../scripts/lib
 
@@ -35,7 +35,7 @@ if [ "$#" -gt 0 ]; then
   usage
 fi
 
-RUN_DIR=`mktemp -d`
+RUN_DIR=$(mktemp -d)
 
 if [ "$?" -ne "0" ]; then
   "failed to create temporary directory"

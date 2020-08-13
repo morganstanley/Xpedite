@@ -8,7 +8,7 @@
 #############################################################################
 
 PROGRAM_NAME=$0
-TEST_DIR=`dirname $0`
+TEST_DIR=$(dirname $0)
 PY_VERSION=$(python -c 'import sys; print(sys.version_info[:][0])')
 DATA_DIR=${TEST_DIR}/pytest/test_xpedite/dataPy${PY_VERSION}
 
@@ -30,7 +30,7 @@ function message() {
 }
 
 function validate() {
-  TEMP_DIR=`mktemp -d`
+  TEMP_DIR=$(mktemp -d)
 
   if [ "$?" -ne "0" ]; then
     "failed to create temporary directory"
@@ -40,10 +40,10 @@ function validate() {
   rm -rf ${TEMP_DIR}/*
   tar -C ${TEMP_DIR} -zxvf ${DATA_DIR}/$1.tar.gz
 
-  MANIFEST_FILE=`fullPath ${DATA_DIR}/$1Manifest.csv`
-  MANIFEST=`tail -n +2 "${MANIFEST_FILE}"`
+  MANIFEST_FILE=$(fullPath ${DATA_DIR}/$1Manifest.csv)
+  MANIFEST=$(tail -n +2 "${MANIFEST_FILE}")
 
-  if [ `tar -tf "${DATA_DIR}"/"$1".tar.gz | grep -vc "/$"` != `echo "${MANIFEST}" | wc -l` ]; then
+  if [ $(tar -tf "${DATA_DIR}"/"$1".tar.gz | grep -vc "/$") != $(echo "${MANIFEST}" | wc -l) ]; then
     message "NUMBER OF FILES IN $1 ARCHIVE DOES NOT MATCH MANIFEST"
     exit 1
   fi
@@ -53,9 +53,9 @@ function validate() {
     FULL_PATH=${TEMP_DIR}/${FILE}
 
     if [[ ${FULL_PATH: -5} == ".data" ]]; then
-      FILE_LINES=`${TEST_DIR}/../install/bin/xpediteSamplesLoader "${FULL_PATH}" | wc -l`
+      FILE_LINES=$(${TEST_DIR}/../install/bin/xpediteSamplesLoader "${FULL_PATH}" | wc -l)
     else
-      FILE_LINES=`wc -l < "${FULL_PATH}"`
+      FILE_LINES=$(wc -l < "${FULL_PATH}")
     fi
 
     if [ ! -f "${FULL_PATH}" ]; then
@@ -63,7 +63,7 @@ function validate() {
       exit 1
     fi
 
-    if [ `wc -c < "${FULL_PATH}"` != "${SIZE}" ]; then
+    if [ $(wc -c < "${FULL_PATH}") != "${SIZE}" ]; then
       message "${FILE} SIZE DOES NOT MATCH MANIFEST"
       exit 1
     fi

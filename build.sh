@@ -21,7 +21,7 @@ EOM
 exit 1
 }
 
-ARGS=`getopt -o t:cjv --long type:,withCallStacks,forJava,verbose -- "$@"`
+ARGS=$(getopt -o t:cjv --long type:,withCallStacks,forJava,verbose -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi

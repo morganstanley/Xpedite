@@ -26,7 +26,7 @@ EOM
 exit 1
 }
 
-ARGS=`getopt -o r:c:p --long remote:,cpu:,pmc -- "$@"`
+ARGS=$(getopt -o r:c:p --long remote:,cpu:,pmc -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -49,8 +49,8 @@ while true ; do
   esac
 done
 
-DEMO_DIR=`dirname $0`
-DEMO_DIR=`readlink -f ${DEMO_DIR}`
+DEMO_DIR=$(dirname $0)
+DEMO_DIR=$(readlink -f ${DEMO_DIR})
 
 PROFILER=${DEMO_DIR}/../scripts/bin/xpedite
 if [ ! -x ${PROFILER} ]; then
@@ -69,7 +69,7 @@ if [ -d ${DEMO_DIR}/../install/runtime/bin ]; then
   export PATH=${DEMO_DIR}/../install/runtime/bin:${PATH}
 fi
 
-LOG_DIR=`${APP_LAUNCHER} "mktemp -d"`
+LOG_DIR=$(${APP_LAUNCHER} "mktemp -d")
 echo Xpedite demo log dir - $LOG_DIR
 if [ ! -z ${APP_HOST} ]; then
   rsync -a ${DEMO_APP} ${APP_HOST}:${LOG_DIR}/
@@ -77,8 +77,8 @@ else
   ln -s ${DEMO_APP} ${LOG_DIR}/
 fi
 
-APP_NAME=`basename ${DEMO_APP}`
-DEMO_APP_PID=`${APP_LAUNCHER} "cd $LOG_DIR; ./${APP_NAME} -c ${CPU} >$LOG_DIR/app.log 2>&1& echo \\\$!"`
+APP_NAME=$(basename ${DEMO_APP})
+DEMO_APP_PID=$(${APP_LAUNCHER} "cd $LOG_DIR; ./${APP_NAME} -c ${CPU} >$LOG_DIR/app.log 2>&1& echo \\\$!")
 
 XPEDITE_DEMO_APP_HOST=${APP_HOST:-localhost} XPEDITE_DEMO_LOG_DIR=${LOG_DIR} XPEDITE_DEMO_PMC=${PMC} XPEDITE_DEMO_CPU_SET=${CPU} ${PROFILER} record -p ${DEMO_DIR}/profileInfo.py -H 1 "$@"
 

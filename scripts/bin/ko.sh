@@ -9,31 +9,31 @@
 
 function unload()
 {
-	if (cat /proc/modules | grep '^xpedite[ ]' > /dev/null) ; then
-		echo unloading Xpedite kernel module
-		/sbin/rmmod xpedite.ko
-	else
-		echo Xpedite kernel module not loaded 1>&2
-		exit 2
-	fi
+  if $(cat /proc/modules | grep '^xpedite[ ]' > /dev/null) ; then
+    echo unloading Xpedite kernel module
+    /sbin/rmmod xpedite.ko
+  else
+    echo Xpedite kernel module not loaded 1>&2
+    exit 2
+  fi
 }
 
 function load()
 {
-  SCRIPT=`/usr/bin/readlink -f $0`
-	INSTALL_DIR="`dirname ${SCRIPT}`/../.."
-	INSTALL_DIR=`/usr/bin/readlink -f $INSTALL_DIR`
-  RELEASE=`basename $INSTALL_DIR`
-	KERNEL_RELEASE=`uname -r`
-	KERNEL_MODULE=${INSTALL_DIR}/modules/${KERNEL_RELEASE}/xpedite.ko
+  SCRIPT=$(/usr/bin/readlink -f $0)
+  INSTALL_DIR="$(dirname ${SCRIPT})/../.."
+  INSTALL_DIR=$(/usr/bin/readlink -f $INSTALL_DIR)
+  RELEASE=$(basename $INSTALL_DIR)
+  KERNEL_RELEASE=$(uname -r)
+  KERNEL_MODULE=${INSTALL_DIR}/modules/${KERNEL_RELEASE}/xpedite.ko
 
-	# fall back to lsb_release string
-	if [ ! -e ${KERNEL_MODULE} ] ; then
-		echo "Xpedite release ${RELEASE} does not support kernel version ${KERNEL_RELEASE}" 2>&1 ; exit 1
-	fi
-	
+  # fall back to lsb_release string
+  if [ ! -e ${KERNEL_MODULE} ] ; then
+          echo "Xpedite release ${RELEASE} does not support kernel version ${KERNEL_RELEASE}" 2>&1 ; exit 1
+  fi
+  
   if [ -e /proc/sys/kernel/nmi_watchdog ]; then
-    WATCH_DOG_ALIVE=`cat /proc/sys/kernel/nmi_watchdog`
+    WATCH_DOG_ALIVE=$(cat /proc/sys/kernel/nmi_watchdog)
     if [ $WATCH_DOG_ALIVE != "0" ]; then
       cat << EOM
         usage of watchdog NMI interrupts can interfere with Xpedite use of performance coutners.
@@ -43,25 +43,25 @@ EOM
     fi
   fi
 
-	if [ -e '/sys/module/xpedite' ]; then
-		if [ ${FORCE} -eq 1 ] ; then
-			echo Xpedite moule already loaded, force reloading ...
-			/sbin/rmmod xpedite.ko
-		else
-			echo Xpedite kernel module already loaded
-			exit 2
-		fi
-	fi
-	
-	if /sbin/insmod ${KERNEL_MODULE}; then
-		echo Xpedite kernel module loaded successfully
+  if [ -e '/sys/module/xpedite' ]; then
+    if [ ${FORCE} -eq 1 ] ; then
+      echo Xpedite moule already loaded, force reloading ...
+      /sbin/rmmod xpedite.ko
+    else
+      echo Xpedite kernel module already loaded
+      exit 2
+    fi
+  fi
+  
+  if /sbin/insmod ${KERNEL_MODULE}; then
+    echo Xpedite kernel module loaded successfully
     if [ -e /dev/xpedite ]; then
       chmod 666 /dev/xpedite
     fi
-	else
-		echo Failed to load Xpedite kernel module 2>&1
-		exit 2
-	fi
+  else
+    echo Failed to load Xpedite kernel module 2>&1
+    exit 2
+  fi
 }
 
 function usage() {
@@ -77,7 +77,7 @@ EOM
 exit 1
 }
 
-ARGS=`getopt -o vluf --long verbose,load,unload,force -- "$@"`
+ARGS=$(getopt -o vluf --long verbose,load,unload,force -- "$@")
 if [ $? -ne 0 -o $# -le 0 ]; then
   usage
 fi
