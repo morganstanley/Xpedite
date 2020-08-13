@@ -81,7 +81,7 @@ function createVisualization(json) {
 
   // Get total size of the tree = value of root node from partition.
   totalSize = path.node().__data__.value;
- };
+ }
 
 // Fade all but the current sequence, and show it in the breadcrumb trail.
 function mouseover(d) {

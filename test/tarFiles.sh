@@ -7,14 +7,14 @@
 #
 #############################################################################
 
-TEST_DIR=`dirname $0`
+TEST_DIR=$(dirname $0)
 PYTEST_DIR=${TEST_DIR}/pytest
 PY_VERSION=$(python -c 'import sys; print(sys.version_info[:][0])')
 DATA_DIR=test_xpedite/dataPy${PY_VERSION}
 
 source ${TEST_DIR}/.testrc
 
-SAMPLES_LOADER=`fullPath ${TEST_DIR}/../install/bin/xpediteSamplesLoader`
+SAMPLES_LOADER=$(fullPath ${TEST_DIR}/../install/bin/xpediteSamplesLoader)
 
 function usage() {
 cat << EOM
@@ -47,8 +47,8 @@ function unzipFiles() {
 }
 
 function zipProfilerFiles() {
-  FILE_PATH=`fullPath ${PYTEST_DIR}`
-  TEST_DIR_PATH=`fullPath ${TEST_DIR}`
+  FILE_PATH=$(fullPath ${PYTEST_DIR})
+  TEST_DIR_PATH=$(fullPath ${TEST_DIR})
   find $1 -name "*.pyc" -type f -delete
   for a in "${APPS[@]}"; do
     for s in "${SCENARIOS[@]}"; do
@@ -74,14 +74,14 @@ function createManifest() {
   MANIFEST_PATH=${TEST_DIR_PATH}/pytest/${DATA_DIR}/${2}Manifest.csv
   rm ${MANIFEST_PATH}
   echo "file name, size, lines" >> ${MANIFEST_PATH}
-  for FILE in `find ${2} -type f | sort`; do
+  for FILE in $(find ${2} -type f | sort); do
     FULL_PATH=$1/${FILE}
     echo -n "${FILE}," >> ${MANIFEST_PATH}
-    echo -n "`wc -c < ${FULL_PATH}`," >> ${MANIFEST_PATH}
+    echo -n "$(wc -c < ${FULL_PATH})," >> ${MANIFEST_PATH}
     if [[ ${FULL_PATH: -5} == ".data" ]]; then
-      echo "`${SAMPLES_LOADER} ${FULL_PATH} | wc -l`" >> ${MANIFEST_PATH}
+      echo "$(${SAMPLES_LOADER} ${FULL_PATH} | wc -l)" >> ${MANIFEST_PATH}
     else
-      echo "`wc -l < ${FULL_PATH}`" >> ${MANIFEST_PATH}
+      echo "$(wc -l < ${FULL_PATH})" >> ${MANIFEST_PATH}
     fi
   done
 }

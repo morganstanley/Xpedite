@@ -10,6 +10,7 @@ Author: Brooke Elizabeth Cantwell, Morgan Stanley
 import os
 import logging
 import datetime
+import types
 
 LOG_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'conf.ini')
 
@@ -58,8 +59,7 @@ class ConsoleFormatter(logging.Formatter):
     ConsoleFormatter.lineCount += 1
     if record.levelname in self.textColor:
       return colored(msg, self.textColor[record.levelname])
-    else:
-      return msg
+    return msg
 
 class FileFormatter(logging.Formatter):
   """Format log messages to write to log file"""
@@ -86,7 +86,6 @@ class ConsoleHandler(logging.StreamHandler):
   def emit(self, record):
     """Create a custom emit method to get rid of newlines in log messages"""
     try:
-      import types # pylint: disable=relative-import
       msg = self.format(record)
       if not hasattr(types, 'UnicodeType'):
         self.stream.write(msg)

@@ -9,7 +9,7 @@
 
 PROGRAM_NAME=$0
 
-TEST_DIR=`dirname $0`
+TEST_DIR=$(dirname $0)
 PYTEST_DIR=${TEST_DIR}/pytest
 XPEDITE_DIR=${TEST_DIR}/../scripts/lib
 
@@ -79,20 +79,19 @@ exit 1
 
 function rsyncSource() {
   SRC_DIR=${TEST_DIR}/../../../../..
-  SRC_PATH=`readlink -f ${SRC_DIR}`
+  SRC_PATH=$(readlink -f ${SRC_DIR})
   DEST_DIR=${SRC_DIR}/..
-  DEST_PATH=`readlink -f ${DEST_DIR}`
+  DEST_PATH=$(readlink -f ${DEST_DIR})
 
   if ! doesDirectoryExist $1 ${SRC_PATH}; then
     echo "_____________________________"
     echo "rsyncing to host $1 ..."
     echo "_____________________________"
-    rsync -avz ${SRC_PATH} $1:${DEST_PATH}
-  fi
-
-  if [ "$?" -ne "0" ]; then
-    "failed to rsync Xpedite source files"
-    exit 1
+    
+    if ! rsync -avz ${SRC_PATH} $1:${DEST_PATH}; then
+      echo "failed to rsync xpedite source files ..."
+      exit 1
+    fi
   fi
 }
 
@@ -105,7 +104,7 @@ function doesDirectoryExist() {
 }
 
 function runPytests() {
-  RUN_DIR=`mktemp -d`
+  RUN_DIR=$(mktemp -d)
 
   if [ "$?" -ne "0" ]; then
     "failed to create temporary directory"
@@ -129,24 +128,23 @@ function runPytests() {
     SCENARIO_TYPES="--scenarioTypes=Regular,Benchmark,PMC"
   fi
 
-  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES} ${RECORD_PMC}
-
-  if [ $? -ne 0 ]; then
+  PYTEST_ARGS="${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES} ${RECORD_PMC}"
+  if ! PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${PYTEST_ARGS}; then
     echo detected one or more pytest failures
-    RC=`expr $RC + 1`
+    RC=$(($RC + 1))
   fi
 }
 
 function runLint() {
-  pylint --rcfile ${XPEDITE_DIR}/../.pylintrc ${XPEDITE_DIR}/xpedite
-  if [ $? -ne 0 ]; then
+  
+  if ! pylint --rcfile ${XPEDITE_DIR}/../.pylintrc ${XPEDITE_DIR}/xpedite; then
     echo detected pylint violations
-    RC=`expr $RC + 1`
+    RC=$(($RC + 1))
   fi
-  PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pylint --rcfile ${XPEDITE_DIR}/../.pylintrc ${PYTEST_DIR}/test_xpedite
-  if [ $? -ne 0 ]; then
+  
+  if ! PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pylint --rcfile ${XPEDITE_DIR}/../.pylintrc ${PYTEST_DIR}/test_xpedite; then
     echo detected pylint violations
-    RC=`expr $RC + 1`
+    RC=$(($RC + 1))
   fi
 
 }
@@ -163,10 +161,9 @@ function runGtests() {
     FILTER=--gtest_filter="-PMC*Test.*"
   fi
 
-  ${TEST_APP} $FILTER
-  if [ $? -ne 0 ]; then
+  if ! ${TEST_APP} $FILTER; then
     echo detected failure of one or more gtests
-    RC=`expr $RC + 1`
+    RC=$(($RC + 1))
   fi
 }
 
@@ -176,7 +173,7 @@ function runAllTests() {
   runPytests
 }
 
-ARGS=`getopt -o lgpw:cr:s:t:m:a:S:P --long lint,gtest,pytest,workspace,cov,remote:,test:,transactions:,multithreaded:,apps:,scenarioTypes:recordPMC -- "$@"`
+ARGS=$(getopt -o lgpw:cr:s:t:m:a:S:P --long lint,gtest,pytest,workspace,cov,remote:,test:,transactions:,multithreaded:,apps:,scenarioTypes:recordPMC -- "$@")
 
 if [ $? -ne 0 ]; then
   usage

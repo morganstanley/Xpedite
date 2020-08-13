@@ -21,7 +21,7 @@ EOM
 exit 1
 }
 
-ARGS=`getopt -o vp --long verbose,enablePMU -- "$@"`
+ARGS=$(getopt -o vp --long verbose,enablePMU -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -41,7 +41,7 @@ while true ; do
   esac
 done
 
-XPEDITE_DIR=`dirname $0`
+XPEDITE_DIR=$(dirname $0)
 
 VENV_CMD=virtualenv
 
@@ -53,16 +53,14 @@ if ! type ${VENV_CMD} >/dev/null 2>&1; then
   fi
 fi
 
-${VENV_CMD} ${XPEDITE_DIR}/install/runtime
-if [ $? -ne 0 ]; then
+if ! ${VENV_CMD} ${XPEDITE_DIR}/install/runtime; then
   echo failed to create virtual environment ...
   exit 1
 fi
 
 RUNTIME_DIR=${XPEDITE_DIR}/install/runtime/bin
-
-${RUNTIME_DIR}/python -m pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install -r ${XPEDITE_DIR}/scripts/lib/xpedite/requirements.txt
-if [ $? -ne 0 ]; then
+REQUIREMENTS=${XPEDITE_DIR}/scripts/lib/xpedite/requirements.txt
+if ! ${RUNTIME_DIR}/python -m pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install -r ${REQUIREMENTS}; then
   echo failed to install python dependencies...
   exit 1
 fi
@@ -74,8 +72,7 @@ if [ ${ENABLE_PMU} -eq 1 ]; then
     echo 'downloading uarch spec and topdown metrics ...'
   fi
   #Download uarch spec database and pmu js
-  $XPEDITE_DIR/scripts/bin/xpedite list >/dev/null 2>&1 
-  if [ $? -ne 0 ]; then
+  if ! ${RUNTIME_DIR}/python $XPEDITE_DIR/scripts/bin/xpedite list >/dev/null 2>&1; then
     echo failed to install micro architecture spec files
   fi
 fi
