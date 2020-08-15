@@ -22,8 +22,6 @@ DEPENDENCY_LOADER.load(Package.Six)
 
 LOGGER = logging.getLogger(__name__)
 
-BENCHMARK_DIR_NAME = 'benchmark'
-
 def makeBenchmark(profiles, path):
   """
   Persists profiles to the file system for future benchmarking
@@ -33,9 +31,8 @@ def makeBenchmark(profiles, path):
 
   """
   benchmarkName = os.path.basename(path)
-  path = os.path.join(path, BENCHMARK_DIR_NAME)
-  if os.path.exists(path):
-    raise Exception('Failed to make benchmark - path {} already exists'.format(path))
+  if not os.path.isdir(path):
+    raise Exception('Failed to make benchmark - path {} not valid'.format(path))
   txnCollection = profiles.transactionRepo.getCurrent()
   samplePath = txnCollection.dataSource.samplePath
   shutil.copytree(samplePath, os.path.join(path, os.path.basename(samplePath)))
@@ -74,13 +71,12 @@ class BenchmarksCollector(object):
       return benchmarks
 
     for i, path in enumerate(self.benchmarkPaths):
-      benchmarkPath = os.path.join(path, BENCHMARK_DIR_NAME)
-      if os.path.isdir(benchmarkPath):
-        info = loadBenchmarkInfo(benchmarkPath)
+      if os.path.isdir(path):
+        info = loadBenchmarkInfo(path)
         if info:
-          (benchmarkName, cpuInfo, path, legend, events) = info
+          (benchmarkName, cpuInfo, legend, events) = info
           benchmark = Benchmark(benchmarkName, cpuInfo, path, legend, events)
-          dataSource = Collector.gatherDataSource(benchmarkPath)
+          dataSource = Collector.gatherDataSource(path)
           if dataSource:
             benchmark.dataSource = dataSource
             benchmarks.append(benchmark)

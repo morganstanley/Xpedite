@@ -188,9 +188,11 @@ class XpediteDormantApp(XpediteApp):
   def __init__(self, name, ip, appInfoPath, runId=None, dataSourcePath=None, workspace=None):
     """Constructs an instance of XpediteDormantApp"""
     dataSource = Collector.gatherDataSource(dataSourcePath) if dataSourcePath else None
-    if dataSource:
-      LOGGER.warn('Data source detected. overriding appinfo to %s', dataSource.appInfoPath)
-      appInfoPath = dataSource.appInfoPath
+    if dataSourcePath  and not dataSource:
+      msg = 'failed to load data source at - {}'.format(dataSourcePath)
+      LOGGER.exception(msg)
+      raise Exception(msg)
+    appInfoPath = dataSource.appInfoPath if dataSource else appInfoPath
     XpediteApp.__init__(self, name, ip, appInfoPath, dryRun=True, workspace=workspace)
     self.dataSource = dataSource
     self.runId = runId

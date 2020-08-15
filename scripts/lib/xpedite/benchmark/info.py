@@ -86,5 +86,5 @@ def loadBenchmarkInfo(path):
         eventStr = configParser.get(BENCHMARK_PMC_SECTION, BENCHMARK_PMC_COUNTER.format(i))
         eventFields = eventStr.split(',')
         events.append(Event(eventFields[0], eventFields[1], bool(eventFields[2]), bool(eventFields[3])))
-    return (benchmarkName, cpuInfo, path, legend, events)
+    return (benchmarkName, cpuInfo, legend, events)
   return None
