@@ -41,12 +41,14 @@ def uarchSpecPath():
 
 def manifestFilePath():
   """Returns path to mainifest of known micro architecture specifications"""
-  return os.path.join(uarchSpecPath(), CONFIG.manifestFileName)
+  return os.path.normpath(os.path.join(os.path.dirname(__file__), 'data', CONFIG.manifestFileName))
 
 def makeUarchSpecDir():
   """Creates a directory for storing micro architecture specifications"""
   from xpedite.util import mkdir, touch
   path = uarchSpecPath()
+  if os.path.exists(path):
+    return path
   try:
     mkdir(path, clean=True)
   except OSError:
@@ -70,42 +72,52 @@ def downloadFile(url, path):
     with open(path, 'w') as fileHandle:
       fileHandle.write(six.ensure_str(data))
     return True
-  except urllib.error.HTTPError as ex:
+  except urllib.error.HTTPError:
     LOGGER.exception('failed to retrieve file "%s" from url - %s', os.path.basename(path), url)
-    raise Exception(ex)
   except IOError:
     LOGGER.exception('failed to open file - %s', path)
 
 def downloadManifest():
   """ Downloads manifest for all known micro architecture specifications from internet"""
-  return makeUarchSpecDir() and downloadFile(CONFIG.uarchSpecRepoUrl + CONFIG.manifestFileName, manifestFilePath())
+  return downloadFile(CONFIG.uarchSpecRepoUrl + CONFIG.manifestFileName, manifestFilePath())
 
 def downloadUarchSpec(uarchSpec):
   """
-  Downloads specifications and topdown metrics for a cpu micro architecture
+  Downloads uarc specifications for a cpu micro architecture
 
   :param uarchSpec: Name of the cpu micro architecture
   """
   from xpedite.util import mkdir
   begin = time.time()
   LOGGER.info('\tdownloading uarch spec for %s -> ', uarchSpec.name)
-  path = os.path.join(uarchSpecPath(), uarchSpec.name)
+  path = os.path.dirname(uarchSpec.coreEventsDbFile)
   mkdir(path)
   url = '{}{}/{}'.format(CONFIG.uarchSpecRepoUrl, uarchSpec.name, os.path.basename(uarchSpec.coreEventsDbFile))
   rc = downloadFile(url, os.path.join(path, uarchSpec.coreEventsDbFile))
   elapsed = time.time() - begin
-  LOGGER.completed('completed in %0.2f sec.', elapsed)
-  if rc:
-    ratiosModuleName = TOPDOWN_RATIOS_MODULES.get(uarchSpec.name)
-    if ratiosModuleName:
-      url = '{}{}'.format(CONFIG.topdownRatiosRepoUrl, ratiosModuleName)
-      LOGGER.info('\tdownloading topdown ratios for %s -> ', uarchSpec.name)
-      begin = time.time()
-      rc = downloadFile(url, os.path.join(path, '__init__.py'))
-      elapsed = time.time() - begin
-      uarchSpec.ratiosModule = ''
-      LOGGER.completed('completed in %0.2f sec.', elapsed)
+  LOGGER.completed('%s in %0.2f sec.', 'completed' if rc else ' --> failed', elapsed)
   return rc
+
+def downloadtopdownMetrics(uarchSpec):
+  """
+  Downloads topdown metrics for a cpu micro architecture
+
+  :param uarchSpec: Name of the cpu micro architecture
+  """
+  from xpedite.util import mkdir
+  ratiosModuleName = TOPDOWN_RATIOS_MODULES.get(uarchSpec.name)
+  path = os.path.join(uarchSpecPath(), uarchSpec.name)
+  if ratiosModuleName and not os.path.exists(path):
+    mkdir(path)
+    url = '{}{}'.format(CONFIG.topdownRatiosRepoUrl, ratiosModuleName)
+    LOGGER.info('\tdownloading topdown ratios for %s -> ', uarchSpec.name)
+    begin = time.time()
+    rc = downloadFile(url, os.path.join(path, '__init__.py'))
+    elapsed = time.time() - begin
+    uarchSpec.ratiosModule = ''
+    LOGGER.completed('completed in %0.2f sec.', elapsed)
+    return rc
+  return None
 
 def downloadUarchSpecDb(uarchSpecDb):
   """
@@ -115,12 +127,14 @@ def downloadUarchSpecDb(uarchSpecDb):
 
   """
   onceFlag = False
+  makeUarchSpecDir()
   for _, uarchSpec in uarchSpecDb.items():
     if not os.path.exists(uarchSpec.coreEventsDbFile):
       if not onceFlag:
         LOGGER.info('syncing uarch spec database for %d micro architectures', len(uarchSpecDb))
         onceFlag = True
       downloadUarchSpec(uarchSpec)
+    downloadtopdownMetrics(uarchSpec)
 
 def loadUarchSpecDb():
   """Loads specifications for all known cpu micro architectures"""

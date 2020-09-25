@@ -37,10 +37,11 @@ installPath = os.path.dirname(os.path.abspath(__file__))
 profileInfoTemplate = os.path.dirname(installPath) + '/lib/examples/profileInfo.py'
 profileInfoHelp = 'path to the profile info (check "{}" for sample template)'.format(profileInfoTemplate)
 
-def _loadPerfEventsDb():
+def _loadPerfEventsDb(cpuId=None):
   from xpedite.pmu.eventsDb import loadEventsDb
   from xpedite.util import getCpuId
-  return loadEventsDb(getCpuId())
+  cpuId = cpuId if cpuId else getCpuId()
+  return loadEventsDb(cpuId)
 
 def _loadDriver(name = None):
   import signal
@@ -190,17 +191,28 @@ class FrameworkController(ArgparseController):
     driver = _loadDriver(self.app.pargs.driver)
     driver.render(profileInfo, report, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
-  @expose(help='List the NON Archtectural hardware performance counters, that can be profiled with xpedite')
+  @expose(
+    arguments=[
+      (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
+    ],
+    help='List the NON Archtectural hardware performance counters, that can be profiled with xpedite'
+  )
   def list(self):
-    eventsDb = _loadPerfEventsDb()
+    eventsDb = _loadPerfEventsDb(self.app.pargs.cpuId)
     for n, e in eventsDb.eventsMap.items():
       LOGGER.info(e)
     LOGGER.info('')
 
-  @expose(help='List the metrics, for bottleneck analysis with xpedite')
+  @expose(
+    arguments=[
+      (['-n', '--node'], dict(action='store', help='list pmu events for node - enter "all" to list events for all nodes')),
+      (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
+    ],
+    help='List the metrics, for bottleneck analysis with xpedite'
+  )
   def metrics(self):
     from xpedite.pmu.topdown import Topdown
-    topdown = Topdown(_loadPerfEventsDb())
+    topdown = Topdown(_loadPerfEventsDb(self.app.pargs.cpuId))
     for n, m in topdown.metrics().items():
       LOGGER.info('%s', topdown.metricsToString(n))
     LOGGER.info('')
@@ -208,12 +220,13 @@ class FrameworkController(ArgparseController):
   @expose(
     arguments=[
       (['-n', '--node'], dict(action='store', help='list pmu events for node - enter "all" to list events for all nodes')),
+      (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
     ],
     help='List the top down hierarchy data, for bottleneck analysis with xpedite'
   )
   def topdown(self):
     from xpedite.pmu.topdown import Topdown
-    topdown = Topdown(_loadPerfEventsDb())
+    topdown = Topdown(_loadPerfEventsDb(self.app.pargs.cpuId))
     if self.app.pargs.node:
       value = topdown.nodesToString(self.app.pargs.node)
       LOGGER.info('%s\n', value if value else 

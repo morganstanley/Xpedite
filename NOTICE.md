@@ -103,3 +103,10 @@ javassist
 https://github.com/jboss-javassist/javassist/blob/master/License.html
 
 Copyright (C) 1999- Shigeru Chiba. All Rights Reserved
+
+perfmon
+==========
+
+https://download.01.org/perfmon/readme.txt
+
+Copyright (C) 2018 Intel Corporation

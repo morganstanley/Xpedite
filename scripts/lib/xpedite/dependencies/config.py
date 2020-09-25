@@ -17,8 +17,8 @@ class Config(object):
     self.uarchSpecPath = config.get('uarchSpecPath', '/var/tmp/xpedite')
     self.uarchSpecRepoUrl = config.get('uarchSpecRepoUrl', 'https://download.01.org/perfmon/')
     self.manifestFileName = config.get('manifestFileName', 'mapfile.csv')
-    self.topdownRatiosRepoUrl = config.get(
-      'topdownRatiosRepoUrl', 'https://raw.githubusercontent.com/andikleen/pmu-tools/master/'
+    self.topdownRatiosRepoUrl = config.get('topdownRatiosRepoUrl',
+      'https://raw.githubusercontent.com/andikleen/pmu-tools/fb31659420632cc1d337662c3cedcc5d6a129969/'
     )
     self.sslContext = config.get('sslContext', buildDefaultContext())
 
