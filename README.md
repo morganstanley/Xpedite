@@ -1,7 +1,6 @@
 [![Apache License](https://img.shields.io/badge/license-Apache-yellow.svg)](https://raw.githubusercontent.com/Morgan-Stanley/Xpedite/master/LICENSE.md)
-[![Build Status](https://travis-ci.org/Morgan-Stanley/Xpedite.svg?branch=master)](https://travis-ci.org/Morgan-Stanley/Xpedite)
-[![codecov](https://codecov.io/gh/Morgan-Stanley/Xpedite/branch/master/graph/badge.svg)](https://codecov.io/gh/Morgan-Stanley/Xpedite)
-[![CodeFactor](https://www.codefactor.io/repository/github/morgan-stanley/xpedite/badge)](https://www.codefactor.io/repository/github/morgan-stanley/xpedite)
+[![Build Status](https://travis-ci.org/Morgan-Stanley/Xpedite.svg?branch=master)](https://travis-ci.com/MorganStanley/Xpedite)
+[![codecov](https://codecov.io/gh/morganstanley/Xpedite/branch/main/graph/badge.svg?token=25wU3VJLky)](https://codecov.io/gh/MorganStanley/Xpedite)
 
 # Xpedite
 
