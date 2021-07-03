@@ -37,9 +37,9 @@ probes = [
 pmc = None
 if os.environ.get('XPEDITE_DEMO_PMC'):
   pmc = [
-    TopdownNode('Root'),          # top down analysis for Root node of the hierarchy
+    #TopdownNode('Root'),          # top down analysis for Root node of the hierarchy
     Metric('IPC'),               # computer instructions retired per cycle mertric
-    Event('LLC Miss',            'LONGEST_LAT_CACHE.MISS'),
+    #Event('LLC Miss',            'LONGEST_LAT_CACHE.MISS'),
   ]
 
 #List of cpu, where the harware performance counters will be enabled

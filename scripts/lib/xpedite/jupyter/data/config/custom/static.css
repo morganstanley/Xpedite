@@ -91,13 +91,6 @@ table > thead > tr > th:last-child {
   width: 700px;
 }
 
-#xpedite-report .xpedite-tab-pane .tableSummary, #xpedite-report .xpedite-tab-content .envInfoBody {
-  border-top: 1px solid #d78787;
-  margin-top: -1px;
-  z-index: -1;
-  position: relative;
-}
-
 .xpedite-tabs-panel li.active {
   background: #262626;
 }
