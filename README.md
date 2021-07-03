@@ -1,5 +1,5 @@
 [![Apache License](https://img.shields.io/badge/license-Apache-yellow.svg)](https://raw.githubusercontent.com/Morgan-Stanley/Xpedite/master/LICENSE.md)
-[![Build Status](https://travis-ci.com/morganstanley/Xpedite.svg?branch=main)](https://travis-ci.com/MorganStanley/Xpedite)
+[![Build Status](https://github.com/morganstanley/Xpedite/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/morganstanley/Xpedite/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/morganstanley/Xpedite/branch/main/graph/badge.svg?token=25wU3VJLky)](https://codecov.io/gh/MorganStanley/Xpedite)
 
 # Xpedite

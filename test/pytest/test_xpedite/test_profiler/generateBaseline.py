@@ -29,7 +29,7 @@ from test_xpedite.test_profiler.context   import Context
 from test_xpedite.test_profiler.scenario  import ScenarioLoader, ScenarioType
 from xpedite.dependencies                 import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Six)
-import six.moves.cPickle as pickle # pylint: disable=wrong-import-position
+from six.moves import cPickle as pickle # pylint: disable=wrong-import-position
 
 BENCHMARK = 'benchmark'
 BENCHMARK_APP_INFO_PATH = os.path.join(BENCHMARK, 'appinfo.txt')

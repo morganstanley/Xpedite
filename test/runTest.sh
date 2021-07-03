@@ -244,10 +244,11 @@ while true ; do
 done
 
 RC=0
+RUNTIME_DIR=${TEST_DIR}/../install/runtime
 
-if [ -d ${TEST_DIR}/../install/runtime/bin ]; then
-  echo detected virtual environment. resolving python dependencies from ${TEST_DIR}/../install/runtime/bin
-  export PATH=${TEST_DIR}/../install/runtime/bin:${PATH}
+if [ -d ${RUNTIME_DIR}/bin ]; then
+  echo detected virtual environment. resolving python dependencies from ${RUNTIME_DIR}/bin
+  export PATH=${RUNTIME_DIR}/bin:${PATH}
   python -m pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install pytest pylint pytest-cov
 fi
 
