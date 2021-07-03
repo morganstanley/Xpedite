@@ -27,8 +27,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo apt install -y libgtest-dev libunwind-dev libdwarf-dev binutils-dev
-
+          sudo apt install -y libgtest-dev libunwind-dev libdwarf-dev binutils-dev virtualenv
+          
       - name: Configure
         run: |
           sudo sh -c 'echo -1 >/proc/sys/kernel/perf_event_paranoid'
