@@ -73,7 +73,7 @@ class ExpectedResultFiles(object):
     """
     Load files with expected results for comparison
     """
-    import six.moves.cPickle as pickle
+    from six.moves import cPickle as pickle
     from xpedite.jupyter.xpediteData    import XpediteDataReader
     with open(os.path.join(dataDir, PROBE_CMD_BASELINE_PATH), 'rb') as probeFileHandle:
       self.baselineProbeMap = pickle.load(probeFileHandle) # pylint: disable=c-extension-no-member
