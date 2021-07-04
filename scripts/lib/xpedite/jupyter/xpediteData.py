@@ -41,6 +41,7 @@ class XpediteDataReader(object):
 
   def openFile(self):
     """Opens a xpedite data file"""
+    #pylint: disable=consider-using-with
     self.binFile = open(self.dataFile, 'rb')
 
   def closeFile(self):

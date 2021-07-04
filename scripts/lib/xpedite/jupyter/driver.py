@@ -66,7 +66,7 @@ def buildD3Flot(cell):
     d3Flot.xAxisValues.append(tick[0])
     d3Flot.xAxisLabels.append(tick[1])
   for coord in range(0, len(cell.flot.data[0]['data'])):
-    for run in range(0, len(cell.flot.data)):
+    for run, _ in enumerate(cell.flot.data):
       xyCoord = {}
       xyCoord['x'] = cell.flot.data[run]['data'][coord][0]
       xyCoord['y'] = cell.flot.data[run]['data'][coord][1]

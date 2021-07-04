@@ -47,7 +47,7 @@ class TreeCollection(object):
       :param subCollection: subcollection for the child node
 
       """
-      ancestry = [anc for anc in self.ancestry]
+      ancestry = list(self.ancestry)
       ancestry.append(name)
       child = TreeCollection.Node(subCollection, ancestry)
       self.children.update({name : child})
@@ -151,7 +151,7 @@ class CompositeTreeCollection(object):
         if childName in self.children:
           compositeChild = self.children[childName]
         else:
-          ancestry = [anc for anc in self.ancestry]
+          ancestry = list(self.ancestry)
           ancestry.append(childName)
           compositeChild = CompositeTreeCollection.CompositeNode(ancestry)
           self.children.update({childName : compositeChild})

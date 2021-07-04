@@ -79,6 +79,6 @@ class TxnCollection(object):
     return rep
 
   def __eq__(self, other):
-    selfDict = dict((k, val) for k, val in self.__dict__.items() if k != 'repo' and k != 'dataSource')
-    otherDict = dict((k, val) for k, val in other.__dict__.items() if k != 'repo' and k != 'dataSource')
+    selfDict = dict((k, val) for k, val in self.__dict__.items() if k not in ('repo', 'dataSource'))
+    otherDict = dict((k, val) for k, val in other.__dict__.items() if k not in ('repo', 'dataSource'))
     return selfDict == otherDict

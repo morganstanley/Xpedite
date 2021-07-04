@@ -32,7 +32,7 @@ class NodeFormatter(object):
     delimiter = '-'*60
     eventsStr = ''
     for node in nodes:
-      header = '\n{} events for node {} {}'.format(delimiter, node.name, delimiter)
+      header = '\n{0} events for node {1} {0}'.format(delimiter, node.name)
       headerLen = len(header)
       eventsStr += header
       eventsStr += NodeFormatter.eventsToString(node.events)

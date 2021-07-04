@@ -326,7 +326,7 @@ class Hierarchy(object):
     hierarchyStr = 'metrics [{}]\n'.format(', '.join(self.metrics.keys()))
     hierarchyTreeStr = self._toString([self.root])
     line = '\n{}'.format(('=' * 90))
-    hierarchyStr += '{}\nTop down pmu hierarchy{}{}\n{}'.format(line, line, hierarchyTreeStr, line)
+    hierarchyStr += '{0}\nTop down pmu hierarchy{0}{1}\n{0}'.format(line, hierarchyTreeStr)
     return hierarchyStr
 
 class TopdownValue(object):

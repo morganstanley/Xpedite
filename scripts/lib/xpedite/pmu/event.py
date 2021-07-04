@@ -132,8 +132,8 @@ class TopdownMetrics(object):
   def __eq__(self, other):
     if other:
       return (
-        set([node.name for node in self.nodes]) == set([node.name for node in other.nodes]) and
-        set([metric.name for metric in self.metrics]) == set([metric.name for metric in other.metrics])
+        {node.name for node in self.nodes} == {node.name for node in other.nodes} and
+        {metric.name for metric in self.metrics} == {metric.name for metric in other.metrics}
       )
     return False
 

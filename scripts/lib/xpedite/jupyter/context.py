@@ -36,6 +36,7 @@ class Context(object):
     self._profiles = None
     self.profileState = None
     self.txn = None
+    #pylint: disable=consider-using-with
     self.executor = futures.ThreadPoolExecutor(max_workers=1)
     self.dataFile = None
     self.errMsg = None

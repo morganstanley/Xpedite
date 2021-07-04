@@ -64,6 +64,8 @@ class Extractor(object):
       iterBegin = begin = time.time()
       loader.beginLoad(threadId, tlsAddr)
       inflateFd = self.openInflateFile(samplePath, threadId, tlsAddr)
+
+      #pylint: disable=consider-using-with
       extractor = subprocess.Popen([self.samplesLoader, filePath],
         bufsize=2*1024*1024, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
       recordCount = 0
@@ -145,6 +147,7 @@ class Extractor(object):
     path = os.path.join(dataSourcePath, '{}-{}'.format(threadId, tlsAddr))
     mkdir(path)
     filePath = os.path.join(path, 'samples-0000.csv')
+    #pylint: disable=consider-using-with
     return open(filePath, 'w')
 
   def extractThreadInfo(self, samplesFile):
