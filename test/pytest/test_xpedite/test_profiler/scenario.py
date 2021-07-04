@@ -17,6 +17,9 @@ Author: Brooke Elizabeth Cantwell, Morgan Stanley
 
 import os
 import json
+import time
+import logging
+import logging.config
 from xpedite.dependencies               import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Enum)
 DEPENDENCY_LOADER.load(Package.Rpyc)
@@ -35,7 +38,10 @@ from test_xpedite                       import (
                                         )
 from test_xpedite.test_profiler.profile import validateBenchmarks
 from xpedite.jupyter                    import PROFILES_KEY
+from logger                             import LOG_CONFIG_PATH
 
+logging.config.fileConfig(LOG_CONFIG_PATH)
+LOGGER = logging.getLogger('xpedite')
 
 class ScenarioType(Enum):
   """Scenarios used in testing"""
@@ -91,6 +97,7 @@ class Scenario(object):
     """
     self.tempDir = None
     self.parameters = None
+    self.beginTime = None
     self.name = name
     self.remote = remote
     self.scenarioType = scenarioType
@@ -105,16 +112,20 @@ class Scenario(object):
     """
     Enter scenario object and create a temporary directory
     """
+    self.beginTime = time.time()
     self._mkdtemp()
     self.parameters = ParameterFiles(self.dataDir, self.tempDir, self.remote)
     if self.expectedResult and self.benchmarkPaths:
       validateBenchmarks(self.baselineProfiles, len(self.benchmarkPaths))
+    LOGGER.info('Running scenario %s | applog - %s\n', self.name, self.tempDir)
     return self
 
   def __exit__(self, excType, excVal, excTb):
     """
     Clean up temporary directories when exiting a scenario
     """
+    elapsed = time.time() - self.beginTime
+    LOGGER.completed('Running scenario %s completed in %0.2f sec.', self.name, elapsed)
 
   def makeTargetApp(self, context):
     """
