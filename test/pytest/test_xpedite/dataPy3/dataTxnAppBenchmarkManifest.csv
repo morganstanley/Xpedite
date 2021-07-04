@@ -1,11 +1,11 @@
 file name, size, lines
-dataTxnAppBenchmark/benchmark/.benchmark,139,8
-dataTxnAppBenchmark/benchmark/1566426538/14368-00002ad7fea51f60/samples-0000.csv,999648,22529
-dataTxnAppBenchmark/benchmark/appinfo.txt,8208,34
-dataTxnAppBenchmark/expectedResults/generateCmdBaseline.py,5834,118
-dataTxnAppBenchmark/expectedResults/probeCmdBaseline.pkl,2515,26
-dataTxnAppBenchmark/expectedResults/reportCmdBaseline.xpd,7337208,6172
-dataTxnAppBenchmark/parameters/baselineCpuInfo.json,1375,0
-dataTxnAppBenchmark/parameters/data/xpedite-dataTxnApp-1566426542-14372-00002b649031bf60.data,656240,22529
+dataTxnAppBenchmark/benchmark/1625372178/2542408-00007f298f203c00/samples-0000.csv,999648,22529
+dataTxnAppBenchmark/benchmark/appinfo.txt,8210,34
+dataTxnAppBenchmark/benchmark/.benchmark,141,8
+dataTxnAppBenchmark/expectedResults/generateCmdBaseline.py,5831,118
+dataTxnAppBenchmark/expectedResults/probeCmdBaseline.pkl,2238,23
+dataTxnAppBenchmark/expectedResults/reportCmdBaseline.xpd,7205410,9446
+dataTxnAppBenchmark/parameters/baselineCpuInfo.json,2064,0
+dataTxnAppBenchmark/parameters/data/xpedite-dataTxnApp-1625372183-2542468-00007fc0d19c4c00.data,656240,22529
 dataTxnAppBenchmark/parameters/profileInfo.py,974,22
-dataTxnAppBenchmark/parameters/xpedite-appinfo.txt,8208,34
+dataTxnAppBenchmark/parameters/xpedite-appinfo.txt,8210,34

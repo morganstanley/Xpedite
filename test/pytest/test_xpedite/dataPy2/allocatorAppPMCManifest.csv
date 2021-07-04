@@ -1,8 +1,8 @@
 file name, size, lines
 allocatorAppPMC/expectedResults/generateCmdBaseline.py,5547,118
-allocatorAppPMC/expectedResults/probeCmdBaseline.pkl,4483,815
-allocatorAppPMC/expectedResults/reportCmdBaseline.xpd,21434281,743337
-allocatorAppPMC/parameters/baselineCpuInfo.json,1375,0
-allocatorAppPMC/parameters/data/xpedite-allocatorApp-1601134308-77513-00002af99b9fdfa0.data,1967600,24577
-allocatorAppPMC/parameters/profileInfo.py,1333,31
-allocatorAppPMC/parameters/xpedite-appinfo.txt,9638,34
+allocatorAppPMC/expectedResults/probeCmdBaseline.pkl,4287,815
+allocatorAppPMC/expectedResults/reportCmdBaseline.xpd,19475420,171490
+allocatorAppPMC/parameters/baselineCpuInfo.json,2065,0
+allocatorAppPMC/parameters/data/xpedite-allocatorApp-1625372572-2548363-00007f0590842c40.data,1623344,22529
+allocatorAppPMC/parameters/profileInfo.py,1286,30
+allocatorAppPMC/parameters/xpedite-appinfo.txt,8140,34
