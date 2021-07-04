@@ -191,13 +191,13 @@ class Conflator(object):
       srcTp = srcTimePoints[begin]
       dstTp = TimePoint(
         srcTp.name, point=srcTp.point, duration=srcTp.duration, pmcNames=srcTp.pmcNames,
-        deltaPmcs=[pmc for pmc in srcTp.deltaPmcs] if srcTp.deltaPmcs else None,
+        deltaPmcs=list(srcTp.deltaPmcs) if srcTp.deltaPmcs else None,
       )
       for j in range(begin+1, end):
         srcTp = srcTimePoints[j]
         dstTp.duration += srcTp.duration
         if srcTp.deltaPmcs:
-          for k in range(len(srcTp.deltaPmcs)):
+          for k, _ in enumerate(srcTp.deltaPmcs):
             if not math.isnan(srcTp.deltaPmcs[k]):
               dstTp.deltaPmcs[k] += srcTp.deltaPmcs[k]
       if topdownMetrics and dstTp.deltaPmcs:

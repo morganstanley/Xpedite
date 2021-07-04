@@ -31,6 +31,7 @@ class Inflator(object):
 
   def open(self):
     """Open Xpedite archvie file"""
+    #pylint: disable=consider-using-with
     self.archive = tarfile.open(self.archivePath, 'w')
 
   def __enter__(self):
@@ -69,6 +70,7 @@ class Deflator(object):
 
   def open(self):
     """Open Xpedite archvie file"""
+    #pylint: disable=consider-using-with
     self.archive = tarfile.open(self.archivePath)
 
   def __enter__(self):

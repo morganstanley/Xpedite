@@ -57,6 +57,7 @@ def shell(cmd, cwd=None, closeFds=True):
   """
   import subprocess
   if cwd:
+    #pylint: disable=consider-using-with
     process = subprocess.Popen(
       cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd=cwd, close_fds=closeFds
     )
