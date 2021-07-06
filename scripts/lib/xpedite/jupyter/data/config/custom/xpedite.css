@@ -214,6 +214,10 @@ a:focus {
 
 #notebook .xpedite-tab-content > .active, .xpedite-tab-content > .active {
   display: block;
+  border-top: 1px solid #d78787;
+  position: relative;
+  margin-top: -1px;
+  width: 1350px;
 }
 
 .fade {

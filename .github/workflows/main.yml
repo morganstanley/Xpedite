@@ -1,0 +1,65 @@
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [2.7]  # , 3.7 - to be enabled, once the test data is regenerated
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # Capture the version of python runtime
+      - name: Store the Python version
+        run: |
+          python -c "import sys; print('xpedite_python_version=-{}'.format(sys.version_info.major))" >> $GITHUB_ENV
+
+      # Install dependencies for vivify and python tests
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y libgtest-dev libunwind-dev libdwarf-dev binutils-dev virtualenv
+          
+      # Enable perf setting for catputing H/W counters and kernel tracepoints
+      - name: Configure
+        run: |
+          sudo sh -c 'echo -1 >/proc/sys/kernel/perf_event_paranoid'
+
+      # Build and install runtime dependencies
+      - name: Build
+        run: |
+          ./build.sh --withCallStacks --forJava
+          ./install.sh "${{ env.xpedite_python_version }}"
+
+      # Run tests
+      - name: Test
+        run: |
+          ./test/validateTarFiles.sh
+          ./test/runTest.sh -c
+
+      # Upload code coverage statistics
+      - name: Upload code cov report
+        run: |
+          PATH=./install/runtime/bin:${PATH} python -m pip install codecov
+          PATH=./install/runtime/bin:${PATH} codecov

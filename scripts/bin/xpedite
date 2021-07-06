@@ -193,6 +193,16 @@ class FrameworkController(ArgparseController):
 
   @expose(
     arguments=[
+    ],
+    help='Print the CPU info for the current machine'
+  )
+  def cpuInfo(self):
+    from xpedite.util import getCpuId
+    cpuId = getCpuId()
+    LOGGER.info('%s\n', cpuId)
+
+  @expose(
+    arguments=[
       (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
     ],
     help='List the NON Archtectural hardware performance counters, that can be profiled with xpedite'

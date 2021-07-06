@@ -34,19 +34,23 @@ TOPDOWN_RATIOS_MODULES = {
   'KNL': 'knl_ratios.py',
 }
 
-def uarchSpecPath():
-  """Returns filesystem location for storing micro architecture specifications"""
+def topdownPath():
+  """Returns filesystem location for storing topdown modules"""
   from xpedite.pmu.uarchspec import UARCH_SPEC_PKG_NAME
   return os.path.join(CONFIG.uarchSpecPath, 'uarchSpec', UARCH_SPEC_PKG_NAME)
 
+def uarchSpecPath():
+  """Returns filesystem location for storing micro architecture specifications"""
+  return os.path.normpath(os.path.join(os.path.dirname(__file__), 'data'))
+
 def manifestFilePath():
   """Returns path to mainifest of known micro architecture specifications"""
-  return os.path.normpath(os.path.join(os.path.dirname(__file__), 'data', CONFIG.manifestFileName))
+  return os.path.join(uarchSpecPath(), CONFIG.manifestFileName)
 
-def makeUarchSpecDir():
+def makeTopdownDir():
   """Creates a directory for storing micro architecture specifications"""
   from xpedite.util import mkdir, touch
-  path = uarchSpecPath()
+  path = topdownPath()
   if os.path.exists(path):
     return path
   try:
@@ -79,6 +83,8 @@ def downloadFile(url, path):
 
 def downloadManifest():
   """ Downloads manifest for all known micro architecture specifications from internet"""
+  from xpedite.util import mkdir
+  mkdir(os.path.dirname(manifestFilePath()))
   return downloadFile(CONFIG.uarchSpecRepoUrl + CONFIG.manifestFileName, manifestFilePath())
 
 def downloadUarchSpec(uarchSpec):
@@ -106,7 +112,7 @@ def downloadtopdownMetrics(uarchSpec):
   """
   from xpedite.util import mkdir
   ratiosModuleName = TOPDOWN_RATIOS_MODULES.get(uarchSpec.name)
-  path = os.path.join(uarchSpecPath(), uarchSpec.name)
+  path = os.path.join(topdownPath(), uarchSpec.name)
   if ratiosModuleName and not os.path.exists(path):
     mkdir(path)
     url = '{}{}'.format(CONFIG.topdownRatiosRepoUrl, ratiosModuleName)
@@ -127,7 +133,7 @@ def downloadUarchSpecDb(uarchSpecDb):
 
   """
   onceFlag = False
-  makeUarchSpecDir()
+  makeTopdownDir()
   for _, uarchSpec in uarchSpecDb.items():
     if not os.path.exists(uarchSpec.coreEventsDbFile):
       if not onceFlag:
@@ -145,7 +151,7 @@ def loadUarchSpecDb():
   uarchSpecDb = UarchSpecDb(path)
   if uarchSpecDb:
     downloadUarchSpecDb(uarchSpecDb)
-  sys.path.append(os.path.dirname(uarchSpecPath()))
+  sys.path.append(os.path.dirname(topdownPath()))
   return uarchSpecDb
 
 def main():
