@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [2.7]  # , 3.7 - to be enabled, once the test data is regenerated
+        python-version: [2.7, 3.8]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

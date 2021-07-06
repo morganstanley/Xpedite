@@ -9,7 +9,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 import sys
-import imp
+import imp #pylint: disable=deprecated-module
 import logging
 
 LOGGER = logging.getLogger(__name__)

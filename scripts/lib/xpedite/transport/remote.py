@@ -54,6 +54,7 @@ class StdFiles(object):
     self.errPath = os.path.join(directory, 'stderr')
     self.outPath = os.path.join(directory, 'stdout')
 
+    #pylint: disable=consider-using-with
     self.err = open(self.errPath, 'w')
     self.out = open(self.outPath, 'w')
 
@@ -153,6 +154,7 @@ class Remote(object):
     if self.host != 'localhost':
       from xpedite.dependencies import binPath
       ssh = binPath('ssh')
+      #pylint: disable=consider-using-with
       subprocess.Popen([ssh, '-T', '-o', 'StrictHostKeyChecking=no', self.host, 'kill', str(self.pid)]).wait()
     self.std.close()
 

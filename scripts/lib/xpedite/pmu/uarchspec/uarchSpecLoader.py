@@ -71,6 +71,7 @@ def downloadFile(url, path):
   """
   import six
   try:
+    #pylint: disable=consider-using-with
     connection = urllib.request.urlopen(urllib.request.Request(url), context=CONFIG.sslContext)
     data = connection.read()
     with open(path, 'w') as fileHandle:
@@ -80,6 +81,7 @@ def downloadFile(url, path):
     LOGGER.exception('failed to retrieve file "%s" from url - %s', os.path.basename(path), url)
   except IOError:
     LOGGER.exception('failed to open file - %s', path)
+  return None
 
 def downloadManifest():
   """ Downloads manifest for all known micro architecture specifications from internet"""

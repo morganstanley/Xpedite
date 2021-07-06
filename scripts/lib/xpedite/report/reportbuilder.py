@@ -186,8 +186,8 @@ class ReportBuilder(object):
 
     """
     if resultOrder != ResultOrder.Chronological:
-      timelineCollection = [timeline for timeline in timelineCollection]  # make a copy, so we can sort
-      if (resultOrder == ResultOrder.WorstToBest) or (resultOrder == ResultOrder.BestToWorst):
+      timelineCollection = list(timelineCollection)  # make a copy, so we can sort
+      if resultOrder in (ResultOrder.WorstToBest, ResultOrder.BestToWorst):
         timelineCollection = sorted(
           timelineCollection, key=lambda timeline: timeline.endpoint.duration, reverse=(
             resultOrder == ResultOrder.WorstToBest
