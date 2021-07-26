@@ -13,6 +13,7 @@ import sys
 import time
 import logging
 from xpedite.util                        import timeAction
+from xpedite.types                       import RouteConflation
 from xpedite.types.containers            import ProbeMap
 
 from xpedite.dependencies                import Package, DEPENDENCY_LOADER
@@ -74,12 +75,13 @@ class Analytics(object):
     return elapsedTscBundles
 
   @staticmethod
-  def buildTxnTree(txnRepo, txnClassifier):
+  def buildTxnTree(txnRepo, txnClassifier, routeConflation):
     """
     Builds Transaction tree collections for current profile sesssion and benchmarks
 
     :param repo: Repository of transaction collections from current profile session and benchmarks
     :param txnClassifier: Predicate to classify transactions into different categories
+    :param routeConflation: Parameter to control, whether routes can be conflated or not
 
     """
     mustHaveProbes = None
@@ -93,7 +95,8 @@ class Analytics(object):
       txnRepo.getCurrent().name, txnRepo.getCurrent().getSubCollection(), treeClassifiers
     )
 
-    treeClassifiers[1] = RouteConflatingAggregator(txnTree).aggregateTxnsByRoutes
+    if routeConflation == RouteConflation.On:
+      treeClassifiers[1] = RouteConflatingAggregator(txnTree).aggregateTxnsByRoutes
     benchmarkCompositeTree = TreeCollectionFactory.buildCompositeTreeCollection(
       {name : collection.getSubCollection() for name, collection in txnRepo.getBenchmarks().items()},
       treeClassifiers
@@ -124,16 +127,17 @@ class Analytics(object):
       LOGGER.warn('[benchmarks missing category/route]')
     return timelineStats, benchmarkTimelineStats
 
-  def generateProfiles(self, name, txnRepo, classifier):
+  def generateProfiles(self, name, txnRepo, classifier, routeConflation):
     """
     Generates profiles for the current profile session
 
     :param txnRepo: Repository of loaded transactions
     :param classifier: Predicate to classify transactions into different categories
+    :param routeConflation: Parameter to control, whether routes can be conflated or not
 
     """
     from xpedite.profiler.profile import Profiles, Profile
-    txnTree, benchmarkCompositeTree = self.buildTxnTree(txnRepo, classifier)
+    txnTree, benchmarkCompositeTree = self.buildTxnTree(txnRepo, classifier, routeConflation)
     profiles = Profiles(name, txnRepo)
 
     for category, categoryNode in txnTree.getChildren().items():

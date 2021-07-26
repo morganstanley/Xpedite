@@ -88,7 +88,7 @@ probes = [
 
 
 ############################################### Sort transactions ##############################################
-#sort order of transaction metrics in report
+# sort order of transaction metrics in report
 # valid values
 #  ResultOrder.Chronological    sort by choronological order, in which the transactions were seen by app
 #  ResultOrder.WorstToBest      sort by statistics order, with worst to best in descending order
@@ -96,6 +96,12 @@ probes = [
 #  ResultOrder.Transaction      sort by transaction sequence number
 #resultOrder = ResultOrder.Chronological
 
+############################################### Route conflation ##############################################
+# conflate longer routes to shorter ones while bechmarking
+# valid values
+#  RouteConflation.On    sort by choronological order, in which the transactions were seen by app
+#  RouteConflation.Off      sort by statistics order, with worst to best in descending order
+#routeConflation = RouteConflation.On
 
 ################################################ Persist Report ################################################
 # Home directory to store xpedite reports - xpedite record and report commands will persiste reports to home dir

@@ -127,7 +127,8 @@ class Profiler(object):
       cprofile.enable()
 
     report = runtime.report(reportName=reportName, benchmarkPaths=profileInfo.benchmarkPaths
-        , classifier=classifier, resultOrder=profileInfo.resultOrder, txnFilter=profileInfo.txnFilter)
+        , classifier=classifier, resultOrder=profileInfo.resultOrder, txnFilter=profileInfo.txnFilter
+        , routeConflation=profileInfo.routeConflation)
     if reportPath:
       report.makeBenchmark(reportPath)
     return report

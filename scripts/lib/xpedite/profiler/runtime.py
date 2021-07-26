@@ -9,8 +9,8 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import logging
-from xpedite.txn.classifier       import DefaultClassifier
-from xpedite.types            import ResultOrder
+from xpedite.txn.classifier   import DefaultClassifier
+from xpedite.types            import ResultOrder, RouteConflation
 
 LOGGER = logging.getLogger(__name__)
 
@@ -230,7 +230,7 @@ class Runtime(AbstractRuntime):
       raise ex
 
   def report(self, reportName=None, benchmarkPaths=None, classifier=DefaultClassifier(), txnFilter=None,
-      reportThreshold=3000, resultOrder=ResultOrder.WorstToBest):
+      reportThreshold=3000, resultOrder=ResultOrder.WorstToBest, routeConflation=RouteConflation.On):
     """
     Ends active profile session and generates reports.
 
@@ -250,7 +250,9 @@ class Runtime(AbstractRuntime):
     :param reportThreshold: Threshold for number of transactions rendered in html reports (Default value = 3000)
     :type reportThreshold: int
     :param resultOrder: Default sort order of transactions in latency constituent reports
-    :type resultOrder: xpedite.pmu.ResultOrder
+    :type resultOrder: xpedite.types.ResultOrder
+    :param routeConflation: Parameter to control, whether routes can be conflated or not
+    :type routeConflation: xpedite.types.RouteConflation
 
     """
     from xpedite.profiler.reportgenerator import ReportGenerator
@@ -274,7 +276,7 @@ class Runtime(AbstractRuntime):
       reportName = reportName if reportName else self.app.name
       reportGenerator = ReportGenerator(reportName)
       return reportGenerator.generateReport(
-        self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths
+        self.app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths, routeConflation
       )
     except Exception as ex:
       LOGGER.exception('failed to generate report')
