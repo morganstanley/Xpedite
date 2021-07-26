@@ -18,7 +18,7 @@ class ProfileInfo(object):
   """Profile info stores settings and parameters to control profiling and report generation."""
 
   def __init__(self, appName, appHost, appInfo, probes, homeDir, pmc,
-    cpuSet, benchmarkPaths, classifier, resultOrder, txnFilter):
+    cpuSet, benchmarkPaths, classifier, resultOrder, txnFilter, routeConflation):
     """
     Constructs an instance of ProfileInfo
 
@@ -34,6 +34,8 @@ class ProfileInfo(object):
     :param resultOrder: Default sort order for transactions in latency constituent reports
     :type resultOrder: xpedite.pmu.ResultOrder
     :param txnFilter: Lambda to filter transactions prior to report generation
+    :param routeConflation: Parameter to control, whether routes can be conflated or not
+    :type routeConflation: xpedite.types.RouteConflation
 
     """
     self.appName = appName.replace(' ', '_')
@@ -47,6 +49,7 @@ class ProfileInfo(object):
     self.classifier = classifier
     self.resultOrder = resultOrder
     self.txnFilter = txnFilter
+    self.routeConflation = routeConflation
 
   def __repr__(self):
     strRepr = 'app name = {}, appHost = {}, appInfo = {}\n'.format(self.appName, self.appHost, self.appInfo)
@@ -79,8 +82,9 @@ def loadProfileInfo(profilePath):
     resultOrder = getattr(profileInfo, 'resultOrder', None)
     homeDir = getattr(profileInfo, 'homeDir', None)
     txnFilter = getattr(profileInfo, 'txnFilter', None)
+    routeConflation = getattr(profileInfo, 'routeConflation', None)
     return ProfileInfo(profileInfo.appName, profileInfo.appHost, profileInfo.appInfo,
-      profileInfo.probes, homeDir, pmc, cpuSet, benchmarkPaths, classifier, resultOrder, txnFilter)
+      profileInfo.probes, homeDir, pmc, cpuSet, benchmarkPaths, classifier, resultOrder, txnFilter, routeConflation)
   except Exception:
     LOGGER.exception('failed to load profile file "%s"', profilePath)
     sys.exit(2)
