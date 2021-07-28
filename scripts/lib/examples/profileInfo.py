@@ -7,6 +7,7 @@
 
 from xpedite import Probe, TxnBeginProbe, TxnSuspendProbe, TxnResumeProbe, TxnEndProbe
 from xpedite.txn.classifier import ProbeDataClassifier
+from xpedite.types import RouteConflation
 from xpedite import TopdownNode, Metric, Event, ResultOrder
 
 # Name of the application
