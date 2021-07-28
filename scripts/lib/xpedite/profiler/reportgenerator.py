@@ -95,7 +95,8 @@ class ReportGenerator(object):
       histograms.update({category: Histogram(title, description, data, options)})
     return histograms
 
-  def generateReport(self, app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths):
+  def generateReport(self, app, repo, classifier, resultOrder, reportThreshold, txnFilter, benchmarkPaths,
+          routeConflation):
     """
     Generates report for the current profile session
 
@@ -107,13 +108,14 @@ class ReportGenerator(object):
     :param reportThreshold: Threshold for number of transactions rendered in html reports.
     :param txnFilter: Lambda to filter transactions prior to report generation
     :param benchmarkPaths: List of stored reports from previous runs, for benchmarking
+    :param routeConflation: Parameter to control, whether routes can be conflated or not
 
     """
     try:
       if txnFilter:
         self.analytics.filterTxns(repo, txnFilter)
       histograms = self.generateHistograms(repo, classifier, app.runId)
-      profiles = self.analytics.generateProfiles(self.reportName, repo, classifier)
+      profiles = self.analytics.generateProfiles(self.reportName, repo, classifier, routeConflation)
       report = xpedite.report.generate(
         app, profiles, histograms, resultOrder, classifier, txnFilter, benchmarkPaths, reportThreshold
       )

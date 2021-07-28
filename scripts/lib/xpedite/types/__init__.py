@@ -82,6 +82,17 @@ class ResultOrder(Enum):
       return self.__dict__ == other.__dict__
     return None
 
+class RouteConflation(Enum):
+  """Sort order of transactions in latency constituent reports"""
+
+  On = 1
+  Off = 2
+
+  def __eq__(self, other):
+    if other:
+      return self.__dict__ == other.__dict__
+    return None
+
 class CpuInfo(object):
   """Info about cpu model and configuration"""
 
