@@ -39,7 +39,7 @@ jobs:
       # Install dependencies for vivify and python tests
       - name: Install Dependencies
         run: |
-          sudo apt install -y libgtest-dev libunwind-dev libdwarf-dev binutils-dev virtualenv
+          sudo apt install -y libgtest-dev libunwind-dev libdwarf-dev binutils-dev virtualenv pybind11-dev
           
       # Enable perf setting for catputing H/W counters and kernel tracepoints
       - name: Configure

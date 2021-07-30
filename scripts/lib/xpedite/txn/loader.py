@@ -2,9 +2,7 @@
 Transaction Loader
 
 This module provides functionality to build transactions from a sequence of probes.
-Two types of grouping are supported
-  1. ChaoticTxnLoader - builds transactions based on user supplied txnId
-  2. BoundedTxnLoader - builds transactions based on scopes and bounds
+The BoundedTxnLoader builds transactions based on scopes and bounds.
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
@@ -117,81 +115,6 @@ class AbstractTxnLoader(object):
   def getCount(self):
     """Returns the count of transactions loaded"""
     return len(self.txns) + (1 if self.currentTxn else 0)
-
-class ChaoticTxnLoader(AbstractTxnLoader):
-  """Loads transactions from counters with tolerance for compromised transactions"""
-
-  def __init__(self, name, cpuInfo, probes, topdownMetrics, events):
-    """
-    Constructs a transaction loader resilient to data corruption
-
-    :param name: Name of the profile being loaded
-    :param probes: List of probes enabled for the profile session
-    :param topdownMetrics: Top down metrics to be computed
-    :param events: PMU events collected for the profile session
-    """
-    AbstractTxnLoader.__init__(self, name, cpuInfo, probes, topdownMetrics, events)
-    self.distortionCount = 0
-
-  @staticmethod
-  def markCounter(counter):
-    """
-    Extracts transaction id from the given counter
-
-    :param counter: Counter with transaction id
-
-    """
-    if counter.data and len(counter.data) >= 8:
-      idIndex = len(counter.data)-8
-      counter.txnId = int(counter.data[idIndex:], 16)
-      counter.data = counter.data[0:idIndex]
-    return counter.txnId
-
-  def loadCounter(self, counter):
-    """
-    Associates the given counter to a transaction
-
-    :param counter: Counter with probe and sample data
-    :type counter: xpedite.types.Counter
-
-    """
-    self.processedCounterCount += 1
-    userProbe = self.probeMap.get(counter.probe, None)
-    if self.currentTxn:
-      if userProbe:
-        if not userProbe.isAnonymous:
-          self.markCounter(counter)
-        if counter.txnId or userProbe.isAnonymous:
-          if userProbe.isAnonymous or counter.txnId == self.currentTxn.txnId:
-            self.currentTxn.addCounter(counter, False)
-          else:
-            if self.distortionCount == 0:
-              self.appendTxn(self.currentTxn)
-              self.currentTxn = Transaction(counter, counter.txnId)
-            else:
-              self.distortionCount -= 1
-              self.compromisedTxns.append(self.currentTxn)
-              self.currentTxn = Transaction(counter, counter.txnId)
-        else:
-          # explicit probe missing id likely compromised - skip this and the next transaction
-          self.currentTxn.addCounter(counter, False)
-          self.distortionCount = 2
-      else:
-        self.currentTxn.addCounter(counter, False)
-    elif userProbe and not userProbe.isAnonymous and self.markCounter(counter):
-      self.currentTxn = Transaction(counter, counter.txnId)
-    else:
-      self.nonTxnCounters.append(counter)
-
-  def endLoad(self):
-    """Marks end of the current load session"""
-    if self.currentTxn:
-      if self.distortionCount == 0:
-        self.appendTxn(self.currentTxn)
-      else:
-        self.compromisedTxns.append(self.currentTxn)
-    self.distortionCount = 0
-    self.currentTxn = None
 
 class BoundedTxnLoader(AbstractTxnLoader):
   """Loads transactions bounded by well defined begin/end probes"""

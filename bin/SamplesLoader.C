@@ -13,7 +13,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////
 
-#include "SamplesLoader.H"
+#include <xpedite/framework/SamplesLoader.H>
 #include <iostream>
 #include <iomanip>
 #include <ios>

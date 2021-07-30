@@ -135,19 +135,14 @@ class TxnRepoFactory(object):
     """
     from xpedite.txn.collector        import Collector
     from xpedite.benchmark            import BenchmarksCollector
-    from xpedite.txn.loader           import ChaoticTxnLoader, BoundedTxnLoader
+    from xpedite.txn.loader           import BoundedTxnLoader
     from xpedite.txn.filter           import TrivialCounterFilter
     from xpedite.analytics            import CURRENT_RUN
     from xpedite.util                 import timeAction
     counterFilter = TrivialCounterFilter()
     collector = Collector(counterFilter)
 
-
-    if any(probe.canBeginTxn or probe.canEndTxn for probe in probes):
-      loaderType = BoundedTxnLoader
-    else:
-      loaderType = ChaoticTxnLoader
-
+    loaderType = BoundedTxnLoader
     loader = loaderType(CURRENT_RUN, cpuInfo, probes, topdownMetrics, events)
 
     timeAction('gathering counters', lambda: collector.gatherCounters(app, loader))

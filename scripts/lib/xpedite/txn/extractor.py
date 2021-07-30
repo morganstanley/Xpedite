@@ -10,11 +10,11 @@ transaction building.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
+import sys
 import os
 import re
 import time
 import logging
-import subprocess
 from xpedite.types      import Counter, DataSource
 from xpedite.util       import makeLogPath, mkdir
 
@@ -22,9 +22,6 @@ LOGGER = logging.getLogger(__name__)
 
 class Extractor(object):
   """Parses sample files to load counters for the current profile session"""
-
-  moduleDirPath = os.path.dirname(os.path.abspath(__file__))
-  samplesLoader = '{}/../../../bin/xpediteSamplesLoader'.format(moduleDirPath)
 
   def __init__(self, counterFilter):
     """
@@ -36,7 +33,7 @@ class Extractor(object):
     """
     self.binaryReportFilePattern = re.compile(r'[^\d]*(\d+)-(\d+)-([0-9a-fA-F]+)\.data')
     self.counterFilter = counterFilter
-    self.orphanedRecords = []
+    self.orphanedSamplesCount = 0
 
   def gatherCounters(self, app, loader):
     """
@@ -63,42 +60,54 @@ class Extractor(object):
 
       iterBegin = begin = time.time()
       loader.beginLoad(threadId, tlsAddr)
-      inflateFd = self.openInflateFile(samplePath, threadId, tlsAddr)
 
-      #pylint: disable=consider-using-with
-      extractor = subprocess.Popen([self.samplesLoader, filePath],
-        bufsize=2*1024*1024, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+      moduleDirPath = os.path.dirname(os.path.abspath(__file__))
+      bindingModulePath = '{}/../../../../install/lib'.format(moduleDirPath)
+      sys.path.append(bindingModulePath)
+      from xpediteBindings    import SamplesLoader
+      samplesLoader = SamplesLoader(filePath)
       recordCount = 0
-      while True:
-        record = extractor.stdout.readline()
-        if record.strip() == '':
-          if extractor.poll() is not None:
-            errmsg = extractor.stderr.read()
-            if errmsg:
-              raise Exception('failed to load {} - {}'.format(filePath, errmsg))
-          break
-        if inflateFd:
-          inflateFd.write(record)
-        if recordCount > 0:
-          self.loadCounter(threadId, loader, app.probes, record)
-          elapsed = time.time() - iterBegin
-          if elapsed >= 5:
-            LOGGER.completed('\tprocessed %d counters | ', recordCount-1)
-            iterBegin = time.time()
+      for sample in samplesLoader:
+        self.loadSample(threadId, loader, app.probes, sample)
+        elapsed = time.time() - iterBegin
+        if elapsed >= 5:
+          LOGGER.completed('\tprocessed %d counters | ', recordCount-1)
+          iterBegin = time.time()
         recordCount += 1
       loader.endLoad()
-      if inflateFd:
-        inflateFd.close()
       elapsed = time.time() - begin
       self.logCounterFilterReport()
-      if self.orphanedRecords:
-        LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', len(self.orphanedRecords))
+      if self.orphanedSamplesCount:
+        LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', self.orphanedSamplesCount)
       LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1, loader.getCount(), elapsed)
     if loader.isCompromised() or loader.getTxnCount() <= 0:
       LOGGER.warn(loader.report())
     elif loader.isNotAccounted():
       LOGGER.debug(loader.report())
     loader.endCollection()
+
+  def loadSample(self, threadId, loader, probes, sample):
+    """
+    Loads time and pmu counters from xpedite sample objects
+
+    :param threadId: Id of thread collecting the samples
+    :param loader: loader to build transactions out of the counters
+    :param probes: Map of probes instrumented in target application
+    :param sample: An object with binding to underlying C++ Sample object
+
+    """
+    addr = hex(sample.returnSite())
+    if addr not in probes:
+      self.orphanedSamplesCount += 1
+      return None
+    data = sample.dataStr() if sample.hasData() else ''
+    counter = Counter(threadId, probes[addr], data, sample.tsc())
+    if sample.hasPmc():
+      for i in range(sample.pmcCount()):
+        counter.addPmc(sample.pmc(i))
+    if self.counterFilter.canLoad(counter):
+      loader.loadCounter(counter)
+    return counter
 
   MIN_FIELD_COUNT = 2
   INDEX_TSC = 0
@@ -121,7 +130,7 @@ class Extractor(object):
       raise Exception('detected record with < {} fields - \nrecord: "{}"\n'.format(self.MIN_FIELD_COUNT, record))
     addr = fields[self.INDEX_ADDR]
     if addr not in probes:
-      self.orphanedRecords.append(record)
+      self.orphanedSamplesCount += 1
       return None
     data = fields[self.INDEX_DATA]
     tsc = int(fields[self.INDEX_TSC], 16)

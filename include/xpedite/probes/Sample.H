@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <tuple>
 #include <sstream>
+#include <cassert>
 
 namespace xpedite { namespace common {
   template<typename T, size_t Size> struct Buffer;
@@ -134,6 +135,13 @@ namespace xpedite { namespace probes {
 
     inline std::tuple<const uint64_t*, int> pmc() const noexcept {
       return std::make_tuple(&_data[1 + 2*hasData()], pmcCount());
+    }
+
+    inline uint64_t pmc(int index_) const noexcept {
+      const uint64_t* v; int c;
+      std::tie(v, c) = pmc();
+			assert(index_ < c);
+      return v[index_];
     }
 
     inline static constexpr unsigned maxSize() noexcept {
