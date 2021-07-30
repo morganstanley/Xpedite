@@ -18,6 +18,7 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)  # ensure standard is supported
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")
@@ -54,6 +55,12 @@ set_property(TARGET xpedite-pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(xpedite-pic pthread rt dl)
 target_compile_definitions(xpedite-pic PRIVATE XPEDITE_PIE=1)
 install(TARGETS xpedite-pic DESTINATION "lib" COMPONENT libraries)
+
+######################### Python bindings #############################
+
+find_package(pybind11 REQUIRED)
+pybind11_add_module(xpediteBindings lib/xpedite/pybind/Bindings.cpp)
+install(TARGETS xpediteBindings DESTINATION "lib" COMPONENT libraries)
 
 ######################### Kernel module #############################
 
