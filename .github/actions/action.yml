@@ -1,0 +1,12 @@
+name: 'Many linux build'
+description: 'Build xpedite ext module for disting to various linux platforms'
+inputs:
+  python-version:
+    description: 'version of python runtimes'
+    required: true
+    default: 'cp38-cp38'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.python-version }}

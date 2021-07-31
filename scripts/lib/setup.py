@@ -4,8 +4,23 @@ Xpedite setup
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
+import os
+from glob import glob
 from setuptools import setup
 from setuptools import find_packages
+from pybind11.setup_helpers import Pybind11Extension
+
+moduleDirPath = os.path.dirname(os.path.abspath(__file__))
+bindingModulePath = os.path.abspath(os.path.join(moduleDirPath, '../../include'))
+print('bindings path - {}'.format(bindingModulePath))
+
+ext_modules = [
+  Pybind11Extension(
+    'xpediteBindings',
+    ['ext/lib/xpedite/pybind/Bindings.cpp'],
+    include_dirs = [bindingModulePath]
+  ),
+]
 
 setup(name='xpedite',
       version='1.0',
@@ -32,6 +47,7 @@ setup(name='xpedite',
       license='Apache 2.0',
       setup_requires=['setuptools_scm'],
       packages=find_packages(include='xpedite.*'),
+      ext_modules = ext_modules,
       include_package_data=True,
       install_requires=[
         'enum34',

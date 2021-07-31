@@ -46,6 +46,12 @@ jobs:
         run: |
           sudo sh -c 'echo -1 >/proc/sys/kernel/perf_event_paranoid'
 
+      - name: Package
+        uses: ./.github/actions
+        id: manyLinux
+        with:
+          python-version: ${{ matrix.python-version }}
+
       # Build and install runtime dependencies
       - name: Build
         run: |
