@@ -188,7 +188,7 @@ class Analytics(object):
       txnMap = txnCollection.txnMap
       filteredCount = 0
       unfilteredCount = len(txnMap)
-      for tid, txn in txnMap.items():
+      for tid, txn in txnMap.copy().items():
         if not txnFilter(txnCollection.name, txn):
           del txnMap[tid]
           filteredCount += 1
