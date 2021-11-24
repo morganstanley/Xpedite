@@ -90,7 +90,7 @@ class XpediteDataFactory(object):
 
   def appendRecord(self, key, description, data):
     """Appends the given data to an internal buffer"""
-    if key in self.dataTable.keys():
+    if key in self.dataTable:
       errMsg = 'failed to commit record to data file - duplicate key "{}" detected'.format(key)
       raise ValueError(errMsg)
     self.dataTable[key] = Record(key, description, data)

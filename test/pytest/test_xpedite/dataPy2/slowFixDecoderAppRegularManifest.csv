@@ -1,10 +1,10 @@
 file name, size, lines
-slowFixDecoderAppRegular/expectedResults/generateCmdBaseline.py,5444,114
+slowFixDecoderAppRegular/expectedResults/generateCmdBaseline.py,5902,121
 slowFixDecoderAppRegular/expectedResults/probeCmdBaseline.pkl,3532,668
-slowFixDecoderAppRegular/expectedResults/reportCmdBaseline.xpd,3829524,21265
+slowFixDecoderAppRegular/expectedResults/reportCmdBaseline.xpd,3827852,21261
 slowFixDecoderAppRegular/__init__.py,0,0
 slowFixDecoderAppRegular/parameters/baselineCpuInfo.json,2065,0
-slowFixDecoderAppRegular/parameters/data/xpedite-slowFixDecoderApp-1625372685-2549585-00007facadffbc00.data,295424,18433
+slowFixDecoderAppRegular/parameters/data/xpedite-slowFixDecoderApp-1637727020-1791622-00007f5eac2f1c00.data,295424,18433
 slowFixDecoderAppRegular/parameters/__init__.py,0,0
 slowFixDecoderAppRegular/parameters/profileInfo.py,2085,48
 slowFixDecoderAppRegular/parameters/xpedite-appinfo.txt,4606,23
