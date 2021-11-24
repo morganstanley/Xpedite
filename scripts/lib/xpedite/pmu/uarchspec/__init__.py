@@ -43,6 +43,7 @@ class UarchSpecDb(object):
   mapHdrVersion = 'Version'
   mapHdrFilename = 'Filename'
   mapHdrEventType = 'EventType'
+  mapHdrCoreRoleName = 'Core Role Name'
 
   def __init__(self, manifestPath):
     self.uarchSpecMap = {}
@@ -52,6 +53,9 @@ class UarchSpecDb(object):
       for row in reader:
         cpuId = row[UarchSpecDb.mapHdrFamily].strip()
         eventsDbFile = row[UarchSpecDb.mapHdrFilename].strip()
+        coreRoleName = row[UarchSpecDb.mapHdrCoreRoleName].strip()
+        if coreRoleName and coreRoleName.lower() != 'core':
+          continue
         if cpuId not in self.uarchSpecMap:
           name = os.path.basename(os.path.dirname(eventsDbFile))
           self.uarchSpecMap.update({cpuId : UarchSpec(cpuId, name)})
@@ -59,7 +63,7 @@ class UarchSpecDb(object):
 
         eventType = row[UarchSpecDb.mapHdrEventType].strip()
         eventsDbFile = uarchSpecDirPath + eventsDbFile
-        if eventType == 'core':
+        if eventType in {'core', 'hybridcore'}:
           uarchSpec.coreEventsDbFile = eventsDbFile
         elif eventType == 'uncore':
           uarchSpec.uncoreEventsDbFile = eventsDbFile

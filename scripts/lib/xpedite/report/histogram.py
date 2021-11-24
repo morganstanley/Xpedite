@@ -71,16 +71,17 @@ def buildHistograms(ticks, series, stack=False):
   data = []
   width = totalWidth / (((len(series) + 1)/2)*2)
   index = None
+
+  def offset(xval):
+    """Calculates horizontal offset"""
+    if stack:
+      return xval
+    return xval - totalWidth / 2 + (index + 1) * width
+
   for index, _ in enumerate(series):
     name, serie = series[index]
     if len(serie) > len(ticks):
       raise ValueError('Series at index {} has more elements than there are ticks'.format(index))
-
-    def offset(xval):
-      """Calculates horizontal offset"""
-      if stack:
-        return xval
-      return xval - totalWidth / 2 + (index + 1) * width
 
     data.append(
       {
