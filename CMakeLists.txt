@@ -59,7 +59,7 @@ install(TARGETS xpedite-pic DESTINATION "lib" COMPONENT libraries)
 ######################### Python bindings #############################
 
 find_package(pybind11 REQUIRED)
-pybind11_add_module(xpediteBindings lib/xpedite/pybind/Bindings.cpp)
+pybind11_add_module(xpediteBindings lib/xpedite/pybind/Bindings.cpp lib/xpedite/framework/SamplesLoader.C)
 install(TARGETS xpediteBindings DESTINATION "lib" COMPONENT libraries)
 
 ######################### Kernel module #############################

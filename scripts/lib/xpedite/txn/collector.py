@@ -5,16 +5,11 @@ This module is used to load counter data from xpedite text format sample files.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-import os
-import re
 import time
-import fnmatch
 import logging
 from xpedite.txn.extractor      import Extractor
-from xpedite.types              import DataSource
 
 LOGGER = logging.getLogger(__name__)
-APPINFO_FILE_NAME = 'appinfo.txt'
 
 class Collector(Extractor):
   """Parses sample files to gather time and pmu counters"""
@@ -28,8 +23,6 @@ class Collector(Extractor):
 
     """
     Extractor.__init__(self, counterFilter)
-    self.samplesFileWildcard = 'samples-[0-9]*.csv'
-    self.samplesFilePattern = re.compile(r'samples-(\d+)\.csv')
 
   @staticmethod
   def formatPath(path, maxChars):
@@ -41,49 +34,6 @@ class Collector(Extractor):
 
     """
     return path if len(path) < maxChars else '...' + path[-maxChars:]
-
-  def listSampleFiles(self, path):
-    """
-    Lists sample files in sorted order
-
-    :param path: path to directory containing sample files
-
-    """
-    def orderByName(fileName):
-      """
-      Sorts files by lexographical order of their names
-
-      :param fileName: Name of the file
-
-      """
-      match = self.samplesFilePattern.findall(fileName)
-      if match and len(match) >= 1:
-        return int(match[0])
-      raise RuntimeError('failed to extract sequence no from report file ' + fileName)
-
-    fileNames = fnmatch.filter(os.listdir(path), self.samplesFileWildcard)
-    fileNames = list(sorted(fileNames, key=orderByName))
-    filePaths = (os.path.join(path, fileName) for fileName in fileNames)
-    return filePaths
-
-  @staticmethod
-  def gatherDataSource(path):
-    """
-    Gathers appinfo and samples dir to build a data source
-
-    :param path: path to directory with txn data
-
-    """
-    appInfoPath = os.path.join(path, APPINFO_FILE_NAME)
-    if not os.path.isfile(appInfoPath):
-      LOGGER.error('skipping data source %s - detected missing appinfo file %s', path, APPINFO_FILE_NAME)
-      return None
-
-    directories = next(os.walk(path))[1]
-    if len(directories) > 1:
-      LOGGER.error('skipping data source %s - detected more than one (%d) directories', path, len(directories))
-      return None
-    return DataSource(appInfoPath, os.path.join(path, directories[0]))
 
   def loadDataSource(self, dataSource, loader):
     """
@@ -97,10 +47,10 @@ class Collector(Extractor):
     loader.beginCollection(dataSource)
     appInfo = AppInfo(dataSource.appInfoPath)
     appInfo.load()
-    self.loadSamples(loader, appInfo.probes, dataSource.samplePath)
+    self.loadSamples(loader, appInfo.probes, dataSource)
     loader.endCollection()
 
-  def loadSamples(self, loader, probes, path):
+  def loadSamples(self, loader, probes, dataSource):
     """
     Loads counters for a profile session from csv sample files
 
@@ -110,32 +60,12 @@ class Collector(Extractor):
 
     """
     recordCount = 0
-    reportDirs = list(sorted(os.listdir(path)))
-    for threadInfo in reportDirs:
-      fields = threadInfo.split('-')
-      if len(fields) < 2:
-        raise Exception('Datasource {} missing tls storage info {}\n'.format(reportDirs, threadInfo))
-      threadId = fields[0]
-      dirPath = os.path.join(path, threadInfo)
-      if os.path.isdir(dirPath):
-        loader.beginLoad(threadId, fields[1])
-        for filePath in self.listSampleFiles(dirPath):
-          recordCount += self.loadCounters(threadId, loader, probes, filePath)
-        loader.endLoad()
+    for sampleFile in dataSource.files:
+      loader.beginLoad(sampleFile.threadId, sampleFile.tlsAddr)
+      recordCount += self.loadCounters(sampleFile.threadId, loader, probes, sampleFile.path)
+      loader.endLoad()
     self.logCounterFilterReport()
     return recordCount
-
-  def gatherCounters(self, app, loader):
-    """
-    Gathers time and pmu counters from sample files for a profile session
-
-    :param app: Handle to the instance of the xpedite app
-    :param loader: Loader to build transactions out of the counters
-
-    """
-    if app.dataSource:
-      return self.loadDataSource(app.dataSource, loader)
-    return Extractor.gatherCounters(self, app, loader)
 
   def loadCounters(self, threadId, loader, probes, path):
     """
@@ -161,3 +91,15 @@ class Collector(Extractor):
       LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1,
         loader.getCount(), elapsed)
       return recordCount
+
+  def gatherCounters(self, app, loader):
+    """
+    Gathers time and pmu counters from sample files for a profile session
+
+    :param app: Handle to the instance of the xpedite app
+    :param loader: Loader to build transactions out of the counters
+
+    """
+    if app.dataSource:
+      return self.loadDataSource(app.dataSource, loader)
+    return Extractor.gatherCounters(self, app, loader)

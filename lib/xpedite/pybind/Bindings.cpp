@@ -38,6 +38,7 @@ PYBIND11_MODULE(xpediteBindings, m) {
 
     py::class_<SamplesLoader>(m, "SamplesLoader")
         .def(py::init<const char*>())
+        .def_static("saveAsCsv", &SamplesLoader::saveAsCsv)
         /// Bare bones interface
         .def(
             "__iter__",

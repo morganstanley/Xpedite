@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
+#include <ostream>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -165,6 +166,9 @@ namespace xpedite { namespace framework {
       }
       return {};
     }
+
+    static int saveAsCsv(const char* samplesPath_, const char* dest_);
+    static int streamAsCsv(const char* samplesPath_, std::ostream& destStream_);
   };
 
 }}

@@ -10,13 +10,11 @@ transaction building.
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
-import sys
-import os
-import re
 import time
 import logging
-from xpedite.types      import Counter, DataSource
-from xpedite.util       import makeLogPath, mkdir
+from xpedite.types            import Counter
+from xpedite.types.dataSource import BinaryDataSourceFactory
+from xpediteBindings          import SamplesLoader
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +29,6 @@ class Extractor(object):
     :type counterFilter: xpedite.filter.TrivialCounterFilter
 
     """
-    self.binaryReportFilePattern = re.compile(r'[^\d]*(\d+)-(\d+)-([0-9a-fA-F]+)\.data')
     self.counterFilter = counterFilter
     self.orphanedSamplesCount = 0
 
@@ -44,31 +41,17 @@ class Extractor(object):
     :param loader: Loader to build transactions out of the counters
 
     """
-    pattern = app.sampleFilePattern()
-    LOGGER.info('scanning for samples files matching - %s', pattern)
-    filePaths = app.gatherFiles(pattern)
-
-    samplePath = makeLogPath('{}/{}'.format(app.name, app.runId))
-    dataSource = DataSource(app.appInfoPath, samplePath)
+    dataSource = BinaryDataSourceFactory().gather(app)
     loader.beginCollection(dataSource)
 
-    for filePath in filePaths:
-      (threadId, tlsAddr) = self.extractThreadInfo(filePath)
-      if not threadId or not tlsAddr:
-        raise Exception('failed to extract thread info for file {}'.format(filePath))
-      LOGGER.info('loading counters for thread %s from file %s -> ', threadId, filePath)
-
+    for sampleFile in dataSource.files:
+      LOGGER.info('loading counters for thread %s from file %s -> ', sampleFile.threadId, sampleFile.path)
       iterBegin = begin = time.time()
-      loader.beginLoad(threadId, tlsAddr)
-
-      moduleDirPath = os.path.dirname(os.path.abspath(__file__))
-      bindingModulePath = '{}/../../../../install/lib'.format(moduleDirPath)
-      sys.path.append(bindingModulePath)
-      from xpediteBindings    import SamplesLoader
-      samplesLoader = SamplesLoader(filePath)
+      loader.beginLoad(sampleFile.threadId, sampleFile.tlsAddr)
+      samplesLoader = SamplesLoader(sampleFile.path)
       recordCount = 0
       for sample in samplesLoader:
-        self.loadSample(threadId, loader, app.probes, sample)
+        self.loadSample(sampleFile.threadId, loader, app.probes, sample)
         elapsed = time.time() - iterBegin
         if elapsed >= 5:
           LOGGER.completed('\tprocessed %d counters | ', recordCount-1)
@@ -142,34 +125,6 @@ class Extractor(object):
     if self.counterFilter.canLoad(counter):
       loader.loadCounter(counter)
     return counter
-
-  @staticmethod
-  def openInflateFile(dataSourcePath, threadId, tlsAddr):
-    """
-    Creates a new data source file for the given thread
-
-    :param dataSourcePath: Path of the data source directory
-    :param threadId: Id of thread collecting the samples
-    :param tlsAddr: Address of thread local storage of thread collecting the samples
-
-    """
-    path = os.path.join(dataSourcePath, '{}-{}'.format(threadId, tlsAddr))
-    mkdir(path)
-    filePath = os.path.join(path, 'samples-0000.csv')
-    #pylint: disable=consider-using-with
-    return open(filePath, 'w')
-
-  def extractThreadInfo(self, samplesFile):
-    """
-    Extracts thread id/thread local storage address from name of the samples file
-
-    :param samplesFile: Name of the samples file
-
-    """
-    match = self.binaryReportFilePattern.findall(samplesFile)
-    if match and len(match[0]) > 2:
-      return (match[0][1], match[0][2])
-    return (None, None)
 
   def logCounterFilterReport(self):
     """Logs statistics on the number of filtered counters"""
