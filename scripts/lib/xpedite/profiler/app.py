@@ -12,8 +12,8 @@ import re
 import time
 import logging
 from xpedite.profiler.environment import Environment, RemoteEnvironment
-from xpedite.transport.net import isIpLocal
-from xpedite.txn.collector import Collector
+from xpedite.transport.net        import isIpLocal
+from xpedite.types.dataSource     import CsvDataSourceFactory
 
 LOGGER = logging.getLogger(__name__)
 
@@ -187,7 +187,7 @@ class XpediteDormantApp(XpediteApp):
 
   def __init__(self, name, ip, appInfoPath, runId=None, dataSourcePath=None, workspace=None):
     """Constructs an instance of XpediteDormantApp"""
-    dataSource = Collector.gatherDataSource(dataSourcePath) if dataSourcePath else None
+    dataSource = CsvDataSourceFactory().gather(dataSourcePath) if dataSourcePath else None
     if dataSource:
       LOGGER.warn('Data source detected. overriding appinfo to %s', dataSource.appInfoPath)
       appInfoPath = dataSource.appInfoPath

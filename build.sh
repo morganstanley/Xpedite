@@ -15,13 +15,15 @@ Build xpedite profiler.
 Mandatory arguments to long options are mandatory for short options too.
   -t, --type                      type of the build DEBUG, RELEASE
   -c, --withCallStacks            build support for tracing call stacks
-  -j, --forJava                  build support for profiling java apps
+  -j, --forJava                   build support for profiling java apps
+  -2, --python2                   install python 2 virtual environment
+  -3, --python3                   install python 3 virtual environment
   -v, --verbose                   collect hardware performance counters
 EOM
 exit 1
 }
 
-ARGS=$(getopt -o t:cjv --long type:,withCallStacks,forJava,verbose -- "$@")
+ARGS=$(getopt -o t:cjv23 --long type:,withCallStacks,forJava,verbose,python2,python3 -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -31,6 +33,7 @@ BUILD_TYPE=Release
 BUILD_VIVIFY=0
 BUILD_JAVA=0
 VERBOSE=0
+PYTHON_VERSION=2.7
 
 while true ; do
   case "$1" in
@@ -40,6 +43,10 @@ while true ; do
         BUILD_VIVIFY=1 ; shift ;;
     -j|--forJava)
         BUILD_JAVA=1 ; shift ;;
+    -2|--python2)
+        PYTHON_VERSION=2.7 ; shift ;;
+    -3|--python3)
+        PYTHON_VERSION=3.8 ; shift ;;
     -v|--verbose)
         VERBOSE=1 ; shift ;;
     --) shift ; break ;;
@@ -47,7 +54,7 @@ while true ; do
   esac
 done
 
-OPTIONS="-DCMAKE_INSTALL_PREFIX=/ -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+OPTIONS="-DCMAKE_INSTALL_PREFIX=/ -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DPYBIND11_PYTHON_VERSION=${PYTHON_VERSION}"
 
 if [ ${VERBOSE} -eq 1 ]; then
   OPTIONS="${OPTIONS} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"

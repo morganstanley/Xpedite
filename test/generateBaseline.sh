@@ -46,6 +46,13 @@ rm -rf ${RUN_DIR}/*
 
 ${TEST_DIR}/tarFiles.sh -d ${RUN_DIR} -e -x
 
+RUNTIME_DIR=${TEST_DIR}/../install/runtime
+
+if [ -d ${RUNTIME_DIR}/bin ]; then
+  echo detected virtual environment. resolving python dependencies from ${RUNTIME_DIR}/bin
+  export PATH=${RUNTIME_DIR}/bin:${PATH}
+fi
+
 python ${PYTEST_DIR}/test_xpedite/test_profiler/generateBaseline.py --rundir ${RUN_DIR}
 python ${PYTEST_DIR}/test_xpedite/test_pmu/generateBaseline.py --rundir ${RUN_DIR}
 

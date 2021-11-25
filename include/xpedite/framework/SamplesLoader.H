@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
+#include <ostream>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -97,7 +98,7 @@ namespace xpedite { namespace framework {
       }
     };
 
-    SamplesLoader(const char* path_)
+    explicit SamplesLoader(const char* path_)
       : _fd {}, _fileHeader {}, _callSiteMap {}, _segmentHeader {}, _size {} {
       load(path_);
     }
@@ -156,8 +157,8 @@ namespace xpedite { namespace framework {
     uint32_t pmcCount()             const noexcept { return _fileHeader->pmcCount(); }
     const CallSiteMap callSiteMap() const noexcept { return _callSiteMap;            }
 
-    Iterator begin() { return Iterator {_segmentHeader, samplesEnd()}; }
-    Iterator end()   { return Iterator {samplesEnd(), samplesEnd()};   }
+    Iterator begin() const { return Iterator {_segmentHeader, samplesEnd()}; }
+    Iterator end() const   { return Iterator {samplesEnd(), samplesEnd()};   }
 
     uint64_t tscHz() const noexcept {
       if(_fileHeader) {
@@ -165,6 +166,9 @@ namespace xpedite { namespace framework {
       }
       return {};
     }
+
+    static int saveAsCsv(const char* samplesPath_, const char* dest_);
+    static int streamAsCsv(const char* samplesPath_, std::ostream& destStream_);
   };
 
 }}

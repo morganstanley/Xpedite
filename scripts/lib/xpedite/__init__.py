@@ -17,7 +17,11 @@ The main features include
 
 Author: Manikandan Dhamodharan, Morgan Stanley
 """
+import os
+import sys
 from xpedite.dependencies     import Package, DEPENDENCY_LOADER
 from xpedite.types.probe      import Probe, TxnBeginProbe, TxnSuspendProbe, TxnResumeProbe, TxnEndProbe
 from xpedite.types            import ResultOrder
 from xpedite.pmu.event        import Event, TopdownNode, Metric
+
+sys.path.append('{}/../../../install/lib'.format(os.path.dirname(os.path.abspath(__file__))))

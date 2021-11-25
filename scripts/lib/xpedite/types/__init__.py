@@ -56,19 +56,6 @@ class Counter(object):
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
 
-class DataSource(object):
-  """Source of profile data"""
-
-  def __init__(self, appInfoPath, samplePath):
-    self.appInfoPath = appInfoPath
-    self.samplePath = samplePath
-
-  def __repr__(self):
-    return 'Data Source - app info path - {} | data path - {}'.format(self.appInfoPath, self.samplePath)
-
-  def __eq__(self, other):
-    return self.__dict__ == other.__dict__
-
 class ResultOrder(Enum):
   """Sort order of transactions in latency constituent reports"""
 
