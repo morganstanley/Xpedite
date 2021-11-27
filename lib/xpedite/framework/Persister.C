@@ -17,35 +17,50 @@
 #include <sys/time.h>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <memory>
 
 namespace xpedite { namespace framework {
 
   static unsigned batchCount;
 
-  std::vector<CallSiteInfo> buildCallSiteList() {
-    std::vector<CallSiteInfo> callSites;
-    for(auto& probe : probes::probeList()) {
-      callSites.emplace_back(probe.rawRecorderCallSite(), probe.attr(), probe.id());
+  void Persister::resizeBuffer(size_t objSize_) {
+    auto size = _buffer.size();
+    while(size < _hdr->size() + objSize_) {
+      size *= 2;
     }
-    return callSites;
+    _buffer.resize(size);
+    _hdr = reinterpret_cast<FileHeader*>(_buffer.data());
   }
 
-  void persistHeader(int fd_) {
-    static auto tscHz = util::estimateTscHz();
-    auto callSites = buildCallSiteList();
+  Persister::Persister()
+    : _hdr {}, _buffer {} {
+    auto tscHz = util::estimateTscHz();
     timeval  time;
     gettimeofday(&time, nullptr);
-    auto capacity = FileHeader::capacity(callSites.size());
-    std::unique_ptr<char []> buffer {new char[capacity]};
-    new (buffer.get()) FileHeader {callSites, time, tscHz, pmu::pmuCtl().pmcCount()};
-    write(fd_, buffer.get(), capacity);
-    XpediteLogInfo << "persisted file header with " << callSites.size() << " call sites  | capacity "
-      << sizeof(FileHeader) << " + " << FileHeader::callSiteSize(callSites.size()) << " = "
-      << capacity << " bytes" << XpediteLogEnd;
+    _buffer.resize(2 * 1024 * 1024);
+    _hdr = new (_buffer.data()) FileHeader {time, tscHz, pmu::pmuCtl().pmcCount()};
+    for(auto& probe : probes::probeList()) {
+      Name probeName    {probe.name(), static_cast<uint32_t>(strlen(probe.name()))+1};
+      Name fileName     {probe.file(), static_cast<uint32_t>(strlen(probe.file()))+1};
+      Name functionName {probe.func(), static_cast<uint32_t>(strlen(probe.func()))+1};
+      auto objSize =  sizeof(ProbeInfo) + probeName._size + fileName._size + functionName._size;
+      if(freeSize() < objSize) {
+        resizeBuffer(objSize);
+      }
+      _hdr->add(
+        probe.rawRecorderCallSite(), probe.attr(), probe.id(), probeName, fileName, functionName, probe.line()
+      );
+    }
   }
 
-  void persistData(int fd_, const probes::Sample* begin_, const probes::Sample* end_) {
+  void Persister::persistHeader(int fd_) {
+    write(fd_, _buffer.data(), _hdr->size());
+    XpediteLogInfo << "persisted file header with " << _hdr->probeCount() << " call sites  | capacity "
+      << _hdr->size() << " bytes" << XpediteLogEnd;
+  }
+
+  void Persister::persistData(int fd_, const probes::Sample* begin_, const probes::Sample* end_) {
 
     if(!begin_ || begin_ == end_) {
       return;

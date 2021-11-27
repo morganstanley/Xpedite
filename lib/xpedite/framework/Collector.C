@@ -22,7 +22,7 @@ namespace xpedite { namespace framework {
 
   bool Collector::beginSamplesCollection() {
     XpediteLogInfo << "xpedite - begin out of band samples collection" << XpediteLogEnd;
-    _isCollecting = SamplesBuffer::attachAll(_fileNamePattern);
+    _isCollecting = SamplesBuffer::attachAll(_persister, _fileNamePattern);
     return _isCollecting;
   }
 
@@ -39,7 +39,7 @@ namespace xpedite { namespace framework {
   void Collector::persistSamples(int fd_, const probes::Sample* begin_, const probes::Sample* end_) {
     auto size = reinterpret_cast<const char*>(end_) - reinterpret_cast<const char*>(begin_);
     if(_storageMgr.consume(size)) {
-      persistData(fd_, begin_, end_);
+      _persister.persistData(fd_, begin_, end_);
     } else if(!_capacityBreached) {
       // capacity breached - dropping all samples from now on
       _capacityBreached = true;
@@ -141,7 +141,7 @@ namespace xpedite { namespace framework {
       while(buffer) {
         if(!buffer->isReaderAttached()) {
           //TODO, have to limit the number of attach operations attempted
-          buffer->attachReader(_fileNamePattern);
+          buffer->attachReader(_persister, _fileNamePattern);
         }
 
         if(buffer->isReaderAttached()) {

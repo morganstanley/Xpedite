@@ -33,7 +33,7 @@ namespace xpedite { namespace framework {
   {
     int _fd;
     const FileHeader* _fileHeader;
-    CallSiteMap _callSiteMap;
+    ProbeInfoMap _probeInfoMap;
     const SegmentHeader* _segmentHeader;
     unsigned _size;
 
@@ -99,7 +99,7 @@ namespace xpedite { namespace framework {
     };
 
     explicit SamplesLoader(const char* path_)
-      : _fd {}, _fileHeader {}, _callSiteMap {}, _segmentHeader {}, _size {} {
+      : _fd {}, _fileHeader {}, _probeInfoMap {}, _segmentHeader {}, _size {} {
       load(path_);
     }
 
@@ -141,21 +141,18 @@ namespace xpedite { namespace framework {
         throw std::runtime_error {errorMsg("detected data corruption - mismatch in header signature")};
       }
 
-      const CallSiteInfo* callSites;
-      uint64_t callSiteCount;
-      std::tie(callSites, callSiteCount) = _fileHeader->callSites();
-      for(unsigned i=0; i<callSiteCount; ++i) {
-        _callSiteMap.add(callSites[i]);
-      }
+      _fileHeader->forEachCallSiteInfo([this](const ProbeInfo* callSiteInfo_) {
+        _probeInfoMap.add(callSiteInfo_);
+      });
       _segmentHeader = _fileHeader->segmentHeader();
     }
 
-    const CallSiteInfo* locateCallSite(const void* callSite_) const noexcept {
-      return _callSiteMap.locateInfo(callSite_);
+    const ProbeInfo* locateCallSite(const void* callSite_) const noexcept {
+      return _probeInfoMap.locateInfo(callSite_);
     }
 
-    uint32_t pmcCount()             const noexcept { return _fileHeader->pmcCount(); }
-    const CallSiteMap callSiteMap() const noexcept { return _callSiteMap;            }
+    uint32_t pmcCount()               const noexcept { return _fileHeader->pmcCount(); }
+    const ProbeInfoMap probeInfoMap() const noexcept { return _probeInfoMap;           }
 
     Iterator begin() const { return Iterator {_segmentHeader, samplesEnd()}; }
     Iterator end() const   { return Iterator {samplesEnd(), samplesEnd()};   }
