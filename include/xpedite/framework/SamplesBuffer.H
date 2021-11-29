@@ -58,11 +58,11 @@ namespace xpedite { namespace framework {
       return _head.load(std::memory_order_relaxed);
     }
 
-    static bool attachAll(const std::string& fileNamePattern_) noexcept {
+    static bool attachAll(Persister& persister_, const std::string& fileNamePattern_) noexcept {
       auto begin = SamplesBuffer::head();
       auto buffer = begin;
       while(buffer) {
-        if(!buffer->attachReader(fileNamePattern_)) {
+        if(!buffer->attachReader(persister_, fileNamePattern_)) {
           break;
         }
         buffer = buffer->next();
@@ -97,7 +97,7 @@ namespace xpedite { namespace framework {
       return _fd >= 0;
     }
 
-    bool attachReader(const std::string& fileNamePattern_) noexcept {
+    bool attachReader(Persister& persister_, const std::string& fileNamePattern_) noexcept {
       if(isReaderAttached()) {
         XpediteLogError << "xpedite - failed to attach reader to thread " << tid() 
           << " - reader already attached. attaching multiple readers not permitted" << XpediteLogEnd;
@@ -112,7 +112,7 @@ namespace xpedite { namespace framework {
         return false;
       }
 
-      persistHeader(_fd);
+      persister_.persistHeader(_fd);
       uint64_t rindex, windex;
       std::tie(rindex, windex) = _bufferPool.attachReader();
       XpediteLogInfo << "xpedite - attached reader to thread - " << tid() << " | buffer index state - [readIndex - "

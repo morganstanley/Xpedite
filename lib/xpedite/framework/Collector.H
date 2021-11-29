@@ -13,6 +13,7 @@
 
 #pragma once
 #include "StorageMgr.H"
+#include <xpedite/framework/Persister.H>
 #include <string>
 #include <tuple>
 
@@ -29,7 +30,7 @@ namespace xpedite { namespace framework {
     public:
 
     Collector(std::string fileNamePattern_, uint64_t samplesDataCapacity_)
-      : _storageMgr {samplesDataCapacity_}, _fileNamePattern {std::move(fileNamePattern_)},
+      : _storageMgr {samplesDataCapacity_}, _persister {}, _fileNamePattern {std::move(fileNamePattern_)},
         _isCollecting {}, _capacityBreached {} {
     }
 
@@ -54,6 +55,7 @@ namespace xpedite { namespace framework {
     std::tuple<int, int> flush(SamplesBuffer* buffer_);
 
     StorageMgr _storageMgr;
+    Persister _persister;
     std::string _fileNamePattern;
     bool _isCollecting;
     bool _capacityBreached;

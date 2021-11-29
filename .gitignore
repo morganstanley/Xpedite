@@ -23,3 +23,4 @@ ko/xpedite.ko.unsigned
 scripts/bin/xpeditec
 *.class
 .gradle
+**/.eggs

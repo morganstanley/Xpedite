@@ -134,7 +134,7 @@ namespace xpedite { namespace transport { namespace tcp {
 
   // should not be called in crit path
   std::string Listener::toString() const {
-    std::array<char, 256> buffer;
+    std::array<char, 256> buffer {};
     if(!inet_ntop(AF_INET, &_addr.sin_addr, buffer.data(), buffer.size())) {
       // error converting ip to string
       strcpy(buffer.data(), "unknown");
