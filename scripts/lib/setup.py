@@ -19,9 +19,10 @@ ext_modules = [
     'xpediteBindings',
     [
       'ext/lib/xpedite/pybind/Bindings.cpp',
-      'ext/lib/xpedite/framework/SamplesLoader.C'
+      'ext/lib/xpedite/persistence/SamplesLoader.C'
     ],
-    include_dirs = [bindingModulePath]
+    include_dirs = [bindingModulePath],
+    extra_compile_args=['-std=c++17'],
   ),
 ]
 

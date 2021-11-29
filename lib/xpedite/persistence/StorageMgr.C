@@ -9,14 +9,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "StorageMgr.H"
+#include <xpedite/persistence/StorageMgr.H>
 #include <xpedite/util/Util.H>
 #include <xpedite/util/Errno.H>
 #include <sstream>
 #include <cstring>
 #include <cstdio>
 
-namespace xpedite { namespace framework {
+namespace xpedite { namespace persistence {
 
   const char* SAMPLES_DIR_PATH {"/dev/shm/"};
 

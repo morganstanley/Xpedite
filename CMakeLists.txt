@@ -17,7 +17,7 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
   message(FATAL_ERROR "Xpedite requires GCC 5.2 or later to build.")
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)  # ensure standard is supported
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -59,7 +59,8 @@ install(TARGETS xpedite-pic DESTINATION "lib" COMPONENT libraries)
 ######################### Python bindings #############################
 
 find_package(pybind11 REQUIRED)
-pybind11_add_module(xpediteBindings lib/xpedite/pybind/Bindings.cpp lib/xpedite/framework/SamplesLoader.C)
+pybind11_add_module(xpediteBindings NO_EXTRAS lib/xpedite/pybind/Bindings.cpp ${lib_files})
+target_compile_definitions(xpediteBindings PRIVATE XPEDITE_PIE=1)
 install(TARGETS xpediteBindings DESTINATION "lib" COMPONENT libraries)
 
 ######################### Kernel module #############################

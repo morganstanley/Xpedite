@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/ux/UxEvent.H>
 #include <xpedite/probes/RecorderCtl.H>
 #include <xpedite/probes/ProbeCtl.H>
 #include <xpedite/pmu/EventSet.h>
@@ -27,8 +28,15 @@ namespace xpedite { namespace framework {
   class Profile
   {
     std::set<probes::ProbeKey> _activeProbes;
+    std::vector<ux::UxEvent> _events;
+    std::vector<std::string> _topdownNodes;
+    std::vector<std::string> _metrics;
 
     public:
+
+    const std::vector<ux::UxEvent>& events()           const noexcept { return _events;       }
+    const std::vector<std::string>& topdownNodes() const noexcept { return _topdownNodes; }
+    const std::vector<std::string>& metrics()      const noexcept { return _metrics;      }
 
     void activateProbe(const probes::ProbeKey& key_) {
       XpediteLogInfo << "xpedite enabling probe | name - " << key_.name()
@@ -72,7 +80,11 @@ namespace xpedite { namespace framework {
       }
     }
 
-    bool enablePerfEvents(const PMUCtlRequest& request_) {
+    bool enablePerfEvents(const PMUCtlRequest& request_, std::vector<ux::UxEvent> events_, std::vector<std::string> topdownNodes_,
+        std::vector<std::string> metrics_) {
+      _events = std::move(events_);
+      _topdownNodes = std::move(topdownNodes_);
+      _metrics = std::move(metrics_);
       char buffer[4096];
       pmuRequestToString(&request_, buffer, sizeof(buffer));
       XpediteLogInfo << "xpedite Rx PMU for request \n" 
@@ -114,6 +126,9 @@ namespace xpedite { namespace framework {
       if(probes::recorderCtl().activeXpediteRecorderType() == probes::RecorderType::CUSTOM_RECORDER) {
         probes::recorderCtl().activateRecorder(probes::RecorderType::EXPANDABLE_RECORDER);
       }
+      _events = {};
+      _topdownNodes = {};
+      _metrics = {};
     }
   };
 

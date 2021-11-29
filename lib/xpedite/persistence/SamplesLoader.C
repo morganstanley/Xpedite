@@ -13,14 +13,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/framework/SamplesLoader.H>
+#include <xpedite/persistence/SamplesLoader.H>
 #include <fstream>
 #include <stdexcept>
 #include <sstream>
 #include <iomanip>
 #include <ios>
 
-namespace xpedite { namespace framework {
+namespace xpedite::persistence {
 
   int SamplesLoader::saveAsCsv(const char* samplesPath_, const char* dest_) {
     using namespace xpedite::probes;
@@ -74,4 +74,4 @@ namespace xpedite { namespace framework {
     return count;
   }
 
-}}
+}

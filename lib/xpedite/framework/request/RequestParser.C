@@ -15,9 +15,17 @@
 //                        arguments (
 //                          --gpCtrCount <number of general purpose counters> 
 //                          --fixedCtrList <list of fixed counters>
+//                          --events <list of pmu event names> 
+//                          --topdownNodes <list of topdown node names>
+//                          --metrics <list of metric names>
 //                        )
 // ActivatePerfEvents - Request to activate PMU counters using perf events api
-//                        arguments (--data <marshalled PMUCtlRequest object>)
+//                        arguments (
+//                          --data <marshalled PMUCtlRequest object>
+//                          --events <list of pmu event names> 
+//                          --topdownNodes <list of topdown node names>
+//                          --metrics <list of metric names>
+//                        )
 //
 // BeginProfile       - Request to activate a profiling session to collect tsc and counters
 //                        arguments (
@@ -59,6 +67,9 @@ namespace xpedite { namespace framework { namespace request {
     const std::string REQ_PMU_ACTIVATION                { "ActivatePmu"          };
     const std::string ARG_PMU_COUNT                     { "--gpCtrCount"         };
     const std::string ARG_PMU_FIXED                     { "--fixedCtrList"       };
+    const std::string ARG_PMU_EVENTS                    { "--events"             };
+    const std::string ARG_PMU_TOPDOWN_NODES             { "--topdownNodes"       };
+    const std::string ARG_PMU_METRICS                   { "--metrics"            };
 
     const std::string REQ_PERF_EVENTS_ACTIVATION        { "ActivatePerfEvents"   };
     const std::string ARG_PERF_EVENTS_DATA              { "--data"               };
@@ -117,6 +128,20 @@ namespace xpedite { namespace framework { namespace request {
     return RequestPtr {new InvalidRequest {"Empty request ..."}};
   }
 
+  std::vector<std::string> tokenize(const char* value_) {
+    std::vector<std::string> values;
+    char opt[strlen(value_)+1];
+    strcpy(opt, value_);
+    char* ptr;
+    const char* delimiter {","};
+    char* token = strtok_r(opt, delimiter, &ptr);
+    while(token) {
+      values.emplace_back(token);
+      token= strtok_r(nullptr, delimiter, &ptr);
+    }
+    return values;
+  }
+
   RequestPtr RequestParser::parseArgs(const std::string& req_, const std::vector<const char*>& args_) {
     std::string errors;
     if(req_ == REQ_PING) {
@@ -148,33 +173,50 @@ namespace xpedite { namespace framework { namespace request {
     else if(args_.size() > 0 && req_ == REQ_PMU_ACTIVATION) {
       int gpEventsCount {};
       std::vector<int> fixedEventIndices;
+      std::vector<std::string> events, topdownNodes, metrics;
       extractArguments([&](const char* name_, const char* value_) {
         if(name_ == ARG_PMU_COUNT) {
           gpEventsCount = atoi(value_);
         }
         else if(name_ == ARG_PMU_FIXED) {
-          char opt[strlen(value_)+1];
-          strcpy(opt, value_);
-          char* ptr;
-          const char* delimiter {","};
-          char* token = strtok_r(opt, delimiter, &ptr);
-          while(token) {
-            fixedEventIndices.emplace_back(atoi(token));
-            token= strtok_r(nullptr, delimiter, &ptr);
+          auto values = tokenize(value_);
+          for(auto& v : values) {
+            fixedEventIndices.emplace_back(atoi(v.c_str()));
           }
         }
+        else if(name_ == ARG_PMU_EVENTS) {
+          events = tokenize(value_);
+        }
+        else if(name_ == ARG_PMU_TOPDOWN_NODES) {
+          topdownNodes = tokenize(value_);
+        }
+        else if(name_ == ARG_PMU_METRICS) {
+          metrics = tokenize(value_);
+        }
       }, args_);
-      return RequestPtr {new PmuActivationRequest {gpEventsCount, fixedEventIndices}};
+      return RequestPtr {new PmuActivationRequest {gpEventsCount, fixedEventIndices, std::move(events),
+        std::move(topdownNodes), std::move(metrics)}};
     }
     else if(args_.size() > 0 && req_ == REQ_PERF_EVENTS_ACTIVATION) {
       PMUCtlRequest request {};
+      std::vector<std::string> events, topdownNodes, metrics;
       extractArguments([&](const char* name_, const char* value_) {
         if(name_ == ARG_PERF_EVENTS_DATA) {
           errors = parsePmuRequest(value_, request);
         }
+        else if(name_ == ARG_PMU_EVENTS) {
+          events = tokenize(value_);
+        }
+        else if(name_ == ARG_PMU_TOPDOWN_NODES) {
+          topdownNodes = tokenize(value_);
+        }
+        else if(name_ == ARG_PMU_METRICS) {
+          metrics = tokenize(value_);
+        }
       }, args_);
       if(errors.empty()) {
-        return RequestPtr {new PerfEventsActivationRequest {request}};
+        return RequestPtr {new PerfEventsActivationRequest {request, std::move(events),
+          std::move(topdownNodes), std::move(metrics)}};
       }
     }
     else if(args_.size() > 0 && req_ == REQ_PROFILE_ACTIVATION) {

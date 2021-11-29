@@ -55,7 +55,7 @@ namespace xpedite { namespace framework {
     XpediteLogInfo << "xpedite starting collecter - sample file - " << samplesFilePattern_
        << " | poll interval - every " << _pollInterval.count() << " milli seconds | samplesDataCapacity - "
        << samplesDataCapacity_ << " bytes" << XpediteLogEnd;
-    _collector.reset(new Collector {std::move(samplesFilePattern_), samplesDataCapacity_});
+    _collector.reset(new Collector {_profile, std::move(samplesFilePattern_), samplesDataCapacity_});
 
     if(!_collector->beginSamplesCollection()) {
       std::ostringstream stream;
@@ -101,8 +101,9 @@ namespace xpedite { namespace framework {
     _profile.enableFixedPMU(index_);
   }
 
-  bool Handler::enablePerfEvents(const PMUCtlRequest& request_) {
-    return _profile.enablePerfEvents(request_);
+  bool Handler::enablePerfEvents(const PMUCtlRequest& request_, std::vector<ux::UxEvent> events_, std::vector<std::string> topdownNodes_,
+      std::vector<std::string> metrics_) {
+    return _profile.enablePerfEvents(request_, std::move(events_), std::move(topdownNodes_), std::move(metrics_));
   }
 
   void Handler::disablePMU() {

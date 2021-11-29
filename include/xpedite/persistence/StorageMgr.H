@@ -12,7 +12,7 @@
 #pragma once
 #include <string>
 
-namespace xpedite { namespace framework {
+namespace xpedite { namespace persistence {
 
   class StorageMgr
   {

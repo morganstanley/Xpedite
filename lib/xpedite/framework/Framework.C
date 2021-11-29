@@ -20,7 +20,7 @@
 #include <xpedite/probes/ProbeList.H>
 #include <xpedite/util/Tsc.H>
 #include <xpedite/common/PromiseKeeper.H>
-#include "StorageMgr.H"
+#include <xpedite/persistence/StorageMgr.H>
 #include "request/RequestParser.H"
 #include "request/ProbeRequest.H"
 #include "request/ProfileRequest.H"
@@ -173,7 +173,7 @@ namespace xpedite { namespace framework {
     }
 
     ProfileActivationRequest profileActivationRequest {
-      StorageMgr::buildSamplesFileTemplate(), MilliSeconds {1}, profileInfo_.samplesDataCapacity()
+      persistence::StorageMgr::buildSamplesFileTemplate(), MilliSeconds {1}, profileInfo_.samplesDataCapacity()
     };
     profileActivationRequest.overrideRecorder(profileInfo_.recorder(), profileInfo_.dataProbeRecorder());
     if(!_sessionManager.execute(&profileActivationRequest)) {
@@ -252,7 +252,7 @@ namespace xpedite { namespace framework {
     frameworkThread = std::move(thread);
 
     // longer timeout, if the framework is awaiting perf client to begin profile
-    auto timeout = isEnabled(options_, Option::AWAIT_PROFILE_BEGIN) ? 120 : 5;
+    auto timeout = isEnabled(options_, Option::AWAIT_PROFILE_BEGIN) ? 120000 : 5;
     if(listenerInitFuture.wait_until(std::chrono::system_clock::now() + std::chrono::seconds(timeout)) != std::future_status::ready) {
       XpediteLogCritical << "xpedite - init failure - failed to start listener (timedout)" << XpediteLogEnd;
       *rc_ = false;

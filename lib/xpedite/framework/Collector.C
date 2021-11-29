@@ -13,7 +13,7 @@
 
 #include "Collector.H"
 #include <xpedite/util/Util.H>
-#include <xpedite/framework/Persister.H>
+#include <xpedite/persistence/Persister.H>
 #include <xpedite/framework/SamplesBuffer.H>
 #include <xpedite/log/Log.H>
 #include <tuple>

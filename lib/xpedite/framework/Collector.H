@@ -12,8 +12,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "StorageMgr.H"
-#include <xpedite/framework/Persister.H>
+#include <xpedite/persistence/StorageMgr.H>
+#include <xpedite/persistence/Persister.H>
+#include "Profile.H"
 #include <string>
 #include <tuple>
 
@@ -29,9 +30,10 @@ namespace xpedite { namespace framework {
   {
     public:
 
-    Collector(std::string fileNamePattern_, uint64_t samplesDataCapacity_)
-      : _storageMgr {samplesDataCapacity_}, _persister {}, _fileNamePattern {std::move(fileNamePattern_)},
-        _isCollecting {}, _capacityBreached {} {
+    Collector(const Profile& profile_, std::string fileNamePattern_, uint64_t samplesDataCapacity_)
+      : _storageMgr {samplesDataCapacity_}, 
+        _persister {profile_.events(), profile_.topdownNodes(), profile_.metrics()},
+        _fileNamePattern {std::move(fileNamePattern_)}, _isCollecting {}, _capacityBreached {} {
     }
 
     ~Collector() {
@@ -54,8 +56,8 @@ namespace xpedite { namespace framework {
     std::tuple<int, int, int> collectSamples(SamplesBuffer* buffer_);
     std::tuple<int, int> flush(SamplesBuffer* buffer_);
 
-    StorageMgr _storageMgr;
-    Persister _persister;
+    persistence::StorageMgr _storageMgr;
+    persistence::Persister _persister;
     std::string _fileNamePattern;
     bool _isCollecting;
     bool _capacityBreached;

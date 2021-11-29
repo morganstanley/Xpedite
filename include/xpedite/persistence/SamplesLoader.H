@@ -16,7 +16,9 @@
 #pragma once
 
 #include <xpedite/util/Errno.H>
-#include <xpedite/framework/Persister.H>
+#include <xpedite/persistence/Persister.H>
+#include <xpedite/persistence/SegmentLoader.H>
+#include <xpedite/persistence/ProfileInfo.H>
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
@@ -27,14 +29,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-namespace xpedite { namespace framework {
+namespace xpedite::persistence {
 
   class SamplesLoader
   {
     int _fd;
     const FileHeader* _fileHeader;
-    ProbeInfoMap _probeInfoMap;
-    const SegmentHeader* _segmentHeader;
+    const SamplesSegment* _samplesSegment;
     unsigned _size;
 
     const void* samplesEnd() const noexcept {
@@ -43,10 +44,25 @@ namespace xpedite { namespace framework {
 
     SamplesLoader(const SamplesLoader&)            = delete;
     SamplesLoader& operator=(const SamplesLoader&) = delete;
-    SamplesLoader(SamplesLoader&&)                 = delete;
-    SamplesLoader& operator=(SamplesLoader&&)      = delete;
 
     public:
+
+    SamplesLoader(SamplesLoader&& other_)
+      : _fd {other_._fd}, _fileHeader {other_._fileHeader }, _samplesSegment {other_._samplesSegment },
+        _size {other_._size } {
+      other_._fd = {};
+      other_._fileHeader = {};
+      other_._samplesSegment = {};
+      other_._size = {};
+    }
+
+    SamplesLoader& operator=(SamplesLoader&& other_) {
+      std::swap(_fd, other_._fd);
+      std::swap(_fileHeader, other_._fileHeader);
+      std::swap(_samplesSegment, other_._samplesSegment);
+      std::swap(_size, other_._size);
+      return *this;
+    }
 
     class Iterator : public std::iterator<std::input_iterator_tag, const probes::Sample>
     {
@@ -56,10 +72,10 @@ namespace xpedite { namespace framework {
 
       public:
 
-      explicit Iterator(const SegmentHeader* samplesHeader_, const void* end_)
+      explicit Iterator(const SamplesSegment* samplesSegment_, const void* end_)
         : _samples {reinterpret_cast<const probes::Sample*>(end_)}, _end {end_}, _size {} {
-        if(samplesHeader_ < _end) {
-          std::tie(_samples, _size) = samplesHeader_->samples();
+        if(samplesSegment_ < _end) {
+          std::tie(_samples, _size) = samplesSegment_->data();
         }
       }
 
@@ -72,8 +88,8 @@ namespace xpedite { namespace framework {
           _size -= _samples->size();
           _samples = _samples->next();
           if(!_size && _samples < _end) {
-            auto samplesHeader = reinterpret_cast<const SegmentHeader*>(_samples);
-            std::tie(_samples, _size) = samplesHeader->samples();
+            auto samplesHeader = reinterpret_cast<const SamplesSegment*>(_samples);
+            std::tie(_samples, _size) = samplesHeader->data();
           }
         }
         return *this;
@@ -99,7 +115,7 @@ namespace xpedite { namespace framework {
     };
 
     explicit SamplesLoader(const char* path_)
-      : _fd {}, _fileHeader {}, _probeInfoMap {}, _segmentHeader {}, _size {} {
+      : _fd {}, _fileHeader {}, _samplesSegment {}, _size {} {
       load(path_);
     }
 
@@ -140,21 +156,21 @@ namespace xpedite { namespace framework {
       if(!_fileHeader->isValid()) {
         throw std::runtime_error {errorMsg("detected data corruption - mismatch in header signature")};
       }
-
-      _fileHeader->forEachCallSiteInfo([this](const ProbeInfo* callSiteInfo_) {
-        _probeInfoMap.add(callSiteInfo_);
-      });
-      _segmentHeader = _fileHeader->segmentHeader();
+      _samplesSegment = _fileHeader->samples();
     }
 
-    const ProbeInfo* locateCallSite(const void* callSite_) const noexcept {
-      return _probeInfoMap.locateInfo(callSite_);
+    ProfileInfo loadProfileInfo(std::vector<ux::UxProbe> uxProbes_ = {}) noexcept {
+      SegmentLoader segmentLoader {};
+      _fileHeader->forEachMetaSegment(segmentLoader);
+      auto [cpuInfo, probeInfoMap, events, topdownNodes, metrics] = segmentLoader.data();
+      auto probeHandles {std::make_shared<ProbeHandles>(probeInfoMap, std::move(uxProbes_))};
+      return ProfileInfo {
+        cpuInfo, std::move(probeHandles), std::move(events), std::move(topdownNodes), std::move(metrics)
+      };
     }
 
-    uint32_t pmcCount()               const noexcept { return _fileHeader->pmcCount(); }
-    const ProbeInfoMap probeInfoMap() const noexcept { return _probeInfoMap;           }
-
-    Iterator begin() const { return Iterator {_segmentHeader, samplesEnd()}; }
+    uint32_t pmcCount() const noexcept { return _fileHeader->pmcCount(); }
+    Iterator begin() const { return Iterator {_samplesSegment, samplesEnd()}; }
     Iterator end() const   { return Iterator {samplesEnd(), samplesEnd()};   }
 
     uint64_t tscHz() const noexcept {
@@ -168,4 +184,4 @@ namespace xpedite { namespace framework {
     static int streamAsCsv(const char* samplesPath_, std::ostream& destStream_);
   };
 
-}}
+}

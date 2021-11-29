@@ -26,7 +26,7 @@ namespace xpedite { namespace common {
     PromiseKeeper& operator=(PromiseKeeper&&) = delete;
 
     ~PromiseKeeper() {
-      if(_promise && !std::uncaught_exception()) {
+      if(_promise && std::uncaught_exceptions() <= 0) {
         deliver(T {});
       }
     }

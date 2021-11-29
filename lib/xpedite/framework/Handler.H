@@ -8,13 +8,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <xpedite/ux/UxEvent.H>
+#include "Collector.H"
+#include "Profile.H"
 #include <map>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <chrono>
-#include "Collector.H"
-#include "Profile.H"
 
 namespace xpedite { namespace framework {
 
@@ -41,7 +42,8 @@ namespace xpedite { namespace framework {
 
       void enableGpPMU(int count_);
       void enableFixedPMU(uint8_t index_);
-      bool enablePerfEvents(const PMUCtlRequest& request_);
+      bool enablePerfEvents(const PMUCtlRequest& request_, std::vector<ux::UxEvent> events_, std::vector<std::string> topdownNodes_,
+          std::vector<std::string> metrics_);
       void disablePMU();
 
       void poll();

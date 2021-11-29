@@ -13,7 +13,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////
 
-#include <xpedite/framework/SamplesLoader.H>
+#include <xpedite/persistence/SamplesLoader.H>
 #include <iostream>
 
 int main(int argc_, char** argv_) {
@@ -21,6 +21,6 @@ int main(int argc_, char** argv_) {
     std::cerr << "[usage]: " << argv_[0] << " <samples-file>" << std::endl;
     exit(1); 
   }
-  xpedite::framework::SamplesLoader::streamAsCsv(argv_[1], std::cout);
+  xpedite::persistence::SamplesLoader::streamAsCsv(argv_[1], std::cout);
   return 0;
 }

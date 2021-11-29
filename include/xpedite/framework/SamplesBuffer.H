@@ -20,7 +20,7 @@
 #include <xpedite/probes/Config.H>
 #include <xpedite/probes/Sample.H>
 #include <xpedite/pmu/PMUCtl.H>
-#include <xpedite/framework/Persister.H>
+#include <xpedite/persistence/Persister.H>
 #include <xpedite/log/Log.H>
 #include <atomic>
 #include <stdlib.h>
@@ -44,6 +44,8 @@ namespace xpedite { namespace framework {
 
   class SamplesBuffer : public util::AlignedObject<common::ALIGNMENT>
   {
+    using Persister = persistence::Persister;
+
     public:
 
     static SamplesBuffer* allocate() {
