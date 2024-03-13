@@ -25,7 +25,7 @@ sourceSets {
 }
 
 task xpediteJar(type: Jar) {
-  baseName = 'xpedite'
+  archiveBaseName = 'xpedite'
   exclude(['**/demo/**'])
   manifest {
     attributes(
@@ -42,7 +42,7 @@ task xpediteJar(type: Jar) {
 task demoJar(type: Jar) {
   include(['**/demo/**'])
   exclude(['**/com/xpedite/probes'])
-  baseName = 'xpediteDemo'
+  archiveBaseName = 'xpediteDemo'
   manifest {
     attributes(
       'Implementation-Title': 'Xpedite Demo Jar',
