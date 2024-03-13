@@ -12,6 +12,7 @@
 
 #pragma once
 #include <sstream>
+#include <cstdint>
 
 namespace xpedite { namespace probes {
 

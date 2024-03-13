@@ -31,7 +31,7 @@ fi
 eval set -- "$ARGS"
 ENABLE_PMU=0
 VERBOSE=0
-PYTHON_VERSION=2
+PYTHON_VERSION=3
 
 while true ; do
   case "$1" in
