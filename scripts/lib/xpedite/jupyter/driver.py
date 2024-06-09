@@ -202,15 +202,17 @@ def launchJupyter(homeDir):
   LOGGER.info('')
   pyPath = os.path.dirname(binPath('python')) + os.pathsep + os.environ['PATH']
   initPath = os.path.dirname(__file__)
+  runtimePath = tempfile.mkdtemp(prefix=SHELL_PREFIX, dir='/tmp')
   jupyterEnv = os.environ
   jupyterEnv[Context.xpediteHomeKey] = os.path.abspath(homeDir)
   jupyterEnv['JUPYTER_PATH'] = os.path.join(initPath, 'data/extensions/')
   jupyterEnv['JUPYTER_CONFIG_DIR'] = os.path.join(initPath, 'data/config/')
+  jupyterEnv['JUPYTER_RUNTIME_DIR'] = runtimePath
+  jupyterEnv['HOME'] = runtimePath
   jupyterEnv['XPEDITE_PATH'] = os.path.abspath(os.path.join(initPath, '../../'))
   jupyterEnv['PATH'] = pyPath
-  jupyterEnv['HOME'] = tempfile.mkdtemp(prefix=SHELL_PREFIX, dir='/tmp')
   jupyterBinary = binPath('jupyter')
-  os.execle(jupyterBinary, 'Xpedite', 'notebook', '--no-browser', '--notebook-dir='+homeDir, jupyterEnv)
+  os.execle(jupyterBinary, 'Xpedite', 'nbclassic', '--no-browser', '--notebook-dir='+homeDir, jupyterEnv)
 
 def validatePath(homeDir, reportName):
   """Validates the path to store xpedite notebook and data files"""

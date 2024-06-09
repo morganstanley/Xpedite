@@ -2,13 +2,13 @@ import os, sys
 from IPython.display import display, HTML
 sys.path.append(os.environ['XPEDITE_PATH'])
 import xpedite
+import ipynbname
 from xpedite.jupyter.commands import routes, txns, plot, stat, filter, diff
 from xpedite.analytics.timelineTree import buildTimelineTree
 from xpedite.jupyter.templates.initCell import INTRO_FRMT
 from xpedite.jupyter.context import Context, context
 
-thismodule = sys.modules[__name__]
-notebookPath = getattr(thismodule, Context.notebookPathKey)
+notebookPath = ipynbname.path()
 result = 'Failed to resolve jupyter notebook path'
 if notebookPath:
   context.initialize(notebookPath)

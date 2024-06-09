@@ -14,7 +14,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 """
 
 import logging
-from IPython.core.display      import display, HTML
+from IPython.display           import display, HTML
 from xpedite.jupyter.context   import context
 from xpedite.report.markup     import ERROR_TEXT
 
@@ -241,7 +241,7 @@ class Txns(object):
       ) if self.profile.current.isEventsEnabled() else ''
       threshold = 1000
       if len(self.profile.current) > threshold:
-        LOGGER.warn('too many transaction - showing only %d out of %d', threshold, len(self.profile.current))
+        LOGGER.warning('too many transaction - showing only %d out of %d', threshold, len(self.profile.current))
       strRepr += str(ReportBuilder().buildTimelineTable(
         self.profile.current, self.profile.probes, ResultOrder.Chronological, threshold, uid
       ))
