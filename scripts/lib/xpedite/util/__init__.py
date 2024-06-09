@@ -40,7 +40,7 @@ def timeAction(action, delegate):
   retVal = delegate()
   elapsed = time.time() - begin
   if elapsed > 10:
-    LOGGER.warn('timed action exceeded threshold %s completed in %s.1f seconds', action, elapsed)
+    LOGGER.warning('timed action exceeded threshold %s completed in %s.1f seconds', action, elapsed)
   return retVal
 
 def shell(cmd, cwd=None, closeFds=True):

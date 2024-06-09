@@ -23,6 +23,7 @@ int  cpu {0};
 bool multiThreaded {};
 int txnCount {100};
 bool randomize {};
+bool pinMemory {};
 
 void parseArgs(int argc_, char** argv_) {
   int arg;
@@ -40,6 +41,9 @@ void parseArgs(int argc_, char** argv_) {
     case 'c':
       cpu = std::stoi(optarg);
       break;
+    case 'l':
+      pinMemory = true;
+      break;
     case '?':
     default:
       std::cerr << argv_[0] << " [-c <cpu>] [-t <txn count>] [-r] [-m]" << std::endl;
@@ -51,13 +55,14 @@ void parseArgs(int argc_, char** argv_) {
 int main(int argc_, char** argv_) {
   using namespace xpedite::demo;
   parseArgs(argc_, argv_);
-  initialize();
   std::cout 
     << "\n========================================================================================\n"
     << " \txpedite " << (multiThreaded ? "Multi thread " : "") << "demo [txnCount - " << txnCount 
     << " | randomization - " << (randomize ? "enabled" : "disabled") 
     << " | cpu - " << cpu << "]" 
+    << " | pinMemory - " << (pinMemory ? "enabled" : "disabled") << "]" 
     << "\n========================================================================================\n\n";
+  initialize(pinMemory);
   if(multiThreaded) {
     int trc;
     std::thread t {[&trc]() {trc = runDemo(txnCount, randomize, cpu);}};

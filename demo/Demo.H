@@ -29,9 +29,11 @@ namespace xpedite { namespace demo {
   constexpr uint64_t indexSize = 2048;
   using Indices = std::array<uint64_t, indexSize>;
 
-  inline void initialize(size_t core_ = 0) {
-    if(mlockall(MCL_CURRENT | MCL_FUTURE)) {
-      std::cerr << "failed to mlock all pages" << std::endl;
+  inline void initialize(bool pinMemory_, size_t core_ = 0) {
+    if(pinMemory_) {
+      if(mlockall(MCL_CURRENT | MCL_FUTURE)) {
+        std::cerr << "failed to mlock all pages" << std::endl;
+      }
     }
     using namespace xpedite::framework;
     if(!xpedite::framework::initialize("xpedite-appinfo.txt", {AWAIT_PROFILE_BEGIN})) { 

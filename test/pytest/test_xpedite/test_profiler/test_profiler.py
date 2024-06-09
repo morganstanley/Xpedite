@@ -54,7 +54,7 @@ def setTestParameters(hostname, transactions, multithreaded, workspace, rundir, 
   ProbeIndexFactory.reset()
   if not isIpLocal(hostname):
     remote = Remote(hostname, makeLogPath('remote'))
-    remote.__enter__()
+    remote.__enter__() # pylint: disable=unnecessary-dunder-call
   CAN_RECORD_PMC = recordPMC
   CONTEXT = Context(transactions, multithreaded, workspace)
   SCENARIO_LOADER.loadScenarios(rundir, apps, scenarioTypes, remote)
@@ -77,8 +77,8 @@ def test_record_vs_report(capsys, scenarioName):
   checkPmcSupport(scenarioName)
   with SCENARIO_LOADER[scenarioName] as scenarios:
     with capsys.disabled():
-      currentReport, _, _ = runXpediteRecord(CONTEXT, scenarios)
-    report = runXpediteReport(currentReport.runId, CONTEXT, scenarios)
+      currentReport, fullCpuInfo, _ = runXpediteRecord(CONTEXT, scenarios)
+    report = runXpediteReport(currentReport.runId, CONTEXT, scenarios, cpuInfoOverride=fullCpuInfo)
     findDiff(report.profiles.__dict__, currentReport.profiles.__dict__)
     assert report.profiles == currentReport.profiles
 

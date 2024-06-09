@@ -109,5 +109,5 @@ class EnvReportBuilder(object):
     tabBody = TAB_BODY_FMT.format('hostInfo', envBodyClass + tabContentState(True), hostReport)
     tabBody += TAB_BODY_FMT.format('profileInfo', envBodyClass + tabContentState(False), profileReport)
     tabBody = TAB_BODY_PREFIX + tabBody + TAB_BODY_SUFFIX
-    report = (HTML_BEGIN + TAB_CONTAINER_FMT.format(tabHeader, tabBody) + TAB_JS + HTML_END)
+    report = HTML_BEGIN + TAB_CONTAINER_FMT.format(tabHeader, tabBody) + TAB_JS + HTML_END
     return report

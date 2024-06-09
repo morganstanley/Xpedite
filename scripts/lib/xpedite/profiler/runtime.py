@@ -82,7 +82,7 @@ class AbstractRuntime(object):
         LOGGER.error(msg)
         raise Exception(msg)
     else:
-      LOGGER.warn('failed to enable probes - Invalid or empty probes argument')
+      LOGGER.warning('failed to enable probes - Invalid or empty probes argument')
 
   def resolveProbes(self, probes):
     """
@@ -224,7 +224,7 @@ class Runtime(AbstractRuntime):
       else:
         if pmc:
           self.eventSet = self.resolveEvents(eventsDb, cpuSet, pmc)
-        LOGGER.warn('DRY Run selected - xpedite won\'t enable probes')
+        LOGGER.warning('DRY Run selected - xpedite won\'t enable probes')
     except Exception as ex:
       LOGGER.exception('failed to start profiling')
       raise ex
@@ -263,7 +263,7 @@ class Runtime(AbstractRuntime):
         try:
           self.app.endProfile()
         except Exception as ex:
-          LOGGER.warn('Detected unclean profile termination - %s', ex)
+          LOGGER.warning('Detected unclean profile termination - %s', ex)
         if self.eventSet:
           self.app.disablePMU()
 

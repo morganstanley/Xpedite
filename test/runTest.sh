@@ -36,6 +36,8 @@ usage: ${PROGRAM_NAME} [lgpw:cr:s:Pt:m:a:]
 -c|--cov            check pytest code coverage
 -r|--remote         set a remote hostname for the application to run on: ${PROGRAM_NAME} -r <hostname>
 -s|--single         choose a single test to run: ${PROGRAM_NAME} -s test_name
+-L|--list           List pytest
+-k|--pattern        Run pytest matching pattern
 -t|--transactions   specify a number of transactions for the target application: ${PROGRAM_NAME} -t <transactions>
 -m|--multithreaded  specify the number of threads for the target application: ${PROGRAM_NAME} -m <number of threads>
 -a|--apps           a comma separated list of binaries to test: ${PROGRAM_NAME} -a <app1,app2,app3>
@@ -103,6 +105,10 @@ function doesDirectoryExist() {
   fi
 }
 
+function listPytests() {
+	PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${PYTEST_DIR} --collect-only
+}
+
 function runPytests() {
   RUN_DIR=$(mktemp -d)
 
@@ -128,8 +134,10 @@ function runPytests() {
     SCENARIO_TYPES="--scenarioTypes=Regular,Benchmark,PMC"
   fi
 
-  PYTEST_ARGS="${COV} ${TEST_NAME} -v ${APP_HOST} ${TRANSACTION_COUNT} ${THREAD_COUNT} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES} ${RECORD_PMC}"
-  if ! PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} pytest ${PYTEST_ARGS}; then
+  set -x
+  PYTEST_ARGS="${COV} ${TEST_NAME} ${TEST_PATTERN} -v ${APP_HOST} ${PYTEST_ARGS} ${TRANSACTION_COUNT} ${THREAD_COUNT}"
+  PYTEST_ARGS="${PYTEST_ARGS} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES} ${RECORD_PMC}"
+  if ! PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} FORCE_COLOR=true pytest ${PYTEST_ARGS}; then
     echo detected one or more pytest failures
     RC=$(($RC + 1))
   fi
@@ -173,7 +181,7 @@ function runAllTests() {
   runPytests
 }
 
-ARGS=$(getopt -o lgpw:cr:s:t:m:a:S:P --long lint,gtest,pytest,workspace,cov,remote:,test:,transactions:,multithreaded:,apps:,scenarioTypes:recordPMC -- "$@")
+ARGS=$(getopt -o lLgpw:cr:s:k:t:m:a:S:P --long lint,list,gtest,pytest,single,pattern,workspace,cov,remote:,test:,transactions:,multithreaded:,apps:,scenarioTypes:recordPMC -- "$@")
 
 if [ $? -ne 0 ]; then
   usage
@@ -212,6 +220,15 @@ while true ; do
       TEST_NAME="${PYTEST_DIR}/test_xpedite/test_profiler/test_profiler.py::$2" ;
       echo ${TEST_NAME}
       shift 2
+      ;;
+    -k|--pattern)
+      TEST_PATTERN="-k $2" ;
+			echo 'Test pattern *******' ${TEST_PATTERN}
+      shift 2
+      ;;
+    -L|--list)
+      LIST_PYTEST=true
+      shift
       ;;
     -t|--transactions)
       TRANSACTION_COUNT="--transactions=$2"
@@ -252,7 +269,7 @@ if [ -d ${RUNTIME_DIR}/bin ]; then
   python -m pip --trusted-host pypi.org --trusted-host files.pythonhosted.org install pytest pylint pytest-cov
 fi
 
-if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" ]]; then
+if [[ -z "${LINT}" && -z "${GTEST}" && -z "${PYTEST}" && -z "${LIST_PYTEST}" && -z "${TEST_PATTERN}" ]]; then
   runAllTests
 else
   if [ -z "${PYTEST}" ] && [[ "${APP_HOST}" || "${TRANSACTION_COUNT}"  || "${THREAD_COUNT}" || "${WORKSPACE}" || "${COV}" || "${TEST_NAME}" || "${APPS}" || "${SCENARIO_TYPES}" || "${RECORD_PMC}" ]]; then
@@ -267,8 +284,12 @@ else
     runLint
   fi
 
-  if [ "${PYTEST}" = true ]; then
+  if [ "${PYTEST}" = true -o -n "${TEST_PATTERN}" ]; then
     runPytests
+  fi
+
+  if [ "${LIST_PYTEST}" = true ]; then
+		listPytests
   fi
 fi
 

@@ -96,7 +96,7 @@ def loaderFactory(loaderType, benchmark, probes, benchmarkProbes, topdownCache, 
   benchmarkTopdownMetrics = None
   if benchmarkProbes and benchmark.name in benchmarkProbes:
     loaderProbes = benchmarkProbes[benchmark.name]
-    LOGGER.warn('overriding probes for benchmark run \'%s\'', benchmark.name)
+    LOGGER.warning('overriding probes for benchmark run \'%s\'', benchmark.name)
   if benchmark.events and topdownMetrics:
     from xpedite.pmu.event import TopdownMetrics
     benchmarkTopdownMetrics = TopdownMetrics()

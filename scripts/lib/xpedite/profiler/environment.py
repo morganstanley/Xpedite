@@ -97,13 +97,13 @@ class ProxyEnvironment(object):
     if not cpuSet or len(cpuSet) <= 0:
       raise Exception('Invalid argument - cpu set missing. need explicit cpu set to enable pmu')
     self.pmuCtrl = PMUCtrl(eventsDb)
-    self.pmuCtrl.__enter__()
+    self.pmuCtrl.__enter__() # pylint: disable=unnecessary-dunder-call
     return self.pmuCtrl.enable(cpuSet, events)
 
   def disablePMU(self):
     """Disables user space pmc collection and restores cpu core to original state"""
     if self.pmuCtrl:
-      self.pmuCtrl.__exit__()
+      self.pmuCtrl.__exit__() # pylint: disable=unnecessary-dunder-call
 
   @staticmethod
   def getVmStats(pid):
@@ -229,7 +229,7 @@ class Environment(object):
     if not self.isDriverLoaded():
       (eventSet, request) = PMUCtrl.buildPerfEventsRequest(eventsDb, events)
       if eventSet and request:
-        LOGGER.warn('xpedite device driver not loaded - falling back to perf events api')
+        LOGGER.warning('xpedite device driver not loaded - falling back to perf events api')
         LOGGER.debug('sending request (%d bytes) to xpedite [%s]', len(request), request)
         rc = self.admin('ActivatePerfEvents --data {}'.format(request))
         if rc:

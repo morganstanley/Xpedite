@@ -102,14 +102,14 @@ class BenchmarksCollector(object):
             benchmark.dataSource = dataSource
             benchmarks.append(benchmark)
         else:
-          LOGGER.warn('skip processing benchmark %s. failed to load benchmark info', path)
+          LOGGER.warning('skip processing benchmark %s. failed to load benchmark info', path)
 
         if len(benchmarks) >= count:
           if i + 1 < len(self.benchmarkPaths):
             LOGGER.debug('skip processing %s benchmarks. limit reached.', self.benchmarkPaths[i+1:])
           break
       else:
-        LOGGER.warn('skip processing benchmark %s. failed to locate benchmark files', path)
+        LOGGER.warning('skip processing benchmark %s. failed to locate benchmark files', path)
     return benchmarks
 
   @staticmethod

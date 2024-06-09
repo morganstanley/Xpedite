@@ -138,7 +138,7 @@ def buildReportCells(nb, result, dataFilePath):
 
     nb['cells'].append(
       nbf.new_code_cell(source=cellCode, metadata={
-        'init_cell': True, 'hide_input': True, 'editable': False, 'deletable': True
+        'init_cell': True, 'hide_input': True, 'editable': True, 'deletable': True
       })
     )
 
@@ -217,7 +217,7 @@ def validatePath(homeDir, reportName):
   from xpedite.jupyter import DATA_DIR, DATA_FILE_EXT, TEMP_PREFIX, NOTEBOOK_EXT
   if homeDir is None:
     homeDir = tempfile.mkdtemp(prefix=TEMP_PREFIX, dir='/tmp')
-    LOGGER.warn('Xpedite home directory not found in profileInfo (using temp dir).\n'
+    LOGGER.warning('Xpedite home directory not found in profileInfo (using temp dir).\n'
       'To keep all reports in one place, set variable homeDir in profileInfo to a valid path.')
 
   dataDir = os.path.join(homeDir, DATA_DIR)
