@@ -61,10 +61,10 @@ class Extractor(object):
       elapsed = time.time() - begin
       self.logCounterFilterReport()
       if self.orphanedSamplesCount:
-        LOGGER.warn('detected mismatch in binary vs app info - %d counters ignored', self.orphanedSamplesCount)
+        LOGGER.warning('detected mismatch in binary vs app info - %d counters ignored', self.orphanedSamplesCount)
       LOGGER.completed('%d records | %d txns loaded in %0.2f sec.', recordCount-1, loader.getCount(), elapsed)
     if loader.isCompromised() or loader.getTxnCount() <= 0:
-      LOGGER.warn(loader.report())
+      LOGGER.warning(loader.report())
     elif loader.isNotAccounted():
       LOGGER.debug(loader.report())
     loader.endCollection()

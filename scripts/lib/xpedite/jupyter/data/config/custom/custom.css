@@ -6,12 +6,12 @@
 **
 *******************************************************************************************/
 
-@import 'flot.css';
-@import 'notebook.css';
-@import 'sunburst.css';
-@import 'bipartite.css';
-@import 'xpedite.css';
-@import 'darkTheme.css';
+@import '/static/flot.css';
+@import '/static/notebook.css';
+@import '/static/sunburst.css';
+@import '/static/bipartite.css';
+@import '/static/xpedite.css';
+@import '/static/darkTheme.css';
 
 body.notebook_app, body.notebook_app.command_mode {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

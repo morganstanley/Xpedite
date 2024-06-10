@@ -26,8 +26,8 @@ logger.init()
 
 from xpedite.dependencies               import Package, DEPENDENCY_LOADER
 DEPENDENCY_LOADER.load(Package.Cement)
-from cement.core.foundation             import CementApp
-from cement.ext.ext_argparse            import ArgparseController, expose
+from cement import App, CaughtSignal, Controller, ex
+
 import logging
 import xpedite
 
@@ -54,15 +54,16 @@ def _loadDriver(name = None):
     return Driver()
   return driver
 
-class AppController(ArgparseController):
+
+class AppController(Controller):
   class Meta:
     label = 'base'
 
-  @expose(hide=True)
+  @ex(hide=True)
   def default(self):
     self.probes()
 
-  @expose(
+  @ex(
     arguments=[
       (['-p', '--profileInfo'], dict(action='store', required=True, help=profileInfoHelp)),
       (['-b', '--createBenchmark'], dict(action='store', help='store Live profile report at the given path, for future benchmarking')),
@@ -94,7 +95,7 @@ class AppController(ArgparseController):
     driver = _loadDriver(self.app.pargs.driver)
     driver.render(profileInfo, report, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
-  @expose(
+  @ex(
     arguments=[
       (['-p', '--profileInfo'], dict(action='store', required=True, help=profileInfoHelp)),
     ],
@@ -113,7 +114,7 @@ class AppController(ArgparseController):
       LOGGER.error('failed to locate probes in app %s. Have you instrumented any ?', profileInfo.appName)
     LOGGER.info('')
 
-  @expose(
+  @ex(
     arguments=[
       (['-H', '--hostname'], dict(action='store', default='127.0.0.1', help='host where the app runs')),
       (['-a', '--appInfo'], dict(action='store', required=True, help='path to appInfo file, used in xpedite framework initilization')),
@@ -124,7 +125,7 @@ class AppController(ArgparseController):
     from xpedite.profiler import Profiler
     Profiler.generate(self.app.pargs.appInfo, hostname=self.app.pargs.hostname)
 
-  @expose(
+  @ex(
     arguments=[
       (['-H', '--home'], dict(action='store', required=False, help='Home dir for xpedite shell')),
       (['-z', '--zip'], dict(action='store', required=False, help='Archive a xpedite report. Takes path of a xpedite notebook as argument')),
@@ -141,7 +142,7 @@ class AppController(ArgparseController):
         return
     home = self.app.pargs.home
     if not home:
-      LOGGER.warn('No home directory specified for shell - using current working directory')
+      LOGGER.warning('No home directory specified for shell - using current working directory')
       home = os.getcwd()
 
     if self.app.pargs.unzip:
@@ -149,13 +150,13 @@ class AppController(ArgparseController):
         deflator.deflate(home)
     launchJupyter(home)
 
-class FrameworkController(ArgparseController):
+class FrameworkController(Controller):
   class Meta:
     label = 'FrameworkController'
     stacked_on = 'base'
     stacked_type = 'embedded'
 
-  @expose(
+  @ex(
     arguments=[
       (['-p', '--profileInfo'], dict(action='store', required=True, help=profileInfoHelp)),
       (['-b', '--createBenchmark'], dict(action='store', help='store report at the given path, for future benchmarking')),
@@ -191,7 +192,7 @@ class FrameworkController(ArgparseController):
     driver = _loadDriver(self.app.pargs.driver)
     driver.render(profileInfo, report, leanReports = self.app.pargs.lean, cprofile = cprofile)
 
-  @expose(
+  @ex(
     arguments=[
     ],
     help='Print the CPU info for the current machine'
@@ -201,7 +202,7 @@ class FrameworkController(ArgparseController):
     cpuId = getCpuId()
     LOGGER.info('%s\n', cpuId)
 
-  @expose(
+  @ex(
     arguments=[
       (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
     ],
@@ -213,7 +214,7 @@ class FrameworkController(ArgparseController):
       LOGGER.info(e)
     LOGGER.info('')
 
-  @expose(
+  @ex(
     arguments=[
       (['-n', '--node'], dict(action='store', help='list pmu events for node - enter "all" to list events for all nodes')),
       (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
@@ -227,7 +228,7 @@ class FrameworkController(ArgparseController):
       LOGGER.info('%s', topdown.metricsToString(n))
     LOGGER.info('')
 
-  @expose(
+  @ex(
     arguments=[
       (['-n', '--node'], dict(action='store', help='list pmu events for node - enter "all" to list events for all nodes')),
       (['-c', '--cpuId'], dict(action='store', required=False, help='list pmu counters for the give cpu identifier')),
@@ -244,7 +245,7 @@ class FrameworkController(ArgparseController):
       return
     LOGGER.info('%s\n', topdown.hierarchy)
 
-  @expose(
+  @ex(
     arguments=[
       (['-e', '--enable'], dict(action='store_true', help='load xpedite kernel module to ENABLE hardware performance counters')),
       (['-d', '--disable'], dict(action='store_true', help='unload xpedite kernel module to DISABLE hardware performance counters')),
@@ -264,7 +265,7 @@ class FrameworkController(ArgparseController):
       extractor = subprocess.call(cmdList)
     LOGGER.info('pmc status - %s\n', 'enabled' if isDriverLoaded() else 'disabled')
 
-class XpediteClient(CementApp):
+class XpediteClient(App):
   class Meta:
     label = 'Xpedite'
     base_controller = 'base'

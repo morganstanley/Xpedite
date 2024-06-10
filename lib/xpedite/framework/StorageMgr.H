@@ -11,6 +11,7 @@
 
 #pragma once
 #include <string>
+#include <cstdint>
 
 namespace xpedite { namespace framework {
 

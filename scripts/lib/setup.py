@@ -63,7 +63,9 @@ setup(name='xpedite',
         'cement',
         'termcolor',
         'py-cpuinfo',
-        'jupyter',
+        'nbclassic',
         'six',
+        'setuptools'
+        'ipynbname',
       ],
       zip_safe=False)

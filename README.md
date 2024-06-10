@@ -43,9 +43,14 @@ Due to this, sampling profilers typically end up profiling the least interesting
 
 ## Building <a name="building"></a>
 
-To build xpedite, you will need [cmake](http://cmake.org/) 3.4 or later, [GNU gcc](https://gcc.gnu.org/) 5.2 or later, and a version 2.5 or later Linux kernel.
+To build xpedite, you will need a linux machine (kernel 2.5 or later) running on intel hardware with the following packages.
+  1. [cmake](http://cmake.org/) (3.4 or later)
+  2. [GNU gcc](https://gcc.gnu.org/) (5.2 or later)
+  3. [python 3](https://www.python.org/downloads/)
+  4. [pybind11](https://github.com/pybind/pybind11)
+  5. [python 3 venv](https://docs.python.org/3/library/venv.html)
 
-With cmake and g++ installed, to use xpedite, clone this repository and run the following from xpedite source dir:
+With the above installed, to use xpedite, clone this repository and run the following from xpedite source dir:
 
 ```
 $ ./build.sh      # builds xpedite c++ library

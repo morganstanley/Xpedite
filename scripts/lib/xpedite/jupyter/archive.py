@@ -93,7 +93,7 @@ class Deflator(object):
     """
     if not extractPath:
       import tempfile
-      LOGGER.warn('No directory specified for extracting files, setting /tmp as notebook directory')
+      LOGGER.warning('No directory specified for extracting files, setting /tmp as notebook directory')
       extractPath = tempfile.mkdtemp(prefix=EXPORT_PREFIX, dir='/tmp')
     self.archive.extractall(path=extractPath)
     return extractPath

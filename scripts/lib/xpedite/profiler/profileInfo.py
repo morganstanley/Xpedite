@@ -9,7 +9,7 @@ Author: Manikandan Dhamodharan, Morgan Stanley
 
 import os
 import sys
-import imp #pylint: disable=deprecated-module
+import importlib.util
 import logging
 
 LOGGER = logging.getLogger(__name__)
@@ -74,7 +74,9 @@ def loadProfileInfo(profilePath):
     path = os.path.abspath(profilePath)
     fileName = os.path.split(profilePath)[1]
     moduleName = str.split(fileName, '.')[0]
-    profileInfo = imp.load_source(moduleName, path)
+    spec = importlib.util.spec_from_file_location(moduleName, path)
+    profileInfo  = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(profileInfo)
     benchmarkPaths = getattr(profileInfo, 'benchmarkPaths', None)
     pmc = getattr(profileInfo, 'pmc', None)
     cpuSet = getattr(profileInfo, 'cpuSet', None)

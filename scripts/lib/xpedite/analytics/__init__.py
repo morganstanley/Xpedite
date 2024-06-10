@@ -60,7 +60,7 @@ class Analytics(object):
             else:
               if category not in categorySet:
                 categorySet.add(category)
-                LOGGER.warn('current run missing trasactions for category "%s"', category)
+                LOGGER.warning('current run missing trasactions for category "%s"', category)
       else:
         scopeList = ', '.join([probe.getCanonicalName() for probe in probes if not probe.isAnonymous])
         errMsg = (

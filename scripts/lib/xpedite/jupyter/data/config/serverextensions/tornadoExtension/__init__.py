@@ -5,8 +5,10 @@ static html and data files
 Author: Dhruv Shekhawat, Morgan Stanley
 """
 
-from notebook.utils          import url_path_join
-from notebook.base.handlers  import IPythonHandler
+#from notebook.utils          import url_path_join
+import jupyter_server
+from jupyter_server.base.handlers import JupyterHandler
+import tornado
 from tornado                 import template
 import tornado.web
 import json
@@ -15,13 +17,14 @@ import base64
 import os
 import sys
 
-class HtmlReportHandler(tornado.web.RequestHandler):
+class HtmlReportHandler(JupyterHandler):
   """Class to serve html reports through links with
   query params as notebook path and (cellId, reportId)
   as indices to read metadata from notebook
   """
+  @tornado.web.authenticated
   def get(self):
-    xpeditePath = os.path.normpath(os.path.join(__file__, '../../../../../..'))
+    xpeditePath = os.path.normpath(os.path.join(__file__, '../../../../../../..'))
     sys.path.append(xpeditePath)
 
     from xpedite.jupyter.xpediteData import XpediteDataReader
@@ -57,11 +60,16 @@ def get_init_cell(jsonReport):
     if(('isInit' in metadata) and (metadata['isInit'] == '0xFFFFFFFFA5A55A5DUL')):
       return cell
 
-def load_jupyter_server_extension(nb_server_app):
-  """Method called first to load the
-  server extension on jupyter startup
-  """
-  web_app = nb_server_app.web_app
-  host_pattern = '.*$'
-  route_pattern = url_path_join(web_app.settings['base_url'], '/xpedite')
-  web_app.add_handlers(host_pattern, [(route_pattern, HtmlReportHandler)])
+def _load_jupyter_server_extension(serverapp: jupyter_server.serverapp.ServerApp):
+    """
+    This function is called when the extension is loaded.
+    """
+    handlers = [('/xpedite', HtmlReportHandler)]
+    serverapp.web_app.add_handlers(".*$", handlers)
+
+def _jupyter_server_extension_points():
+    """
+    Returns a list of dictionaries with metadata describing
+    where to find the `_load_jupyter_server_extension` function.
+    """
+    return [{"module": "tornadoExtension"}]

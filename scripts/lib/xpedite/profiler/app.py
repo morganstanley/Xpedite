@@ -123,7 +123,7 @@ class XpediteApp(object):
       Environment(self.ip, self._appInfoPath, self.dryRun, self.workspace) if isLocal
       else RemoteEnvironment(self.ip, self._appInfoPath, self.dryRun, self.workspace)
     )
-    self.env.__enter__()
+    self.env.__enter__() # pylint: disable=unnecessary-dunder-call
 
   def stop(self):
     """Disconnects and detaches from target application"""
@@ -165,7 +165,7 @@ def pingApp(app):
   except socket.error as socketError:
     errMsg = 'encounter a socket error: {}'.format(str(socketError))
 
-  LOGGER.warn('restarting xpedite client - application is not responding to ping - %s', errMsg)
+  LOGGER.warning('restarting xpedite client - application is not responding to ping - %s', errMsg)
   app.restart()
 
   try:
@@ -189,7 +189,7 @@ class XpediteDormantApp(XpediteApp):
     """Constructs an instance of XpediteDormantApp"""
     dataSource = CsvDataSourceFactory().gather(dataSourcePath) if dataSourcePath else None
     if dataSource:
-      LOGGER.warn('Data source detected. overriding appinfo to %s', dataSource.appInfoPath)
+      LOGGER.warning('Data source detected. overriding appinfo to %s', dataSource.appInfoPath)
       appInfoPath = dataSource.appInfoPath
     XpediteApp.__init__(self, name, ip, appInfoPath, dryRun=True, workspace=workspace)
     self.dataSource = dataSource

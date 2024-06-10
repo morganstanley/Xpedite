@@ -14,6 +14,7 @@
 #include <xpedite/util/Util.H>
 #include <xpedite/probes/CallSite.H>
 #include <xpedite/probes/RecorderCtl.H>
+#include <cstdint>
 
 namespace xpedite { namespace probes {
 

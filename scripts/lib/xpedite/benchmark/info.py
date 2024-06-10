@@ -73,7 +73,7 @@ def loadBenchmarkInfo(path):
     legend = configParser.get(BENCHMARK_SECTION, BENCHMARK_LEGEND_KEY)
 
     if not configParser.has_section(BENCHMARK_CPU_INFO_SECTION):
-      LOGGER.warn('failed to load benchmark %s - cpu info missing', benchmarkName)
+      LOGGER.warning('failed to load benchmark %s - cpu info missing', benchmarkName)
       return None
     cpuId = configParser.get(BENCHMARK_CPU_INFO_SECTION, BENCHMARK_CPU_ID_KEY)
     cpuFrequency = configParser.get(BENCHMARK_CPU_INFO_SECTION, BENCHMARK_CPU_FREQUENCY_KEY)

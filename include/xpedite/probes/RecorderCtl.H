@@ -11,6 +11,7 @@
 #pragma once
 #include <xpedite/probes/CallSite.H>
 #include <xpedite/probes/Recorders.H>
+#include <cstdint>
 
 using XpediteRecorder = void (*)(const void*, uint64_t);
 using XpediteDataProbeRecorder = void (*)(const void*, uint64_t, __uint128_t);

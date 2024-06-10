@@ -17,6 +17,7 @@
 #pragma once
 #include <xpedite/platform/Builtins.H>
 #include <array>
+#include <cstdint>
 
 extern "C" {
 

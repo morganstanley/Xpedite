@@ -35,13 +35,13 @@ def generateProfiles(app, scenario, context):
     assert len(profile.current) == context.txnCount
   return report
 
-def runXpediteReport(runId, context, scenario, sampleFilePath=None, cpuInfoOverride=False):
+def runXpediteReport(runId, context, scenario, sampleFilePath=None, cpuInfoOverride=None):
   """
   Run xpedite report
   """
   with scenario.makeXpediteDormantApp(runId, context.workspace, sampleFilePath) as xpediteApp:
     if cpuInfoOverride:
-      xpediteApp.env.proxy.fullCpuInfo = scenario.fullCpuInfo
+      xpediteApp.env.proxy.fullCpuInfo = cpuInfoOverride
     xpediteApp.appInfoPath = os.path.join(scenario.dataDir, XPEDITE_APP_INFO_PARAMETER_PATH)
     return generateProfiles(xpediteApp, scenario, context)
 
@@ -69,7 +69,7 @@ def compareVsBaseline(context, scenario):
   runId = scenario.discoverRunId()
   sampleFilePath = SAMPLE_FILE_PATH.format(dataDir=scenario.dataDir, runId=runId)
   report = runXpediteReport(
-    runId, context, scenario, sampleFilePath=sampleFilePath, cpuInfoOverride=True
+    runId, context, scenario, sampleFilePath=sampleFilePath, cpuInfoOverride=scenario.fullCpuInfo
   )
   reportProfiles = report.profiles
   reportProfiles.transactionRepo = None

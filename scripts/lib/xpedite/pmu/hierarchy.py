@@ -94,8 +94,7 @@ class Hierarchy(object):
 
     """
     node.thresh = False
-    if node.level > self.maxLevel:
-      self.maxLevel = node.level
+    self.maxLevel = max(node.level, self.maxLevel)
     node.children = []
     node.name = self.formatName(node.name)
     self.nodes.update({node.name: node})
