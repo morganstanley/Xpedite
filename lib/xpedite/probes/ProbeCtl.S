@@ -16,6 +16,8 @@
 
 #include <xpedite/probes/StackAlign.H>
 
+.section .note.GNU-stack,"",@progbits
+
 .section .text
 
 .global  xpediteTrampoline
