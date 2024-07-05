@@ -65,7 +65,7 @@ setup(name='xpedite',
         'py-cpuinfo',
         'nbclassic',
         'six',
-        'setuptools'
+        'setuptools',
         'ipynbname',
       ],
       zip_safe=False)
