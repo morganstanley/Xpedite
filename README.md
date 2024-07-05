@@ -375,6 +375,11 @@ In reports with multiple benchmarks, the reference benchmark can be change by us
 
 ## Hardware performance counters <a name="pmc"></a>
 
+Xpedite uses linux perf events api to program and collect hardware performance counters in the cpu.
+To enable this feature, ensure cpu level event access is permitted for the current user running Xpedite.
+Cpu level event access for all users can be enabled by setting /proc/sys/kernel/perf_event_paranoid to a value <=0.
+More details can found at perf_event_paranoid section of the linux kernel documentation [here](https://www.kernel.org/doc/Documentation/sysctl/kernel.txt)
+
 Xpedite can collect any of the core and offcore hardware performance counters, for bottleneck or topdown analysis.
 The list of counters supported, depends on processor's micro architecture and can be listed by running ```xpedite list```
   

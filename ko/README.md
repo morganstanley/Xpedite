@@ -1,3 +1,12 @@
+# Xpedite kernel module is deprecated
+
+Xpedite no longer requires kernel module to use hardware performance counters.
+Xpedite now uses perf events api to program and collect PMU data from user space.
+
+For more details checkout the section on "Hardware performance counters" in Xpedite readme docs.
+
+
+
 # Xpedite kernel module
 
 Xpedite provides a minimalistic kernel module to support programming and collection of performance counters from user space.
