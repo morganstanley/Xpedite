@@ -7,7 +7,7 @@ pygments>=2.0.2
 rpyc>=4.0.1
 cement>=3.0.10
 termcolor>=1.1.0
-py-cpuinfo>=0.1.2
+py-cpuinfo>=3.2.0
 six>=1.12.0
 nbclassic>=1.0.0
 setuptools

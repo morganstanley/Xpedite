@@ -25,8 +25,12 @@ class CpuInfo(object):
     """Returns the cpu identifier from vendor, family, model and stepping"""
     vendorId = self.info.get('vendor_id')
     vendorId = vendorId if vendorId else self.info.get('vendor_id_raw')
+    stepping = self.info.get('stepping') if 'stepping' in self.info else None
     if vendorId:
-      return '{}-{}-{:02X}-{}'.format(vendorId, self.info['family'], self.info['model'], self.info['stepping'])
+      vendorIdString =  '{}-{}-{:02X}'.format(vendorId, self.info['family'], self.info['model'])
+      if stepping:
+        vendorIdString += '-{}'.format(stepping)
+      return vendorIdString
     raise Exception('failed to load cpuInfo - missing cpu vendor id\n{}'.format(self.info))
 
   def _loadAdvertisedHz(self):
