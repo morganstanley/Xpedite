@@ -136,7 +136,7 @@ function runPytests() {
 
   PYTEST_ARGS="${COV} ${TEST_NAME} ${TEST_PATTERN} -v ${APP_HOST} ${PYTEST_ARGS} ${TRANSACTION_COUNT} ${THREAD_COUNT}"
   PYTEST_ARGS="${PYTEST_ARGS} ${WORKSPACE} ${RUN_DIR_ARG} ${APPS} ${SCENARIO_TYPES} ${RECORD_PMC}"
-  if ! PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} FORCE_COLOR=true pytest ${PYTEST_ARGS}; then
+  if ! PYTHONPATH=${XPEDITE_DIR}:${PYTHONPATH} FORCE_COLOR=true pytest ${PYTEST_ARGS} .; then
     echo detected one or more pytest failures
     RC=$(($RC + 1))
   fi
