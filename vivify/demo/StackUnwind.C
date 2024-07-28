@@ -18,6 +18,7 @@
 #include <libunwind-x86_64.h>
 
 #include <cstdlib>
+#include <stdexcept>
 #include <sstream>
 #include <algorithm>
 
