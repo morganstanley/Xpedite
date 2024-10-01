@@ -189,16 +189,18 @@ class Analytics(object):
     """
     totalFilteredCount = 0
     for txnCollection in repo.getTxnCollections():
-      txnMap = txnCollection.txnMap
+      txnMap = {}
       filteredCount = 0
       unfilteredCount = len(txnMap)
-      for tid, txn in txnMap.items():
+      for tid, txn in txnCollection.txnMap.items():
         if not txnFilter(txnCollection.name, txn):
-          del txnMap[tid]
           filteredCount += 1
+        else:
+          txnMap[tid] = txn
       if filteredCount:
         LOGGER.debug('filtering txns from \"%s\" - removed %d out of %d',
           txnCollection.name, filteredCount, unfilteredCount
         )
       totalFilteredCount += filteredCount
+      txnCollection.txnMap = txnMap
     return totalFilteredCount
