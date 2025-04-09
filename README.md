@@ -117,7 +117,7 @@ Given a valid AppInfo file, the profiler can, attach and profile the process tha
     #include <xpedite/framework/Framework.H>
 
     int main() {
-      if(!xpedite::framework::initialize("/tmp/xpedite-appinfo.txt", true)) { 
+      if(!xpedite::framework::initialize("/tmp/xpedite-appinfo.txt")) {
         throw std::runtime_error {"failed to init xpedite"}; 
       }
       life(100);
